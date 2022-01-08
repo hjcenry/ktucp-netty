@@ -7,7 +7,7 @@
 
 [README in english](https://github.com/hjcenry/ktucp-netty/README.en.md)
 
-基于TCP/UDP为通信协议，以KCP实现可靠通信的双通道协议栈实现
+> **基于TCP/UDP为通信协议，以KCP实现可靠通信的双通道协议栈实现**
 
 - 基于https://github.com/l42111996/java-Kcp.git的大部分实现
 - 对代码使用中不方便的地方进行接口改造
@@ -28,8 +28,8 @@ KCP是一个基于udp的快速可靠协议(rudp)，能以比 TCP浪费10%-20%的
 `以下文档引用原作者的README`
 
 > # 使用方法以及参数
-> 1. [server端示例](https://github.com/l42111996/hjcenry/ktucp-netty/src/main/test/KcpRttExampleServer.java)
-> 2. [client端实例](https://github.com/l42111996/hjcenry/ktucp-netty/src/main/test/KcpRttExampleClient.java)
+> 1. [server端示例](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleServer.java)
+> 2. [client端实例](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleClient.java)
 > 3. [最佳实践](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
 > 4. [大量资料](https://github.com/skywind3000/kcp)
 > 5. 兼容c#端，[java服务端](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java) , [c#客户端](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)

@@ -9,18 +9,28 @@ Kcp based on netty version (including implementation of fec function)
 
 KCP is a udp-based fast and reliable protocol (rudp), which can reduce the average delay by 30% -40% at the cost of wasting 10% -20% of bandwidth over TCP, and reduce the maximum delay by three times the transmission effect.
 
+> **Protocol layer combine with TCP & UDP,and upper layer implement by KCP**
+
+- Most implements are Based on https://github.com/l42111996/java-Kcp.git
+- Improve convince for code using and interface
+- Add tcp and udp protocol with choosing yourself
+- Make channel can be changed when running 
+
+> Kcp based on netty version (including implementation of fec function)
+
+KCP is a udp-based fast and reliable protocol (rudp), which can reduce the average delay by 30% -40% at the cost of wasting 10% -20% of bandwidth over TCP, and reduce the maximum delay by three times the transmission effect.
+
 # maven repository:
 
-```xml
-<dependency>
-  <groupId>com.github.l42111996</groupId>
-  <artifactId>kcp-base</artifactId>
-  <version>1.6</version>
-</dependency>
+```java
+// TODO
 ```
+
+`The followings are refrerence from origin author`
+
 # Using method and parameters
-1. [Server-side example](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/KcpRttExampleServer.java)
-2. [Client Example](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/KcpRttExampleClient.java)
+1. [Server-side example](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleServer.java)
+2. [Client Example](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleClient.java)
 3. [Best Practices](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
 4. [A lot of information](https://github.com/skywind3000/kcp)
 5. Compatible with C #, [java server](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java), [c #Client](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
