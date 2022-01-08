@@ -18,7 +18,7 @@ KCP is a udp-based fast and reliable protocol (rudp), which can reduce the avera
 
 > Kcp based on netty version (including implementation of fec function)
 
-KCP is a udp-based fast and reliable protocol (rudp), which can reduce the average delay by 30% -40% at the cost of wasting 10% -20% of bandwidth over TCP, and reduce the maximum delay by three times the transmission effect.
+KCP is a udp-based fast and reliable protocol (udp), which can reduce the average delay by 30% -40% at the cost of wasting 10% -20% of bandwidth over TCP, and reduce the maximum delay by three times the transmission effect.
 
 # maven repository:
 
