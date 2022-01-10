@@ -8,7 +8,8 @@ public class Fec {
     public static int
             fecHeaderSize = 6,
             fecDataSize = 2,
-            fecHeaderSizePlus2 = fecHeaderSize + fecDataSize, // plus 2B data size
+    // plus 2B data size
+    fecHeaderSizePlus2 = fecHeaderSize + fecDataSize,
             typeData = 0xf1,
             typeParity = 0xf2;
 

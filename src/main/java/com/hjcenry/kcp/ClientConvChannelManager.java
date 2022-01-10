@@ -1,9 +1,9 @@
 package com.hjcenry.kcp;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.Channel;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,9 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by JinMiao
  * 2019/10/17.
  */
-public class ClientConvChannelManager implements IChannelManager {
-
-    private int convIndex;
+public class ClientConvChannelManager extends AbstractChannelManager {
 
     public ClientConvChannelManager(int convIndex) {
         this.convIndex = convIndex;
@@ -24,30 +22,19 @@ public class ClientConvChannelManager implements IChannelManager {
     private Map<Integer, Ukcp> ukcpMap = new ConcurrentHashMap<>();
 
     @Override
-    public Ukcp get(DatagramPacket msg) {
-        int conv = getConv(msg);
+    public Ukcp getKcp(Channel channel, ByteBuf readByteBuf, InetSocketAddress address) {
+        int conv = getConvIdByByteBuf(readByteBuf);
         return ukcpMap.get(conv);
     }
 
-
-    private int getConv(DatagramPacket msg) {
-        ByteBuf byteBuf = msg.content();
-        return byteBuf.getIntLE(byteBuf.readerIndex() + convIndex);
-    }
-
     @Override
-    public void New(SocketAddress socketAddress, Ukcp ukcp, DatagramPacket msg) {
+    public void addKcp(Ukcp ukcp) {
         int conv = ukcp.getConv();
-        if (msg != null) {
-            conv = getConv(msg);
-            ukcp.setConv(conv);
-        }
-
         ukcpMap.put(conv, ukcp);
     }
 
     @Override
-    public void del(Ukcp ukcp) {
+    public void remove(Ukcp ukcp) {
         ukcpMap.remove(ukcp.getConv());
         ukcp.user().getChannel().close();
     }

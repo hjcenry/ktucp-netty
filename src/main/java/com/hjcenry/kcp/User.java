@@ -30,7 +30,7 @@ public class User {
         this.localAddress = localAddress;
     }
 
-    protected Channel getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 
@@ -46,7 +46,7 @@ public class User {
         this.remoteAddress = remoteAddress;
     }
 
-    protected InetSocketAddress getLocalAddress() {
+    public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
 

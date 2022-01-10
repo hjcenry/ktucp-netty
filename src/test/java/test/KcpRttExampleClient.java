@@ -51,8 +51,8 @@ public class KcpRttExampleClient implements KcpListener {
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true,40,2,true);
-        channelConfig.setSndwnd(512);
-        channelConfig.setRcvwnd(512);
+        channelConfig.setSndWnd(512);
+        channelConfig.setRcvWnd(512);
         channelConfig.setMtu(512);
         channelConfig.setAckNoDelay(true);
         channelConfig.setConv(55);

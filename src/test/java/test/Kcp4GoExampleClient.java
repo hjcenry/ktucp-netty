@@ -20,8 +20,8 @@ public class Kcp4GoExampleClient implements KcpListener {
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true, 40, 2, true);
-        channelConfig.setSndwnd(1024);
-        channelConfig.setRcvwnd(1024);
+        channelConfig.setSndWnd(1024);
+        channelConfig.setRcvWnd(1024);
         channelConfig.setMtu(1400);
         channelConfig.setFecAdapt(new FecAdapt(10, 3));
         channelConfig.setAckNoDelay(false);

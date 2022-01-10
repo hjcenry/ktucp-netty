@@ -1,6 +1,9 @@
 package com.hjcenry.kcp;
 
 import com.hjcenry.fec.FecAdapt;
+import com.hjcenry.server.NetChannelConfig;
+import com.hjcenry.server.tcp.TcpChannelConfig;
+import com.hjcenry.server.udp.UdpChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import com.hjcenry.threadPool.netty.NettyMessageExecutorPool;
 
@@ -14,30 +17,45 @@ public class ChannelConfig {
     private int conv;
     private boolean nodelay;
     private int interval = Kcp.IKCP_INTERVAL;
-    private int fastresend;
-    private boolean nocwnd;
-    private int sndwnd = Kcp.IKCP_WND_SND;
-    private int rcvwnd = Kcp.IKCP_WND_RCV;
+    private int fastResend;
+    private boolean nocWnd;
+    private int sndWnd = Kcp.IKCP_WND_SND;
+    private int rcvWnd = Kcp.IKCP_WND_RCV;
     private int mtu = Kcp.IKCP_MTU_DEF;
-    //超时时间 超过一段时间没收到消息断开连接
+    /**
+     * 超时时间 超过一段时间没收到消息断开连接
+     */
     private long timeoutMillis;
     //TODO 可能有bug还未测试
     private boolean stream;
 
-    //下面为新增参数
+    // 下面为新增参数
+
     private FecAdapt fecAdapt;
-    //收到包立刻回传ack包
+    /**
+     * 收到包立刻回传ack包
+     */
     private boolean ackNoDelay = false;
-    //发送包立即调用flush 延迟低一些  cpu增加  如果interval值很小 建议关闭该参数
+    /**
+     * 发送包立即调用flush 延迟低一些  cpu增加  如果interval值很小 建议关闭该参数
+     */
     private boolean fastFlush = true;
-    //crc32校验
+    /**
+     * crc32校验
+     */
     private boolean crc32Check = false;
-    //接收窗口大小(字节 -1不限制)
+    /**
+     * 接收窗口大小(字节 -1不限制)
+     */
     private int readBufferSize = -1;
-    //发送窗口大小(字节 -1不限制)
+    /**
+     * 发送窗口大小(字节 -1不限制)
+     */
     private int writeBufferSize = -1;
 
-    //增加ack包回复成功率 填 /8/16/32
+    /**
+     * 增加ack包回复成功率 填 /8/16/32
+     */
     private int ackMaskSize = 0;
     /**
      * 使用conv确定一个channel 还是使用 socketAddress确定一个channel
@@ -48,13 +66,22 @@ public class ChannelConfig {
      **/
     private IMessageExecutorPool iMessageExecutorPool = new NettyMessageExecutorPool(Runtime.getRuntime().availableProcessors());
 
+    /**
+     * TCP配置
+     */
+    private NetChannelConfig tcpChannelConfig = new TcpChannelConfig();
+    /**
+     * UDP配置
+     */
+    private NetChannelConfig udpChannelConfig = new UdpChannelConfig();
 
     public void nodelay(boolean nodelay, int interval, int resend, boolean nc) {
         this.nodelay = nodelay;
         this.interval = interval;
-        this.fastresend = resend;
-        this.nocwnd = nc;
+        this.fastResend = resend;
+        this.nocWnd = nc;
     }
+
 
     public int getReadBufferSize() {
         return readBufferSize;
@@ -64,11 +91,11 @@ public class ChannelConfig {
         this.readBufferSize = readBufferSize;
     }
 
-    public IMessageExecutorPool getiMessageExecutorPool() {
+    public IMessageExecutorPool getIMessageExecutorPool() {
         return iMessageExecutorPool;
     }
 
-    public void setiMessageExecutorPool(IMessageExecutorPool iMessageExecutorPool) {
+    public void setIMessageExecutorPool(IMessageExecutorPool iMessageExecutorPool) {
         if (this.iMessageExecutorPool != null) {
             this.iMessageExecutorPool.stop();
         }
@@ -91,28 +118,28 @@ public class ChannelConfig {
         return interval;
     }
 
-    public int getFastresend() {
-        return fastresend;
+    public int getFastResend() {
+        return fastResend;
     }
 
-    public boolean isNocwnd() {
-        return nocwnd;
+    public boolean isNocWnd() {
+        return nocWnd;
     }
 
-    public int getSndwnd() {
-        return sndwnd;
+    public int getSndWnd() {
+        return sndWnd;
     }
 
-    public void setSndwnd(int sndwnd) {
-        this.sndwnd = sndwnd;
+    public void setSndWnd(int sndWnd) {
+        this.sndWnd = sndWnd;
     }
 
-    public int getRcvwnd() {
-        return rcvwnd;
+    public int getRcvWnd() {
+        return rcvWnd;
     }
 
-    public void setRcvwnd(int rcvwnd) {
-        this.rcvwnd = rcvwnd;
+    public void setRcvWnd(int rcvWnd) {
+        this.rcvWnd = rcvWnd;
     }
 
     public int getMtu() {
@@ -193,5 +220,31 @@ public class ChannelConfig {
 
     public void setUseConvChannel(boolean useConvChannel) {
         this.useConvChannel = useConvChannel;
+    }
+
+    public NetChannelConfig getTcpChannelConfig() {
+        return tcpChannelConfig;
+    }
+
+    public NetChannelConfig getUdpChannelConfig() {
+        return udpChannelConfig;
+    }
+
+    /**
+     * 是否使用TCP网络
+     *
+     * @return
+     */
+    public boolean useTcp() {
+        return this.tcpChannelConfig.isUsed();
+    }
+
+    /**
+     * 是否使用UDP网络
+     *
+     * @return
+     */
+    public boolean useUdp() {
+        return this.udpChannelConfig.isUsed();
     }
 }

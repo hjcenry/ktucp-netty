@@ -1,5 +1,6 @@
 package com.hjcenry.kcp;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.DatagramPacket;
@@ -22,17 +23,15 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("", cause);
-        //SocketAddress socketAddress = ctx.channel().localAddress();
-        //Ukcp ukcp = ukcpMap.get(socketAddress);
-        //ukcp.getKcpListener().handleException(cause,ukcp);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object object) {
         DatagramPacket msg = (DatagramPacket) object;
-        Ukcp ukcp = this.channelManager.get(msg);
+        ByteBuf readByteBuf = msg.content();
+        Ukcp ukcp = this.channelManager.getKcp(ctx.channel(), readByteBuf, msg.recipient());
         if (ukcp != null) {
-            ukcp.read(msg.content());
+            ukcp.read(readByteBuf);
         }
     }
 }

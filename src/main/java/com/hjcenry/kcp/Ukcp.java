@@ -63,11 +63,10 @@ public class Ukcp {
 
     private boolean controlWriteBufferSize = false;
 
-
     /**
      * 上次收到消息时间
      **/
-    private long lastRecieveTime = System.currentTimeMillis();
+    private long lastReceiveTime = System.currentTimeMillis();
 
 
     /**
@@ -118,9 +117,9 @@ public class Ukcp {
 
 
     private void initKcpConfig(ChannelConfig channelConfig) {
-        kcp.nodelay(channelConfig.isNodelay(), channelConfig.getInterval(), channelConfig.getFastresend(), channelConfig.isNocwnd());
-        kcp.setSndWnd(channelConfig.getSndwnd());
-        kcp.setRcvWnd(channelConfig.getRcvwnd());
+        kcp.nodelay(channelConfig.isNodelay(), channelConfig.getInterval(), channelConfig.getFastResend(), channelConfig.isNocWnd());
+        kcp.setSndWnd(channelConfig.getSndWnd());
+        kcp.setRcvWnd(channelConfig.getRcvWnd());
         kcp.setMtu(channelConfig.getMtu());
         kcp.setStream(channelConfig.isStream());
         kcp.setAckNoDelay(channelConfig.isAckNoDelay());
@@ -215,12 +214,12 @@ public class Ukcp {
     }
 
 
-    protected long getLastRecieveTime() {
-        return lastRecieveTime;
+    protected long getLastReceiveTime() {
+        return lastReceiveTime;
     }
 
-    protected void setLastRecieveTime(long lastRecieveTime) {
-        this.lastRecieveTime = lastRecieveTime;
+    protected void setLastReceiveTime(long lastReceiveTime) {
+        this.lastReceiveTime = lastReceiveTime;
     }
 
     /**
@@ -435,7 +434,7 @@ public class Ukcp {
         notifyWriteEvent();
         kcp.flush(false, System.currentTimeMillis());
         //连接删除
-        channelManager.del(this);
+        channelManager.remove(this);
         release();
     }
 

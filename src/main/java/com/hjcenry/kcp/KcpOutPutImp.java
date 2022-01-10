@@ -8,14 +8,23 @@ import io.netty.channel.socket.DatagramPacket;
  * Created by JinMiao
  * 2018/9/21.
  */
-public class KcpOutPutImp implements KcpOutput {
+public abstract class KcpOutPutImp implements KcpOutput {
 
     @Override
     public void out(ByteBuf data, IKcp kcp) {
+        // 统计
         Snmp.snmp.OutPkts.increment();
         Snmp.snmp.OutBytes.add(data.writerIndex());
+        // 回写数据
         User user = (User) kcp.getUser();
-        DatagramPacket temp = new DatagramPacket(data, user.getRemoteAddress(), user.getLocalAddress());
-        user.getChannel().writeAndFlush(temp);
+        this.writeAndFlush(data, user);
     }
+
+    /**
+     * 写数据
+     *
+     * @param data 数据
+     * @param user 用户
+     */
+    protected abstract void writeAndFlush(ByteBuf data, User user);
 }

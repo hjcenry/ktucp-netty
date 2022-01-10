@@ -24,12 +24,12 @@ public class SpeedExampleClient implements KcpListener {
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true,30,2,true);
-        channelConfig.setSndwnd(2048);
-        channelConfig.setRcvwnd(2048);
+        channelConfig.setSndWnd(2048);
+        channelConfig.setRcvWnd(2048);
         channelConfig.setMtu(1400);
         channelConfig.setAckNoDelay(true);
         channelConfig.setConv(55);
-        channelConfig.setiMessageExecutorPool(new DisruptorExecutorPool(Runtime.getRuntime().availableProcessors()/2));
+        channelConfig.setIMessageExecutorPool(new DisruptorExecutorPool(Runtime.getRuntime().availableProcessors()/2));
         //channelConfig.setFecDataShardCount(10);
         //channelConfig.setFecParityShardCount(3);
         channelConfig.setCrc32Check(false);

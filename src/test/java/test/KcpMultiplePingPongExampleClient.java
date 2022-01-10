@@ -21,8 +21,8 @@ public class KcpMultiplePingPongExampleClient implements KcpListener {
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true,40,0,true);
-        channelConfig.setSndwnd(256);
-        channelConfig.setRcvwnd(256);
+        channelConfig.setSndWnd(256);
+        channelConfig.setRcvWnd(256);
         channelConfig.setMtu(400);
         //channelConfig.setFecDataShardCount(10);
         //channelConfig.setFecParityShardCount(3);

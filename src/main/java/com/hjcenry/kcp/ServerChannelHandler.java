@@ -1,6 +1,7 @@
 package com.hjcenry.kcp;
 
 import com.hjcenry.fec.fec.Fec;
+import com.hjcenry.server.udp.UdpOutPutImp;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.buffer.ByteBuf;
@@ -41,43 +42,37 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("", cause);
-        //SocketAddress socketAddress = ctx.channel().remoteAddress();
-        //Ukcp ukcp = clientMap.get(socketAddress);
-        //if(ukcp==null){
-        //    logger.error("exceptionCaught ukcp is not exist address"+ctx.channel().remoteAddress(),cause);
-        //    return;
-        //}
-        //ukcp.getKcpListener().handleException(cause,ukcp);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object object) {
         final ChannelConfig channelConfig = this.channelConfig;
         DatagramPacket msg = (DatagramPacket) object;
-        Ukcp ukcp = channelManager.get(msg);
-        ByteBuf byteBuf = msg.content();
+        ByteBuf readByteBuf = msg.content();
+
+        Ukcp ukcp = channelManager.getKcp(ctx.channel(), readByteBuf, msg.sender());
 
         if (ukcp != null) {
             User user = ukcp.user();
             //每次收到消息重绑定地址
             user.setRemoteAddress(msg.sender());
-            ukcp.read(byteBuf);
+            ukcp.read(readByteBuf);
             return;
         }
 
         //如果是新连接第一个包的sn必须为0
-        int sn = getSn(byteBuf, channelConfig);
+        int sn = getSn(readByteBuf, channelConfig);
         if (sn != 0) {
             msg.release();
             return;
         }
         IMessageExecutor iMessageExecutor = iMessageExecutorPool.getIMessageExecutor();
-        KcpOutput kcpOutput = new KcpOutPutImp();
+        KcpOutput kcpOutput = new UdpOutPutImp();
         Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, channelConfig, channelManager);
 
         User user = new User(ctx.channel(), msg.sender(), msg.recipient());
         newUkcp.user(user);
-        channelManager.New(msg.sender(), newUkcp, msg);
+        channelManager.addKcp(newUkcp);
 
         iMessageExecutor.execute(() -> {
             try {
@@ -87,21 +82,18 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
             }
         });
 
-        newUkcp.read(byteBuf);
+        newUkcp.read(readByteBuf);
 
         ScheduleTask scheduleTask = new ScheduleTask(iMessageExecutor, newUkcp, hashedWheelTimer);
         hashedWheelTimer.newTimeout(scheduleTask, newUkcp.getInterval(), TimeUnit.MILLISECONDS);
     }
-
 
     private int getSn(ByteBuf byteBuf, ChannelConfig channelConfig) {
         int headerSize = 0;
         if (channelConfig.getFecAdapt() != null) {
             headerSize += Fec.fecHeaderSizePlus2;
         }
-
-        int sn = byteBuf.getIntLE(byteBuf.readerIndex() + Kcp.IKCP_SN_OFFSET + headerSize);
-        return sn;
+        return byteBuf.getIntLE(byteBuf.readerIndex() + Kcp.IKCP_SN_OFFSET + headerSize);
     }
 
 }

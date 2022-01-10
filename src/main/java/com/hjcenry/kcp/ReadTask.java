@@ -88,7 +88,7 @@ public class ReadTask implements ITask {
 
 
     private void readBytebuf(ByteBuf buf,long current,Ukcp ukcp) {
-        ukcp.setLastRecieveTime(current);
+        ukcp.setLastReceiveTime(current);
         try {
             ukcp.getKcpListener().handleReceive(buf, ukcp);
         } catch (Throwable throwable) {

@@ -1,6 +1,7 @@
 package com.hjcenry.kcp;
 
 import com.hjcenry.fec.fec.Fec;
+import com.hjcenry.server.udp.UdpOutPutImp;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.bootstrap.Bootstrap;
@@ -56,7 +57,7 @@ public class KcpClient {
         } else {
             channelManager = new ClientAddressChannelManager();
         }
-        this.iMessageExecutorPool = channelConfig.getiMessageExecutorPool();
+        this.iMessageExecutorPool = channelConfig.getIMessageExecutorPool();
         nioEventLoopGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
 
         hashedWheelTimer = new HashedWheelTimer(new TimerThreadFactory(), 1, TimeUnit.MILLISECONDS);
@@ -115,12 +116,13 @@ public class KcpClient {
 
         User user = new User(channel, remoteAddress, localAddress);
         IMessageExecutor iMessageExecutor = iMessageExecutorPool.getIMessageExecutor();
-        KcpOutput kcpOutput = new KcpOutPutImp();
+//        KcpOutput kcpOutput = new KcpOutPutImp();
+        KcpOutput kcpOutput = new UdpOutPutImp();
 
         Ukcp ukcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, channelConfig, channelManager);
         ukcp.user(user);
 
-        channelManager.New(localAddress, ukcp, null);
+        channelManager.addKcp(ukcp);
         iMessageExecutor.execute(() -> {
             try {
                 ukcp.getKcpListener().onConnected(ukcp);

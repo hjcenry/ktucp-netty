@@ -21,8 +21,8 @@ public class KcpIdleExampleServer implements KcpListener {
         KcpIdleExampleServer kcpIdleExampleServer = new KcpIdleExampleServer();
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true,40,2,true);
-        channelConfig.setSndwnd(1024);
-        channelConfig.setRcvwnd(1024);
+        channelConfig.setSndWnd(1024);
+        channelConfig.setRcvWnd(1024);
         channelConfig.setMtu(1400);
         //channelConfig.setFecDataShardCount(10);
         //channelConfig.setFecParityShardCount(3);
