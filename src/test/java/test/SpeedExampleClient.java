@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.threadPool.disruptor.DisruptorExecutorPool;
 import io.netty.buffer.ByteBuf;
@@ -70,7 +70,7 @@ public class SpeedExampleClient implements KcpListener {
     }
 
     @Override
-    public void handleReceive(ByteBuf byteBuf, Ukcp ukcp) {
+    public void handleReceive(Object object, Ukcp ukcp) {
     }
 
     @Override

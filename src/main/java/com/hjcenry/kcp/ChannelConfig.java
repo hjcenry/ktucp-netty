@@ -82,7 +82,6 @@ public class ChannelConfig {
         this.nocWnd = nc;
     }
 
-
     public int getReadBufferSize() {
         return readBufferSize;
     }

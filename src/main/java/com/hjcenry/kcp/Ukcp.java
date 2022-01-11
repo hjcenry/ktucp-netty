@@ -1,14 +1,20 @@
 package com.hjcenry.kcp;
 
+import com.hjcenry.coder.ByteBufDecoder;
+import com.hjcenry.coder.ByteBufEncoder;
+import com.hjcenry.coder.IMessageDecoder;
+import com.hjcenry.coder.IMessageEncoder;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.IFecDecode;
 import com.hjcenry.fec.IFecEncode;
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.fec.fec.FecPacket;
 import com.hjcenry.fec.fec.Snmp;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.threadPool.IMessageExecutor;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.jctools.queues.MpscLinkedQueue;
@@ -23,7 +29,6 @@ public class Ukcp {
 
     private static final InternalLogger log = InternalLoggerFactory.getInstance(Ukcp.class);
 
-
     private final IKcp kcp;
 
     private boolean fastFlush = true;
@@ -35,9 +40,14 @@ public class Ukcp {
     private IFecEncode fecEncode = null;
     private IFecDecode fecDecode = null;
 
-    private final Queue<ByteBuf> writeBuffer;
-
-    private final Queue<ByteBuf> readBuffer;
+    /**
+     * 写消息队列：按Object写
+     */
+    private final Queue<Object> writeObjectQueue;
+    /**
+     * 对消息队列：按Buffer读
+     */
+    private final Queue<ByteBuf> readBufferQueue;
 
     private final IMessageExecutor iMessageExecutor;
 
@@ -55,9 +65,9 @@ public class Ukcp {
 
     private final AtomicInteger writeBufferIncr = new AtomicInteger(-1);
 
-    private final WriteTask writeTask = new WriteTask(this);
+    private final WriteTask writeTask;
 
-    private final ReadTask readTask = new ReadTask(this);
+    private final ReadTask readTask;
 
     private boolean controlReadBufferSize = false;
 
@@ -74,15 +84,34 @@ public class Ukcp {
      *
      * @param output output for kcp
      */
-    public Ukcp(KcpOutput output, KcpListener kcpListener, IMessageExecutor iMessageExecutor, ChannelConfig channelConfig, IChannelManager channelManager) {
+    public Ukcp(KcpOutput output,
+                KcpListener kcpListener,
+                IMessageExecutor iMessageExecutor,
+                ChannelConfig channelConfig,
+                IChannelManager channelManager,
+                IMessageEncoder messageEncoder,
+                IMessageDecoder messageDecoder) {
         this.timeoutMillis = channelConfig.getTimeoutMillis();
         this.kcp = new Kcp(channelConfig.getConv(), output);
         this.active = true;
         this.kcpListener = kcpListener;
         this.iMessageExecutor = iMessageExecutor;
         this.channelManager = channelManager;
-        this.writeBuffer = new MpscLinkedQueue<>();
-        this.readBuffer = new MpscLinkedQueue<>();
+
+        // 自定义编解码
+        if (messageEncoder == null) {
+            // 默认使用byteBuf编码器
+            messageEncoder = new ByteBufEncoder();
+        }
+        this.writeTask = new WriteTask(this, messageEncoder);
+        if (messageDecoder == null) {
+            // 默认使用byteBuf解码器
+            messageDecoder = new ByteBufDecoder();
+        }
+        this.readTask = new ReadTask(this, messageDecoder);
+
+        this.writeObjectQueue = new MpscLinkedQueue<>();
+        this.readBufferQueue = new MpscLinkedQueue<>();
 
         if (channelConfig.getReadBufferSize() != -1) {
             this.controlReadBufferSize = true;
@@ -158,8 +187,8 @@ public class Ukcp {
                 List<ByteBuf> byteBufs = fecDecode.decode(fecPacket);
                 if (byteBufs != null) {
                     ByteBuf byteBuf;
-                    for (int i = 0; i < byteBufs.size(); i++) {
-                        byteBuf = byteBufs.get(i);
+                    for (ByteBuf buf : byteBufs) {
+                        byteBuf = buf;
                         input(byteBuf, false, current);
                         byteBuf.release();
                     }
@@ -341,7 +370,7 @@ public class Ukcp {
                 return;
             }
         }
-        this.readBuffer.offer(byteBuf);
+        this.readBufferQueue.offer(byteBuf);
         notifyReadEvent();
     }
 
@@ -352,7 +381,7 @@ public class Ukcp {
      * @param byteBuf 发送后需要手动调用 {@link ByteBuf#release()}
      * @return true发送成功  false缓冲区满了
      */
-    public boolean write(ByteBuf byteBuf) {
+    public boolean write(Object object) {
         if (controlWriteBufferSize) {
             int bufferSize = writeBufferIncr.getAndUpdate(operand -> {
                 if (operand == 0) {
@@ -365,12 +394,10 @@ public class Ukcp {
                 return false;
             }
         }
-        byteBuf = byteBuf.retainedDuplicate();
-        writeBuffer.offer(byteBuf);
+        writeObjectQueue.offer(object);
         notifyWriteEvent();
         return true;
     }
-
 
     protected AtomicInteger getReadBufferIncr() {
         return readBufferIncr;
@@ -401,8 +428,8 @@ public class Ukcp {
         return tsUpdate;
     }
 
-    protected Queue<ByteBuf> getReadBuffer() {
-        return readBuffer;
+    protected Queue<ByteBuf> getReadBufferQueue() {
+        return readBufferQueue;
     }
 
     protected Ukcp setTsUpdate(long tsUpdate) {
@@ -410,8 +437,8 @@ public class Ukcp {
         return this;
     }
 
-    protected Queue<ByteBuf> getWriteBuffer() {
-        return writeBuffer;
+    protected Queue<Object> getWriteObjectQueue() {
+        return writeObjectQueue;
     }
 
     protected KcpListener getKcpListener() {
@@ -442,14 +469,14 @@ public class Ukcp {
         kcp.setState(-1);
         kcp.release();
         for (; ; ) {
-            ByteBuf byteBuf = writeBuffer.poll();
-            if (byteBuf == null) {
+            Object object = writeObjectQueue.poll();
+            if (object == null) {
                 break;
             }
-            byteBuf.release();
+            ReferenceCountUtil.release(object);
         }
         for (; ; ) {
-            ByteBuf byteBuf = readBuffer.poll();
+            ByteBuf byteBuf = readBufferQueue.poll();
             if (byteBuf == null) {
                 break;
             }

@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -52,7 +52,7 @@ public class Kcp4GoExampleClient implements KcpListener {
     }
 
     @Override
-    public void handleReceive(ByteBuf byteBuf, Ukcp ukcp) {
+    public void handleReceive(Object object, Ukcp ukcp) {
 
     }
 

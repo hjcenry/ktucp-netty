@@ -2,9 +2,10 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.KcpServer;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -12,7 +13,7 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpMultiplePingPongExampleServer implements KcpListener {
+public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf> {
 
     public static void main(String[] args) {
 
@@ -43,7 +44,7 @@ public class KcpMultiplePingPongExampleServer implements KcpListener {
     //long start = System.currentTimeMillis();
 
     @Override
-    public void handleReceive(ByteBuf buf, Ukcp kcp) {
+    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
         //i++;
         //long now = System.currentTimeMillis();
         //if(now-start>1000){
@@ -51,7 +52,7 @@ public class KcpMultiplePingPongExampleServer implements KcpListener {
         //    start = now;
         //    i=0;
         //}
-        kcp.write(buf);
+        ukcp.write(cast);
     }
 
     @Override

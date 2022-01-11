@@ -1,9 +1,11 @@
 package com.hjcenry.server.tcp;
 
+import com.hjcenry.coder.IMessageDecoder;
+import com.hjcenry.coder.IMessageEncoder;
 import com.hjcenry.kcp.AbstractServerChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.KcpOutput;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.threadPool.IMessageExecutorPool;
@@ -23,8 +25,20 @@ import java.net.InetSocketAddress;
  **/
 public class TcpServerChannelHandler extends AbstractServerChannelHandler {
 
-    public TcpServerChannelHandler(IChannelManager channelManager, ChannelConfig channelConfig, IMessageExecutorPool iMessageExecutorPool, KcpListener kcpListener, HashedWheelTimer hashedWheelTimer) {
-        super(channelManager, channelConfig, iMessageExecutorPool, kcpListener, hashedWheelTimer);
+    public TcpServerChannelHandler(IChannelManager channelManager,
+                                   ChannelConfig channelConfig,
+                                   IMessageExecutorPool iMessageExecutorPool,
+                                   KcpListener kcpListener,
+                                   HashedWheelTimer hashedWheelTimer,
+                                   IMessageEncoder messageEncoder,
+                                   IMessageDecoder messageDecoder) {
+        super(channelManager,
+                channelConfig,
+                iMessageExecutorPool,
+                kcpListener,
+                hashedWheelTimer,
+                messageEncoder,
+                messageDecoder);
     }
 
     @Override

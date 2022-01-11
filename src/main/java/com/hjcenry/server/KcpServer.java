@@ -1,13 +1,18 @@
 package com.hjcenry.server;
 
+import com.hjcenry.coder.ByteToMessageDecoder;
+import com.hjcenry.coder.IMessageDecoder;
+import com.hjcenry.coder.IMessageEncoder;
+import com.hjcenry.coder.MessageToByteEncoder;
 import com.hjcenry.exception.KcpInitException;
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.ServerAddressChannelManager;
 import com.hjcenry.kcp.ServerConvChannelManager;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.HashedWheelTimer;
@@ -60,6 +65,19 @@ public class KcpServer {
      * @param channelConfig 连接配置
      */
     public void init(KcpListener kcpListener, ChannelConfig channelConfig) {
+        // 使用默认编解码（传原始ByteBuf）
+        this.init(kcpListener, channelConfig, null, null);
+    }
+
+    /**
+     * 初始化KCP网络服务
+     *
+     * @param kcpListener    KCP监听器
+     * @param channelConfig  连接配置
+     * @param messageDecoder 解码器
+     * @param messageEncoder 编码器
+     */
+    public void init(KcpListener kcpListener, ChannelConfig channelConfig, IMessageEncoder messageEncoder, IMessageDecoder messageDecoder) {
         if (channelConfig.isUseConvChannel()) {
             int convIndex = 0;
             if (channelConfig.getFecAdapt() != null) {
@@ -83,6 +101,8 @@ public class KcpServer {
         netConfigData.setChannelManager(channelManager);
         netConfigData.setHashedWheelTimer(hashedWheelTimer);
         netConfigData.setListener(kcpListener);
+        netConfigData.setMessageEncoder(messageEncoder);
+        netConfigData.setMessageDecoder(messageDecoder);
 
         // 创建网络服务
         List<INetServer> netServers = new ArrayList<>();
@@ -143,31 +163,50 @@ public class KcpServer {
         return channelManager;
     }
 
+    /**
+     * TEST CODE
+     */
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.getTcpChannelConfig().setBindPort(1111);
         channelConfig.getUdpChannelConfig().setBindPort(1111);
         KcpServer kcpServer = new KcpServer();
-        kcpServer.init(new KcpListener() {
-            @Override
-            public void onConnected(Ukcp ukcp) {
+        kcpServer.init(
+                // 监听器
+                new SimpleKcpListener<String>() {
+                    @Override
+                    public void onConnected(Ukcp ukcp) {
+                        System.out.println("onConnected!!!:" + ukcp);
+                    }
 
-            }
+                    @Override
+                    protected void handleReceive0(String cast, Ukcp ukcp) throws Exception {
+                        System.out.println("handleReceive!!!:" + cast);
+                    }
 
-            @Override
-            public void handleReceive(ByteBuf byteBuf, Ukcp ukcp) {
+                    @Override
+                    public void handleException(Throwable ex, Ukcp ukcp) {
+                        System.out.println("handleException!!!:" + ukcp);
+                    }
 
-            }
-
-            @Override
-            public void handleException(Throwable ex, Ukcp ukcp) {
-
-            }
-
-            @Override
-            public void handleClose(Ukcp ukcp) {
-
-            }
-        }, channelConfig);
+                    @Override
+                    public void handleClose(Ukcp ukcp) {
+                        System.out.println("handleClose!!!:" + ukcp);
+                    }
+                }, channelConfig,
+                // 编码器
+                new MessageToByteEncoder<String>() {
+                    @Override
+                    protected void encodeObject(String writeObject, ByteBuf targetByteBuf) {
+                        targetByteBuf.writeBytes(writeObject.getBytes());
+                    }
+                },
+                // 解码器
+                new ByteToMessageDecoder<String>() {
+                    @Override
+                    protected String decodeByteBuf(ByteBuf readByteBuf) {
+                        return new String(readByteBuf.array());
+                    }
+                });
     }
 }

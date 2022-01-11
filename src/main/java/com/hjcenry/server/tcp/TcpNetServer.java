@@ -97,7 +97,10 @@ public class TcpNetServer extends AbstractNetServer {
                 netConfigData.getChannelConfig(),
                 netConfigData.getiMessageExecutorPool(),
                 netConfigData.getListener(),
-                netConfigData.getHashedWheelTimer());
+                netConfigData.getHashedWheelTimer(),
+                netConfigData.getMessageEncoder(),
+                netConfigData.getMessageDecoder()
+        );
         if (netConfigData.getChannelConfig().isCrc32Check()) {
             Crc32Encode crc32Encode = new Crc32Encode();
             Crc32Decode crc32Decode = new Crc32Decode();

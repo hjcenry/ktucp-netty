@@ -1,6 +1,6 @@
-package com.hjcenry.kcp;
+package com.hjcenry.kcp.listener;
 
-import io.netty.buffer.ByteBuf;
+import com.hjcenry.kcp.Ukcp;
 
 /**
  * Created by JinMiao
@@ -18,10 +18,10 @@ public interface KcpListener {
     /**
      * kcp message
      *
-     * @param byteBuf the data
+     * @param object
      * @param ukcp
      */
-    void handleReceive(ByteBuf byteBuf, Ukcp ukcp);
+    void handleReceive(Object object, Ukcp ukcp) throws Exception;
 
     /**
      * kcp异常，之后此kcp就会被关闭

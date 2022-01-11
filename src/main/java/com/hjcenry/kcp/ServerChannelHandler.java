@@ -1,6 +1,7 @@
 package com.hjcenry.kcp;
 
 import com.hjcenry.fec.fec.Fec;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.server.udp.UdpOutPutImp;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
@@ -68,7 +69,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         }
         IMessageExecutor iMessageExecutor = iMessageExecutorPool.getIMessageExecutor();
         KcpOutput kcpOutput = new UdpOutPutImp();
-        Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, channelConfig, channelManager);
+        Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, channelConfig, channelManager, null, null);
 
         User user = new User(ctx.channel(), msg.sender(), msg.recipient());
         newUkcp.user(user);

@@ -3,8 +3,9 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -17,11 +18,11 @@ import java.util.TimerTask;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpReconnectExampleClient implements KcpListener {
+public class KcpReconnectExampleClient extends SimpleKcpListener<ByteBuf> {
 
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.nodelay(true,40,2,true);
+        channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(1024);
         channelConfig.setRcvWnd(1024);
         channelConfig.setMtu(1400);
@@ -38,7 +39,7 @@ public class KcpReconnectExampleClient implements KcpListener {
 
         KcpReconnectExampleClient kcpClientRttExample = new KcpReconnectExampleClient();
         Ukcp ukcp = kcpClient.connect(new InetSocketAddress("127.0.0.1", 10021), channelConfig, kcpClientRttExample);
-        Timer timer =  new Timer();
+        Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -58,20 +59,21 @@ public class KcpReconnectExampleClient implements KcpListener {
             byteBuf.release();
         }
     }
-    int j =0;
+
+    int j = 0;
 
     @Override
-    public void handleReceive(ByteBuf byteBuf, Ukcp ukcp) {
-        ukcp.write(byteBuf);
-        int id = byteBuf.getInt(0);
+    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+        ukcp.write(cast);
+        int id = cast.getInt(0);
         //if(j-id%10!=0){
         //    System.out.println("id"+id +"  j" +j);
         //}
 
         j++;
-        if(j%100000==0){
+        if (j % 100000 == 0) {
             System.out.println(Snmp.snmp.toString());
-            System.out.println("收到了 返回回去"+j);
+            System.out.println("收到了 返回回去" + j);
         }
     }
 

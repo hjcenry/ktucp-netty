@@ -2,8 +2,9 @@ package test;
 
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpDisconnectExampleClient implements KcpListener {
+public class KcpDisconnectExampleClient extends SimpleKcpListener<ByteBuf> {
 
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
@@ -68,8 +69,8 @@ public class KcpDisconnectExampleClient implements KcpListener {
     }
 
     @Override
-    public void handleReceive(ByteBuf byteBuf, Ukcp ukcp) {
-        if (byteBuf.getInt(0) == 99) {
+    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+        if (cast.getInt(0) == 99) {
             ukcp.close();
         }
     }

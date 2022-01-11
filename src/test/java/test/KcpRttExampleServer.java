@@ -3,9 +3,10 @@ package test;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.KcpServer;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -13,7 +14,7 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2018/11/2.
  */
-public class KcpRttExampleServer implements KcpListener {
+public class KcpRttExampleServer extends SimpleKcpListener<ByteBuf> {
 
     public static void main(String[] args) {
 
@@ -39,12 +40,12 @@ public class KcpRttExampleServer implements KcpListener {
     }
 
     @Override
-    public void handleReceive(ByteBuf buf, Ukcp kcp) {
-        short curCount = buf.getShort(buf.readerIndex());
+    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+        short curCount = cast.getShort(cast.readerIndex());
         System.out.println(Thread.currentThread().getName() + "  收到消息 " + curCount);
-        kcp.write(buf);
+        ukcp.write(cast);
         if (curCount == -1) {
-            kcp.close();
+            ukcp.close();
         }
     }
 

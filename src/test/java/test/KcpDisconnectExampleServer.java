@@ -1,9 +1,10 @@
 package test;
 
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.KcpServer;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -11,7 +12,7 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpDisconnectExampleServer implements KcpListener {
+public class KcpDisconnectExampleServer extends SimpleKcpListener<ByteBuf> {
 
     public static void main(String[] args) {
 
@@ -37,10 +38,9 @@ public class KcpDisconnectExampleServer implements KcpListener {
         System.out.println("有连接进来 " + Thread.currentThread().getName() + ukcp.user().getRemoteAddress());
     }
 
-
     @Override
-    public void handleReceive(ByteBuf buf, Ukcp kcp) {
-        kcp.write(buf);
+    protected void handleReceive0(ByteBuf buf, Ukcp ukcp) throws Exception {
+        ukcp.write(buf);
     }
 
     @Override

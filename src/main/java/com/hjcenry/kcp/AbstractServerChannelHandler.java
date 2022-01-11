@@ -1,6 +1,9 @@
 package com.hjcenry.kcp;
 
+import com.hjcenry.coder.IMessageDecoder;
+import com.hjcenry.coder.IMessageEncoder;
 import com.hjcenry.fec.fec.Fec;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.buffer.ByteBuf;
@@ -46,13 +49,29 @@ public abstract class AbstractServerChannelHandler extends ChannelInboundHandler
      * 时间轮
      */
     protected HashedWheelTimer hashedWheelTimer;
+    /**
+     * 消息编码器
+     */
+    protected IMessageEncoder messageEncoder;
+    /**
+     * 消息解码器
+     */
+    protected IMessageDecoder messageDecoder;
 
-    public AbstractServerChannelHandler(IChannelManager channelManager, ChannelConfig channelConfig, IMessageExecutorPool iMessageExecutorPool, KcpListener kcpListener, HashedWheelTimer hashedWheelTimer) {
+    public AbstractServerChannelHandler(IChannelManager channelManager,
+                                        ChannelConfig channelConfig,
+                                        IMessageExecutorPool iMessageExecutorPool,
+                                        KcpListener kcpListener,
+                                        HashedWheelTimer hashedWheelTimer,
+                                        IMessageEncoder messageEncoder,
+                                        IMessageDecoder messageDecoder) {
         this.channelManager = channelManager;
         this.channelConfig = channelConfig;
         this.iMessageExecutorPool = iMessageExecutorPool;
         this.kcpListener = kcpListener;
         this.hashedWheelTimer = hashedWheelTimer;
+        this.messageEncoder = messageEncoder;
+        this.messageDecoder = messageDecoder;
     }
 
     @Override
@@ -108,7 +127,7 @@ public abstract class AbstractServerChannelHandler extends ChannelInboundHandler
      */
     protected Ukcp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
         KcpOutput kcpOutput = this.getKcpOutput();
-        Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, channelConfig, channelManager);
+        Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
         // 创建user
         InetSocketAddress localAddress = getLocalAddress(channel, readObject);
         InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);

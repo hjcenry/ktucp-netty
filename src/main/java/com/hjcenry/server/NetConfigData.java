@@ -1,8 +1,10 @@
 package com.hjcenry.server;
 
+import com.hjcenry.coder.IMessageDecoder;
+import com.hjcenry.coder.IMessageEncoder;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.util.HashedWheelTimer;
 
@@ -35,6 +37,14 @@ public class NetConfigData {
      * 监听器
      */
     private KcpListener listener;
+    /**
+     * 消息编码
+     */
+    private IMessageEncoder messageEncoder;
+    /**
+     * 消息解码
+     */
+    private IMessageDecoder messageDecoder;
 
     public ChannelConfig getChannelConfig() {
         return channelConfig;
@@ -74,5 +84,21 @@ public class NetConfigData {
 
     public void setListener(KcpListener listener) {
         this.listener = listener;
+    }
+
+    public IMessageEncoder getMessageEncoder() {
+        return messageEncoder;
+    }
+
+    public void setMessageEncoder(IMessageEncoder messageEncoder) {
+        this.messageEncoder = messageEncoder;
+    }
+
+    public IMessageDecoder getMessageDecoder() {
+        return messageDecoder;
+    }
+
+    public void setMessageDecoder(IMessageDecoder messageDecoder) {
+        this.messageDecoder = messageDecoder;
     }
 }

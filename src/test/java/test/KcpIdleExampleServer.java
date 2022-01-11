@@ -2,10 +2,9 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.KcpServer;
 import com.hjcenry.kcp.Ukcp;
-import io.netty.buffer.ByteBuf;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,7 +51,7 @@ public class KcpIdleExampleServer implements KcpListener {
     long start = System.currentTimeMillis();
 
     @Override
-    public void handleReceive(ByteBuf buf, Ukcp kcp) {
+    public void handleReceive(Object object, Ukcp kcp) {
         System.out.println("收到消息 "+recieveAtomicInteger.incrementAndGet());
         i++;
         long now = System.currentTimeMillis();

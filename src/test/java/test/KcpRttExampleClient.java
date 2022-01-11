@@ -4,8 +4,9 @@ import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * Created by JinMiao
  * 2019-06-26.
  */
-public class KcpRttExampleClient implements KcpListener {
+public class KcpRttExampleClient extends SimpleKcpListener<ByteBuf> {
 
     private final ByteBuf data;
 
@@ -32,7 +33,7 @@ public class KcpRttExampleClient implements KcpListener {
 
     private ScheduledFuture<?> future = null;
 
-    private final long startTime ;
+    private final long startTime;
 
     public KcpRttExampleClient() {
         data = Unpooled.buffer(200);
@@ -50,14 +51,14 @@ public class KcpRttExampleClient implements KcpListener {
 
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.nodelay(true,40,2,true);
+        channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(512);
         channelConfig.setRcvWnd(512);
         channelConfig.setMtu(512);
         channelConfig.setAckNoDelay(true);
         channelConfig.setConv(55);
 
-        channelConfig.setFecAdapt(new FecAdapt(3,1));
+        channelConfig.setFecAdapt(new FecAdapt(3, 1));
         channelConfig.setCrc32Check(true);
         //channelConfig.setTimeoutMillis(10000);
         //channelConfig.setAckMaskSize(32);
@@ -65,7 +66,7 @@ public class KcpRttExampleClient implements KcpListener {
         kcpClient.init(channelConfig);
 
         KcpRttExampleClient kcpClientRttExample = new KcpRttExampleClient();
-        kcpClient.connect(new InetSocketAddress("127.0.0.1",20003),channelConfig,kcpClientRttExample);
+        kcpClient.connect(new InetSocketAddress("127.0.0.1", 20003), channelConfig, kcpClientRttExample);
 
         //kcpClient.connect(new InetSocketAddress("10.60.100.191",20003),channelConfig,kcpClientRttExample);
     }
@@ -88,8 +89,8 @@ public class KcpRttExampleClient implements KcpListener {
     }
 
     @Override
-    public void handleReceive(ByteBuf byteBuf, Ukcp ukcp) {
-        int curCount = byteBuf.readShort();
+    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+        int curCount = cast.readShort();
 
         if (curCount == -1) {
             scheduleSrv.schedule(new Runnable() {
@@ -99,7 +100,7 @@ public class KcpRttExampleClient implements KcpListener {
                     for (int rtt : rtts) {
                         sum += rtt;
                     }
-                    System.out.println("average: "+ (sum / rtts.length));
+                    System.out.println("average: " + (sum / rtts.length));
                     System.out.println(Snmp.snmp.toString());
                     ukcp.close();
                     //ukcp.setTimeoutMillis(System.currentTimeMillis());
@@ -108,19 +109,18 @@ public class KcpRttExampleClient implements KcpListener {
             }, 3, TimeUnit.SECONDS);
         } else {
             int idx = curCount - 1;
-            long time = byteBuf.readInt();
+            long time = cast.readInt();
             if (rtts[idx] != -1) {
                 System.out.println("???");
             }
             //log.info("rcv count {} {}", curCount, System.currentTimeMillis());
             rtts[idx] = (int) (System.currentTimeMillis() - startTime - time);
-            System.out.println("rtt : "+ curCount+"  "+ rtts[idx]);
+            System.out.println("rtt : " + curCount + "  " + rtts[idx]);
         }
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp kcp)
-    {
+    public void handleException(Throwable ex, Ukcp kcp) {
         ex.printStackTrace();
     }
 
@@ -136,14 +136,14 @@ public class KcpRttExampleClient implements KcpListener {
         int sum = 0;
         int max = 0;
         for (int rtt : rtts) {
-            if(rtt>max){
+            if (rtt > max) {
                 max = rtt;
             }
             sum += rtt;
         }
-        System.out.println("average: "+ (sum / rtts.length)+" max:"+max);
+        System.out.println("average: " + (sum / rtts.length) + " max:" + max);
         System.out.println(Snmp.snmp.toString());
-        System.out.println("lost percent: "+(Snmp.snmp.RetransSegs.doubleValue()/Snmp.snmp.OutPkts.doubleValue()));
+        System.out.println("lost percent: " + (Snmp.snmp.RetransSegs.doubleValue() / Snmp.snmp.OutPkts.doubleValue()));
 
 
     }

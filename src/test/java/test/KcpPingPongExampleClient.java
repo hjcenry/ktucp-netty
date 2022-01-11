@@ -3,8 +3,9 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.DefaultEventLoop;
@@ -16,7 +17,7 @@ import java.net.InetSocketAddress;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpPingPongExampleClient implements KcpListener {
+public class KcpPingPongExampleClient extends SimpleKcpListener<ByteBuf> {
 
     static DefaultEventLoop logicThread = new DefaultEventLoop();
     public static void main(String[] args) {
@@ -52,9 +53,10 @@ public class KcpPingPongExampleClient implements KcpListener {
     }
     int j =0;
 
+
     @Override
-    public void handleReceive(ByteBuf byteBuf, Ukcp ukcp) {
-        ByteBuf newBuf = byteBuf.retainedDuplicate();
+    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+        ByteBuf newBuf = cast.retainedDuplicate();
         logicThread.execute(() -> {
             try {
                 ukcp.write(newBuf);
@@ -67,9 +69,7 @@ public class KcpPingPongExampleClient implements KcpListener {
             }catch (Exception e){
                 e.printStackTrace();
             }
-
         });
-
     }
 
     @Override

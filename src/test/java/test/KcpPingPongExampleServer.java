@@ -2,9 +2,10 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpListener;
+import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.KcpServer;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.DefaultEventLoop;
 
@@ -14,13 +15,14 @@ import io.netty.channel.DefaultEventLoop;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpPingPongExampleServer implements KcpListener {
+public class KcpPingPongExampleServer extends SimpleKcpListener<ByteBuf> {
     static DefaultEventLoop logicThread = new DefaultEventLoop();
+
     public static void main(String[] args) {
 
         KcpPingPongExampleServer kcpRttExampleServer = new KcpPingPongExampleServer();
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.nodelay(true,40,2,true);
+        channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(1024);
         channelConfig.setRcvWnd(1024);
         channelConfig.setMtu(1400);
@@ -44,20 +46,20 @@ public class KcpPingPongExampleServer implements KcpListener {
     long start = System.currentTimeMillis();
 
     @Override
-    public void handleReceive(ByteBuf buf, Ukcp kcp) {
-        ByteBuf newBuf = buf.retainedDuplicate();
+    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+        ByteBuf newBuf = cast.retainedDuplicate();
         logicThread.execute(() -> {
             try {
                 i++;
                 long now = System.currentTimeMillis();
-                if(now-start>1000){
-                    System.out.println("收到消息 time: "+(now-start) +"  message :" +i);
+                if (now - start > 1000) {
+                    System.out.println("收到消息 time: " + (now - start) + "  message :" + i);
                     start = now;
-                    i=0;
+                    i = 0;
                 }
-                kcp.write(newBuf);
+                ukcp.write(newBuf);
                 newBuf.release();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -72,7 +74,7 @@ public class KcpPingPongExampleServer implements KcpListener {
     @Override
     public void handleClose(Ukcp kcp) {
         System.out.println(Snmp.snmp.toString());
-        Snmp.snmp= new Snmp();
+        Snmp.snmp = new Snmp();
         System.out.println("连接断开了");
     }
 }

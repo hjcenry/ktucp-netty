@@ -1,8 +1,10 @@
 package com.hjcenry.kcp;
 
+import com.hjcenry.coder.IMessageEncoder;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.threadPool.ITask;
 import io.netty.buffer.ByteBuf;
+import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -14,9 +16,11 @@ import java.util.Queue;
 public class WriteTask implements ITask {
 
     private final Ukcp ukcp;
+    private final IMessageEncoder messageEncoder;
 
-    public WriteTask(Ukcp ukcp) {
+    public WriteTask(Ukcp ukcp, IMessageEncoder messageEncoder) {
         this.ukcp = ukcp;
+        this.messageEncoder = messageEncoder;
     }
 
     @Override
@@ -28,22 +32,34 @@ public class WriteTask implements ITask {
                 return;
             }
             //从发送缓冲区到kcp缓冲区
-            Queue<ByteBuf> queue = ukcp.getWriteBuffer();
+            Queue<Object> queue = ukcp.getWriteObjectQueue();
             int writeCount = 0;
             long writeBytes = 0;
             while (ukcp.canSend(false)) {
-                ByteBuf byteBuf = queue.poll();
-                if (byteBuf == null) {
+                Object object = queue.poll();
+                if (object == null) {
                     break;
                 }
-                writeCount++;
+                ByteBuf byteBuf = null;
                 try {
+                    // 消息编码
+                    byteBuf = this.messageEncoder.encode(object);
+                    if (byteBuf == null) {
+                        break;
+                    }
+                    writeCount++;
                     writeBytes += byteBuf.readableBytes();
+                    // 发送
                     ukcp.send(byteBuf);
-                    byteBuf.release();
                 } catch (IOException e) {
                     ukcp.getKcpListener().handleException(e, ukcp);
                     return;
+                } finally {
+                    // release
+                    if (byteBuf != null) {
+                        byteBuf.release();
+                    }
+                    ReferenceCountUtil.release(object);
                 }
             }
             Snmp.snmp.BytesSent.add(writeBytes);
@@ -62,7 +78,6 @@ public class WriteTask implements ITask {
             release();
         }
     }
-
 
     public void release() {
         ukcp.getWriteProcessing().set(false);

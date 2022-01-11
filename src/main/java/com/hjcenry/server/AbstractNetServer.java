@@ -135,7 +135,7 @@ public abstract class AbstractNetServer implements INetServer {
         final CountDownLatch waiter = new CountDownLatch(2);
         this.start(bindPort, waiter, bindCallBack, activeCallBack);
         try {
-            // 等待服务成功启动。再继续后面的逻辑
+            // 等待服务成功启动。再继续后面的逻辑，1min超时
             if (!waiter.await(1, TimeUnit.MINUTES)) {
                 LOG.warn(String.format("%s start time out [%d%s]", this.getClass().getSimpleName(), 1, TimeUnit.MINUTES));
             }
