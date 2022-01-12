@@ -29,8 +29,9 @@ public interface IChannelManager {
      * 创建KCP对象
      *
      * @param ukcp kcp对象
+     * @param channel
      */
-    void addKcp(Ukcp ukcp);
+    void addKcp(Ukcp ukcp, Channel channel);
 
     /**
      * 移除KCP对象

@@ -28,7 +28,7 @@ public class ServerConvChannelManager extends AbstractChannelManager {
     }
 
     @Override
-    public void addKcp(Ukcp ukcp) {
+    public void addKcp(Ukcp ukcp, Channel channel) {
         int conv = ukcp.getConv();
         ukcpMap.put(conv, ukcp);
     }

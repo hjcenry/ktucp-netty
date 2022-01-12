@@ -1,6 +1,7 @@
 package com.hjcenry.server.udp;
 
 import com.hjcenry.server.NetChannelConfig;
+import com.hjcenry.server.NetServerEnum;
 import com.hjcenry.server.callback.StartUpNettyServerCallBack;
 import io.netty.channel.ChannelOption;
 
@@ -19,6 +20,10 @@ public class UdpChannelConfig extends NetChannelConfig {
      * UDP Channel参数
      */
     private final Map<ChannelOption, Object> channelOptions = new HashMap<>();
+
+    public UdpChannelConfig(int bindPort) {
+        super(NetServerEnum.NET_UDP, bindPort);
+    }
 
     /**
      * 添加UDP Channel参数

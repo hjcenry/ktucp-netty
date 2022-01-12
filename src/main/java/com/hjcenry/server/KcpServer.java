@@ -1,9 +1,9 @@
 package com.hjcenry.server;
 
-import com.hjcenry.coder.ByteToMessageDecoder;
-import com.hjcenry.coder.IMessageDecoder;
-import com.hjcenry.coder.IMessageEncoder;
-import com.hjcenry.coder.MessageToByteEncoder;
+import com.hjcenry.codec.decode.ByteToMessageDecoder;
+import com.hjcenry.codec.decode.IMessageDecoder;
+import com.hjcenry.codec.encode.IMessageEncoder;
+import com.hjcenry.codec.encode.MessageToByteEncoder;
 import com.hjcenry.exception.KcpInitException;
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.kcp.ChannelConfig;
@@ -13,6 +13,8 @@ import com.hjcenry.kcp.ServerAddressChannelManager;
 import com.hjcenry.kcp.ServerConvChannelManager;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.server.tcp.TcpChannelConfig;
+import com.hjcenry.server.udp.UdpChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.HashedWheelTimer;
@@ -94,27 +96,8 @@ public class KcpServer {
         // 消息处理池
         IMessageExecutorPool iMessageExecutorPool = channelConfig.getIMessageExecutorPool();
 
-        // 网络服务数据
-        NetConfigData netConfigData = new NetConfigData();
-        netConfigData.setChannelConfig(channelConfig);
-        netConfigData.setiMessageExecutorPool(iMessageExecutorPool);
-        netConfigData.setChannelManager(channelManager);
-        netConfigData.setHashedWheelTimer(hashedWheelTimer);
-        netConfigData.setListener(kcpListener);
-        netConfigData.setMessageEncoder(messageEncoder);
-        netConfigData.setMessageDecoder(messageDecoder);
-
         // 创建网络服务
-        List<INetServer> netServers = new ArrayList<>();
-        if (channelConfig.useTcp()) {
-            // 创建TCP服务
-            createNetServer(NetServerEnum.NET_TCP, netConfigData, netServers);
-        }
-        if (channelConfig.useUdp()) {
-            // 创建UDP服务
-            createNetServer(NetServerEnum.NET_UDP, netConfigData, netServers);
-        }
-        this.netServers = netServers;
+        createNetServers(kcpListener, channelConfig, messageEncoder, messageDecoder, hashedWheelTimer, iMessageExecutorPool);
 
         // 启动网络服务
         for (INetServer netServer : this.netServers) {
@@ -130,6 +113,29 @@ public class KcpServer {
 
         // 停服钩子
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+    }
+
+    protected void createNetServers(KcpListener kcpListener, ChannelConfig channelConfig, IMessageEncoder messageEncoder, IMessageDecoder messageDecoder, HashedWheelTimer hashedWheelTimer, IMessageExecutorPool iMessageExecutorPool) {
+        List<INetServer> netServers = new ArrayList<>();
+
+        for (NetChannelConfig netChannelConfig : channelConfig.getNetChannelConfigList()) {
+            // 网络服务数据
+            NetConfigData netConfigData = new NetConfigData();
+            // 配置数据
+            netConfigData.setChannelConfig(channelConfig);
+            netConfigData.setNetChannelConfig(netChannelConfig);
+            // 处理器
+            netConfigData.setMessageExecutorPool(iMessageExecutorPool);
+            netConfigData.setChannelManager(channelManager);
+            netConfigData.setHashedWheelTimer(hashedWheelTimer);
+            // 监听和解码
+            netConfigData.setListener(kcpListener);
+            netConfigData.setMessageEncoder(messageEncoder);
+            netConfigData.setMessageDecoder(messageDecoder);
+            // 创建网络服务
+            createNetServer(netChannelConfig.getServerEnum(), netConfigData, netServers);
+        }
+        this.netServers = netServers;
     }
 
     private void logPrintNetServer() {
@@ -168,8 +174,10 @@ public class KcpServer {
      */
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.getTcpChannelConfig().setBindPort(1111);
-        channelConfig.getUdpChannelConfig().setBindPort(1111);
+        // 添加TCP服务
+        channelConfig.addNetChannelConfig(new TcpChannelConfig(1111));
+        // 添加KCP服务
+        channelConfig.addNetChannelConfig(new UdpChannelConfig(1111));
         KcpServer kcpServer = new KcpServer();
         kcpServer.init(
                 // 监听器

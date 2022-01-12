@@ -1,17 +1,18 @@
 package com.hjcenry.server.tcp;
 
-import com.hjcenry.coder.IMessageDecoder;
-import com.hjcenry.coder.IMessageEncoder;
+import com.hjcenry.codec.decode.IMessageDecoder;
+import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.kcp.AbstractServerChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.kcp.KcpOutput;
+import com.hjcenry.kcp.ServerHandlerChannelManager;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelHandler;
 import io.netty.util.HashedWheelTimer;
 
 import java.net.InetSocketAddress;
@@ -23,38 +24,54 @@ import java.net.InetSocketAddress;
  * @version 1.0
  * @date 2022/1/8 16:46
  **/
+@ChannelHandler.Sharable
 public class TcpServerChannelHandler extends AbstractServerChannelHandler {
 
-    public TcpServerChannelHandler(IChannelManager channelManager,
+    /**
+     * TCP有连接存在，可通过连接映射KCP对象
+     */
+    private final ServerHandlerChannelManager clientChannelManager;
+
+    public TcpServerChannelHandler(int netId, IChannelManager channelManager,
                                    ChannelConfig channelConfig,
                                    IMessageExecutorPool iMessageExecutorPool,
                                    KcpListener kcpListener,
                                    HashedWheelTimer hashedWheelTimer,
                                    IMessageEncoder messageEncoder,
                                    IMessageDecoder messageDecoder) {
-        super(channelManager,
+        super(netId, channelManager,
                 channelConfig,
                 iMessageExecutorPool,
                 kcpListener,
                 hashedWheelTimer,
                 messageEncoder,
                 messageDecoder);
+        this.clientChannelManager = new ServerHandlerChannelManager();
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf byteBuf = (ByteBuf) msg;
+    protected Ukcp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
+        Ukcp ukcp = super.createUkcp(channel, readObject, readByteBuf, iMessageExecutor);
+        // 添加TCP通道管理
+        this.clientChannelManager.addKcp(ukcp, channel);
+        return ukcp;
+    }
+
+    @Override
+    protected ByteBuf getReadByteBuf(Channel channel, Object msg) {
+        return (ByteBuf) msg;
+    }
+
+    @Override
+    protected Ukcp getReadUkcp(Channel channel, Object msg) {
         // 获取KCP对象
-        Channel channel = ctx.channel();
-        Ukcp ukcp = channelManager.getKcp(ctx.channel(), byteBuf, (InetSocketAddress) channel.remoteAddress());
-        // 读消息
-        this.channelRead0(ctx, msg, ukcp, byteBuf);
+        return this.clientChannelManager.getKcp(channel);
     }
 
     @Override
-    protected KcpOutput getKcpOutput() {
-        // TCP输出
-        return new TcpOutPutImp();
+    protected Ukcp getUkcpByChannel(Channel channel) {
+        // 通过TCP Channel获取KCP对象
+        return this.clientChannelManager.getKcp(channel);
     }
 
     @Override

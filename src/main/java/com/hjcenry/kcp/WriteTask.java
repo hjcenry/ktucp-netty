@@ -1,6 +1,6 @@
 package com.hjcenry.kcp;
 
-import com.hjcenry.coder.IMessageEncoder;
+import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.threadPool.ITask;
 import io.netty.buffer.ByteBuf;

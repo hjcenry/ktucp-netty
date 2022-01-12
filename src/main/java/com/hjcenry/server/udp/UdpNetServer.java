@@ -25,13 +25,18 @@ import java.util.Map;
  **/
 public class UdpNetServer extends AbstractNetServer {
 
-    public UdpNetServer(NetConfigData netConfigData) throws KcpInitException {
-        super(netConfigData);
-    }
+    private final AbstractServerChannelHandler serverChannelHandler;
 
-    @Override
-    protected NetChannelConfig getNetChannelConfig() {
-        return this.netConfigData.getChannelConfig().getUdpChannelConfig();
+    public UdpNetServer(int netId, NetConfigData netConfigData) throws KcpInitException {
+        super(netId, netConfigData);
+        serverChannelHandler = new UdpServerChannelHandler(this.netId,
+                netConfigData.getChannelManager(),
+                netConfigData.getChannelConfig(),
+                netConfigData.getMessageExecutorPool(),
+                netConfigData.getListener(),
+                netConfigData.getHashedWheelTimer(),
+                netConfigData.getMessageEncoder(),
+                netConfigData.getMessageDecoder());
     }
 
     @Override
@@ -57,7 +62,7 @@ public class UdpNetServer extends AbstractNetServer {
         bootstrap.option(ChannelOption.SO_REUSEADDR, true);
         // 自定义配置参数
         ChannelConfig channelConfig = this.netConfigData.getChannelConfig();
-        UdpChannelConfig udpChannelConfig = (UdpChannelConfig) channelConfig.getUdpChannelConfig();
+        UdpChannelConfig udpChannelConfig = (UdpChannelConfig) this.netConfigData.getNetChannelConfig();
         for (Map.Entry<ChannelOption, Object> entry : udpChannelConfig.getChannelOptions().entrySet()) {
             ChannelOption channelOption = entry.getKey();
             Object value = entry.getValue();
@@ -68,13 +73,6 @@ public class UdpNetServer extends AbstractNetServer {
     @Override
     protected void initChannel(Channel ch) {
         ChannelPipeline cp = ch.pipeline();
-        AbstractServerChannelHandler serverChannelHandler = new UdpServerChannelHandler(netConfigData.getChannelManager(),
-                netConfigData.getChannelConfig(),
-                netConfigData.getiMessageExecutorPool(),
-                netConfigData.getListener(),
-                netConfigData.getHashedWheelTimer(),
-                netConfigData.getMessageEncoder(),
-                netConfigData.getMessageDecoder());
         if (netConfigData.getChannelConfig().isCrc32Check()) {
             Crc32Encode crc32Encode = new Crc32Encode();
             Crc32Decode crc32Decode = new Crc32Decode();

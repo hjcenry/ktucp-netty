@@ -28,7 +28,7 @@ public class ClientConvChannelManager extends AbstractChannelManager {
     }
 
     @Override
-    public void addKcp(Ukcp ukcp) {
+    public void addKcp(Ukcp ukcp, Channel channel) {
         int conv = ukcp.getConv();
         ukcpMap.put(conv, ukcp);
     }
@@ -36,7 +36,6 @@ public class ClientConvChannelManager extends AbstractChannelManager {
     @Override
     public void remove(Ukcp ukcp) {
         ukcpMap.remove(ukcp.getConv());
-        ukcp.user().getChannel().close();
     }
 
     @Override

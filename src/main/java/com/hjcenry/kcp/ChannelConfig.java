@@ -7,6 +7,9 @@ import com.hjcenry.server.udp.UdpChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import com.hjcenry.threadPool.netty.NettyMessageExecutorPool;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by JinMiao
  * 2018/9/20.
@@ -67,13 +70,10 @@ public class ChannelConfig {
     private IMessageExecutorPool iMessageExecutorPool = new NettyMessageExecutorPool(Runtime.getRuntime().availableProcessors());
 
     /**
-     * TCP配置
+     * 网络配置
+     * <b>有多少配置，就会启动多少网络服务</b>
      */
-    private NetChannelConfig tcpChannelConfig = new TcpChannelConfig();
-    /**
-     * UDP配置
-     */
-    private NetChannelConfig udpChannelConfig = new UdpChannelConfig();
+    private List<NetChannelConfig> netChannelConfigList = new ArrayList<>();
 
     public void nodelay(boolean nodelay, int interval, int resend, boolean nc) {
         this.nodelay = nodelay;
@@ -221,29 +221,15 @@ public class ChannelConfig {
         this.useConvChannel = useConvChannel;
     }
 
-    public NetChannelConfig getTcpChannelConfig() {
-        return tcpChannelConfig;
+    public List<NetChannelConfig> getNetChannelConfigList() {
+        return netChannelConfigList;
     }
 
-    public NetChannelConfig getUdpChannelConfig() {
-        return udpChannelConfig;
+    public void addNetChannelConfig(NetChannelConfig netChannelConfig) {
+        this.netChannelConfigList.add(netChannelConfig);
     }
 
-    /**
-     * 是否使用TCP网络
-     *
-     * @return
-     */
-    public boolean useTcp() {
-        return this.tcpChannelConfig.isUsed();
-    }
-
-    /**
-     * 是否使用UDP网络
-     *
-     * @return
-     */
-    public boolean useUdp() {
-        return this.udpChannelConfig.isUsed();
+    public int getNetNum() {
+        return netChannelConfigList.size();
     }
 }

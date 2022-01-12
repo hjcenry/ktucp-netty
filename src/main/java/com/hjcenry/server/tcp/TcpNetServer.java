@@ -15,10 +15,13 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ServerChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TCP网络服务
@@ -29,13 +32,19 @@ import java.util.Map;
  **/
 public class TcpNetServer extends AbstractNetServer {
 
-    public TcpNetServer(NetConfigData netConfigData) throws KcpInitException {
-        super(netConfigData);
-    }
+    private final AbstractServerChannelHandler serverChannelHandler;
 
-    @Override
-    protected NetChannelConfig getNetChannelConfig() {
-        return this.netConfigData.getChannelConfig().getTcpChannelConfig();
+    public TcpNetServer(int netId, NetConfigData netConfigData) throws KcpInitException {
+        super(netId, netConfigData);
+        serverChannelHandler = new TcpServerChannelHandler(this.netId,
+                netConfigData.getChannelManager(),
+                netConfigData.getChannelConfig(),
+                netConfigData.getMessageExecutorPool(),
+                netConfigData.getListener(),
+                netConfigData.getHashedWheelTimer(),
+                netConfigData.getMessageEncoder(),
+                netConfigData.getMessageDecoder()
+        );
     }
 
     @Override
@@ -60,9 +69,7 @@ public class TcpNetServer extends AbstractNetServer {
     @Override
     protected void applyConnectionOptions() {
         ServerBootstrap serverBootstrap = (ServerBootstrap) this.bootstrap;
-
-        ChannelConfig channelConfig = this.netConfigData.getChannelConfig();
-        TcpChannelConfig tcpChannelConfig = (TcpChannelConfig) channelConfig.getTcpChannelConfig();
+        TcpChannelConfig tcpChannelConfig = (TcpChannelConfig) this.netConfigData.getNetChannelConfig();
 
         // 默认配置ServerSocketChannel
         serverBootstrap.option(ChannelOption.SO_REUSEADDR, true);
@@ -93,20 +100,15 @@ public class TcpNetServer extends AbstractNetServer {
     @Override
     protected void initChannel(Channel ch) {
         ChannelPipeline cp = ch.pipeline();
-        AbstractServerChannelHandler serverChannelHandler = new TcpServerChannelHandler(netConfigData.getChannelManager(),
-                netConfigData.getChannelConfig(),
-                netConfigData.getiMessageExecutorPool(),
-                netConfigData.getListener(),
-                netConfigData.getHashedWheelTimer(),
-                netConfigData.getMessageEncoder(),
-                netConfigData.getMessageDecoder()
-        );
         if (netConfigData.getChannelConfig().isCrc32Check()) {
             Crc32Encode crc32Encode = new Crc32Encode();
             Crc32Decode crc32Decode = new Crc32Decode();
             cp.addLast(crc32Encode);
             cp.addLast(crc32Decode);
         }
+        TcpChannelConfig tcpChannelConfig = (TcpChannelConfig) this.netConfigData.getNetChannelConfig();
+        cp.addLast(new IdleStateHandler(tcpChannelConfig.getReadIdleTime(), tcpChannelConfig.getWriteIdleTime(), tcpChannelConfig.getAllIdleTime(), TimeUnit.MILLISECONDS));
+//        cp.addLast(new LengthFieldBasedFrameDecoder(NettyConstants.SERVER_TO_SERVER_MAX_FRAME_LENGTH, 0, 4, 0, 4));
         cp.addLast(serverChannelHandler);
     }
 }

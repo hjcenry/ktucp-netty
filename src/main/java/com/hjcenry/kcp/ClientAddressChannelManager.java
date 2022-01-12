@@ -3,7 +3,6 @@ package com.hjcenry.kcp;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.socket.DatagramPacket;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -25,7 +24,7 @@ public class ClientAddressChannelManager extends AbstractChannelManager {
     }
 
     @Override
-    public void addKcp(Ukcp ukcp) {
+    public void addKcp(Ukcp ukcp, Channel channel) {
         InetSocketAddress localAddress = ukcp.user().getLocalAddress();
         ukcpMap.put(localAddress, ukcp);
     }
@@ -33,7 +32,6 @@ public class ClientAddressChannelManager extends AbstractChannelManager {
     @Override
     public void remove(Ukcp ukcp) {
         ukcpMap.remove(ukcp.user().getLocalAddress());
-        ukcp.user().getChannel().close();
     }
 
     @Override

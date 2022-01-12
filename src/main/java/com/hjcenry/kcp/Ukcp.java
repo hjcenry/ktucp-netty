@@ -1,9 +1,9 @@
 package com.hjcenry.kcp;
 
-import com.hjcenry.coder.ByteBufDecoder;
-import com.hjcenry.coder.ByteBufEncoder;
-import com.hjcenry.coder.IMessageDecoder;
-import com.hjcenry.coder.IMessageEncoder;
+import com.hjcenry.codec.decode.ByteBufDecoder;
+import com.hjcenry.codec.encode.ByteBufEncoder;
+import com.hjcenry.codec.decode.IMessageDecoder;
+import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.IFecDecode;
 import com.hjcenry.fec.IFecEncode;
@@ -78,7 +78,6 @@ public class Ukcp {
      **/
     private long lastReceiveTime = System.currentTimeMillis();
 
-
     /**
      * Creates a new instance.
      *
@@ -123,7 +122,6 @@ public class Ukcp {
             this.writeBufferIncr.set(channelConfig.getWriteBufferSize() / channelConfig.getMtu());
         }
 
-
         int headerSize = 0;
         FecAdapt fecAdapt = channelConfig.getFecAdapt();
         if (channelConfig.isCrc32Check()) {
@@ -144,7 +142,6 @@ public class Ukcp {
         initKcpConfig(channelConfig);
     }
 
-
     private void initKcpConfig(ChannelConfig channelConfig) {
         kcp.nodelay(channelConfig.isNodelay(), channelConfig.getInterval(), channelConfig.getFastResend(), channelConfig.isNocWnd());
         kcp.setSndWnd(channelConfig.getSndWnd());
@@ -156,7 +153,6 @@ public class Ukcp {
         this.fastFlush = channelConfig.isFastFlush();
     }
 
-
     /**
      * Receives ByteBufs.
      *
@@ -166,11 +162,9 @@ public class Ukcp {
         kcp.recv(bufList);
     }
 
-
     protected ByteBuf mergeReceive() {
         return kcp.mergeRecv();
     }
-
 
     protected void input(ByteBuf data, long current) throws IOException {
         //lastRecieveTime = System.currentTimeMillis();
@@ -215,7 +209,6 @@ public class Ukcp {
         }
     }
 
-
     /**
      * Sends a Bytebuf.
      *
@@ -232,7 +225,6 @@ public class Ukcp {
         }
     }
 
-
     /**
      * Returns {@code true} if there are bytes can be received.
      *
@@ -241,7 +233,6 @@ public class Ukcp {
     protected boolean canRecv() {
         return kcp.canRecv();
     }
-
 
     protected long getLastReceiveTime() {
         return lastReceiveTime;
@@ -324,7 +315,6 @@ public class Ukcp {
         kcp.setConv(conv);
     }
 
-
     /**
      * Returns update interval.
      *
@@ -334,11 +324,9 @@ public class Ukcp {
         return kcp.getInterval();
     }
 
-
     protected boolean isStream() {
         return kcp.isStream();
     }
-
 
     /**
      * Sets the {@link ByteBufAllocator} which is used for the kcp to allocate buffers.
@@ -403,7 +391,6 @@ public class Ukcp {
         return readBufferIncr;
     }
 
-
     /**
      * 主动关闭连接调用
      */
@@ -422,7 +409,6 @@ public class Ukcp {
             this.iMessageExecutor.execute(this.writeTask);
         }
     }
-
 
     protected long getTsUpdate() {
         return tsUpdate;
@@ -449,7 +435,6 @@ public class Ukcp {
         return active;
     }
 
-
     void internalClose() {
         if (!active) {
             return;
@@ -462,7 +447,13 @@ public class Ukcp {
         kcp.flush(false, System.currentTimeMillis());
         //连接删除
         channelManager.remove(this);
+        //关闭channel
+        closeChannel();
         release();
+    }
+
+    void closeChannel() {
+        this.user().closeAllChannel();
     }
 
     void release() {
@@ -495,7 +486,6 @@ public class Ukcp {
         return writeProcessing;
     }
 
-
     protected AtomicBoolean getReadProcessing() {
         return readProcessing;
     }
@@ -516,11 +506,9 @@ public class Ukcp {
         return controlReadBufferSize;
     }
 
-
     protected boolean isControlWriteBufferSize() {
         return controlWriteBufferSize;
     }
-
 
     @SuppressWarnings("unchecked")
     public User user() {

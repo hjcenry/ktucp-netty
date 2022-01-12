@@ -1,7 +1,6 @@
 package com.hjcenry.server;
 
 import com.hjcenry.exception.KcpInitException;
-import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.server.callback.StartUpNettyServerCallBack;
@@ -31,6 +30,8 @@ public abstract class AbstractNetServer implements INetServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractNetServer.class);
 
+    protected int netId;
+
     protected AbstractBootstrap<?, ?> bootstrap;
     /**
      * BOSS线程组
@@ -53,7 +54,8 @@ public abstract class AbstractNetServer implements INetServer {
      */
     protected NettyGroupChannel nettyGroupChannel = NettyGroupChannel.getNettyGroupChannel();
 
-    public AbstractNetServer(NetConfigData netConfigData) throws KcpInitException {
+    public AbstractNetServer(int netId, NetConfigData netConfigData) throws KcpInitException {
+        this.netId = netId;
         this.netConfigData = netConfigData;
         this.checkConfigData();
     }
@@ -68,6 +70,9 @@ public abstract class AbstractNetServer implements INetServer {
         if (this.netConfigData.getChannelConfig() == null) {
             throw new KcpInitException("NetServer Channel Config can not be null");
         }
+        if (this.netConfigData.getNetChannelConfig() == null) {
+            throw new KcpInitException("NetServer Net Channel Config can not be null");
+        }
         if (this.netConfigData.getListener() == null) {
             throw new KcpInitException("NetServer Listener can not be null");
         }
@@ -77,7 +82,7 @@ public abstract class AbstractNetServer implements INetServer {
         if (this.netConfigData.getHashedWheelTimer() == null) {
             throw new KcpInitException("NetServer HashedWheelTimer can not be null");
         }
-        if (this.netConfigData.getiMessageExecutorPool() == null) {
+        if (this.netConfigData.getMessageExecutorPool() == null) {
             throw new KcpInitException("NetServer MessageExecutorPool can not be null");
         }
     }
@@ -86,8 +91,8 @@ public abstract class AbstractNetServer implements INetServer {
     public void stop() {
         IChannelManager channelManager = netConfigData.getChannelManager();
         channelManager.getAll().forEach(Ukcp::close);
-        if (netConfigData.getiMessageExecutorPool() != null) {
-            netConfigData.getiMessageExecutorPool().stop();
+        if (netConfigData.getMessageExecutorPool() != null) {
+            netConfigData.getMessageExecutorPool().stop();
         }
         if (netConfigData.getHashedWheelTimer() != null) {
             netConfigData.getHashedWheelTimer().stop();
@@ -102,12 +107,16 @@ public abstract class AbstractNetServer implements INetServer {
 
     @Override
     public void start() throws KcpInitException {
-        int bindPort = this.getBindPort();
+        NetChannelConfig netChannelConfig = this.netConfigData.getNetChannelConfig();
+
+        int bindPort = netChannelConfig.getBindPort();
         if (bindPort < 0) {
             throw new KcpInitException(String.format("%s start failed , port is [%d]", this.getClass().getSimpleName(), bindPort));
         }
-        StartUpNettyServerCallBack bindCallBack = this.getBindCallBack();
-        StartUpNettyServerCallBack activeCallBack = this.getActiveCallBack();
+
+        StartUpNettyServerCallBack bindCallBack = netChannelConfig.getBindCallback();
+        StartUpNettyServerCallBack activeCallBack = netChannelConfig.getActiveCallback();
+
         String serverClassName = this.getClass().getSimpleName();
         // 绑定端口回调
         bindCallBack = bindCallBack != null ? bindCallBack : new StartUpNettyServerCallBack() {
@@ -182,85 +191,20 @@ public abstract class AbstractNetServer implements INetServer {
         });
     }
 
-    protected abstract NetChannelConfig getNetChannelConfig();
-
-    /**
-     * 获取绑定端口
-     *
-     * @return 绑定端口
-     */
-    protected int getBindPort() {
-        NetChannelConfig netChannelConfig = this.getNetChannelConfig();
-        if (netChannelConfig == null) {
-            return 0;
-        }
-        return netChannelConfig.getBindPort();
-    }
-
-    /**
-     * 获取BOSS线程数
-     *
-     * @return BOSS线程数
-     */
-    protected int getBossThreadNum() {
-        NetChannelConfig netChannelConfig = this.getNetChannelConfig();
-        if (netChannelConfig == null) {
-            return 0;
-        }
-        return netChannelConfig.getBossThreadNum();
-    }
-
-    /**
-     * 获取IO线程数
-     *
-     * @return IO线程数
-     */
-    protected int getIoThreadNum() {
-        NetChannelConfig netChannelConfig = this.getNetChannelConfig();
-        if (netChannelConfig == null) {
-            return 0;
-        }
-        return netChannelConfig.getIoThreadNum();
-    }
-
-    /**
-     * 获取绑定回调
-     *
-     * @return 绑定回调
-     */
-    protected StartUpNettyServerCallBack getBindCallBack() {
-        NetChannelConfig netChannelConfig = this.getNetChannelConfig();
-        if (netChannelConfig == null) {
-            return null;
-        }
-        return netChannelConfig.getBindSuccessCallback();
-    }
-
-    /**
-     * 获取激活回调
-     *
-     * @return 激活回调
-     */
-    protected StartUpNettyServerCallBack getActiveCallBack() {
-        NetChannelConfig netChannelConfig = this.getNetChannelConfig();
-        if (netChannelConfig == null) {
-            return null;
-        }
-        return netChannelConfig.getActiveSuccessCallback();
-    }
-
     /**
      * 初始线程组
      */
     protected void initGroups() {
+        NetChannelConfig netChannelConfig = this.netConfigData.getNetChannelConfig();
+
         // 创建BOSS线程组
-        int bossNum = this.getBossThreadNum();
+        int bossNum = netChannelConfig.getBossThreadNum();
         bossNum = bossNum == 0 ? SystemOS.CPU_NUM : bossNum;
         if (bossNum > 0) {
             bossGroup = nettyGroupChannel.createEventLoopGroup(bossNum);
         }
         // 创建IO线程组
-        int ioNum = this.getIoThreadNum();
+        int ioNum = netChannelConfig.getIoThreadNum();
         ioNum = ioNum == 0 ? SystemOS.CPU_NUM : ioNum;
         if (ioNum > 0) {
             ioGroup = nettyGroupChannel.createEventLoopGroup(ioNum);
@@ -286,10 +230,11 @@ public abstract class AbstractNetServer implements INetServer {
 
     @Override
     public String toString() {
+        NetChannelConfig netChannelConfig = this.netConfigData.getNetChannelConfig();
         return this.getClass().getSimpleName() + "{" +
-                "bindPort=" + getBindPort() +
-                ", bossGroup.num=" + getBossThreadNum() +
-                ", ioGroup.num=" + getIoThreadNum() +
+                "bindPort=" + netChannelConfig.getBindPort() +
+                ", bossGroup.num=" + netChannelConfig.getBossThreadNum() +
+                ", ioGroup.num=" + netChannelConfig.getIoThreadNum() +
                 '}';
     }
 }

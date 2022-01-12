@@ -1,4 +1,4 @@
-package com.hjcenry.coder;
+package com.hjcenry.codec.decode;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

@@ -12,6 +12,11 @@ import com.hjcenry.exception.KcpInitException;
 public interface INetServer {
 
     /**
+     * 默认网络ID，用于单通道网络
+     */
+    public static final int DEFAULT_CHANNEL_NET_ID = 0;
+
+    /**
      * 启动服务
      *
      * @throws KcpInitException KCP初始化异常

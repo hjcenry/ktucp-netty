@@ -2,10 +2,10 @@ package com.hjcenry.kcp;
 
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.server.udp.UdpOutPutImp;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.DatagramPacket;
@@ -68,12 +68,15 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
             return;
         }
         IMessageExecutor iMessageExecutor = iMessageExecutorPool.getIMessageExecutor();
-        KcpOutput kcpOutput = new UdpOutPutImp();
+        KcpOutput kcpOutput = new KcpOutPutImp();
         Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, channelConfig, channelManager, null, null);
 
-        User user = new User(ctx.channel(), msg.sender(), msg.recipient());
+        User user = new User(msg.sender(), msg.recipient(), 1);
+        Channel channel = ctx.channel();
+//        user.setUdpChannel(channel);
+        user.addChannel(channel);
         newUkcp.user(user);
-        channelManager.addKcp(newUkcp);
+        channelManager.addKcp(newUkcp, channel);
 
         iMessageExecutor.execute(() -> {
             try {

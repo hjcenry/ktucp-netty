@@ -2,7 +2,6 @@ package com.hjcenry.kcp;
 
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.server.udp.UdpOutPutImp;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.bootstrap.Bootstrap;
@@ -97,10 +96,12 @@ public class KcpClient {
         }
         ukcp.getiMessageExecutor().execute(() -> {
             User user = ukcp.user();
-            user.getChannel().close();
+//            user.getTcpChannel().close();
+            user.closeChannel();
             InetSocketAddress localAddress = new InetSocketAddress(0);
             ChannelFuture channelFuture = bootstrap.connect(user.getRemoteAddress(), localAddress);
-            user.setChannel(channelFuture.channel());
+//            user.setTcpChannel(channelFuture.channel());
+            user.addChannel(channelFuture.channel());
         });
     }
 
@@ -115,15 +116,17 @@ public class KcpClient {
         NioDatagramChannel channel = (NioDatagramChannel) sync.channel();
         localAddress = channel.localAddress();
 
-        User user = new User(channel, remoteAddress, localAddress);
+        User user = new User(remoteAddress, localAddress, 1);
+//        user.setUdpChannel(channel);
+        user.addChannel(channel);
         IMessageExecutor iMessageExecutor = iMessageExecutorPool.getIMessageExecutor();
 //        KcpOutput kcpOutput = new KcpOutPutImp();
-        KcpOutput kcpOutput = new UdpOutPutImp();
+        KcpOutput kcpOutput = new KcpOutPutImp();
 
         Ukcp ukcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, channelConfig, channelManager, null, null);
         ukcp.user(user);
 
-        channelManager.addKcp(ukcp);
+        channelManager.addKcp(ukcp, channel);
         iMessageExecutor.execute(() -> {
             try {
                 ukcp.getKcpListener().onConnected(ukcp);

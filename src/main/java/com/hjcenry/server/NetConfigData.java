@@ -1,7 +1,7 @@
 package com.hjcenry.server;
 
-import com.hjcenry.coder.IMessageDecoder;
-import com.hjcenry.coder.IMessageEncoder;
+import com.hjcenry.codec.decode.IMessageDecoder;
+import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
 import com.hjcenry.kcp.listener.KcpListener;
@@ -22,9 +22,13 @@ public class NetConfigData {
      */
     private ChannelConfig channelConfig;
     /**
+     * 网络服务配置
+     */
+    private NetChannelConfig netChannelConfig;
+    /**
      * 处理器
      */
-    private IMessageExecutorPool iMessageExecutorPool;
+    private IMessageExecutorPool messageExecutorPool;
     /**
      * 连接管理器
      */
@@ -50,16 +54,24 @@ public class NetConfigData {
         return channelConfig;
     }
 
+    public NetChannelConfig getNetChannelConfig() {
+        return netChannelConfig;
+    }
+
+    public void setNetChannelConfig(NetChannelConfig netChannelConfig) {
+        this.netChannelConfig = netChannelConfig;
+    }
+
     public void setChannelConfig(ChannelConfig channelConfig) {
         this.channelConfig = channelConfig;
     }
 
-    public IMessageExecutorPool getiMessageExecutorPool() {
-        return iMessageExecutorPool;
+    public IMessageExecutorPool getMessageExecutorPool() {
+        return messageExecutorPool;
     }
 
-    public void setiMessageExecutorPool(IMessageExecutorPool iMessageExecutorPool) {
-        this.iMessageExecutorPool = iMessageExecutorPool;
+    public void setMessageExecutorPool(IMessageExecutorPool messageExecutorPool) {
+        this.messageExecutorPool = messageExecutorPool;
     }
 
     public IChannelManager getChannelManager() {

@@ -1,5 +1,6 @@
-package com.hjcenry.coder;
+package com.hjcenry.codec.decode;
 
+import com.hjcenry.codec.IMessageCoder;
 import io.netty.buffer.ByteBuf;
 
 /**

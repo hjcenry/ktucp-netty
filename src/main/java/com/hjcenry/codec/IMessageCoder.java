@@ -1,6 +1,4 @@
-package com.hjcenry.coder;
-
-import io.netty.buffer.ByteBuf;
+package com.hjcenry.codec;
 
 /**
  * 消息编解码接口

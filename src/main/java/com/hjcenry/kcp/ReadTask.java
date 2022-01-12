@@ -1,6 +1,6 @@
 package com.hjcenry.kcp;
 
-import com.hjcenry.coder.IMessageDecoder;
+import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.internal.CodecOutputList;
 import com.hjcenry.kcp.listener.KcpListener;
