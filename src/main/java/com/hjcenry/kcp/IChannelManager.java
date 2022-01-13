@@ -1,7 +1,6 @@
 package com.hjcenry.kcp;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -18,20 +17,18 @@ public interface IChannelManager {
     /**
      * 获取KCP对象
      *
-     * @param channel     通道
      * @param readByteBuf 消息对象
      * @param address
      * @return kcp对象
      */
-    Ukcp getKcp(Channel channel, ByteBuf readByteBuf, InetSocketAddress address);
+    Ukcp getKcp(ByteBuf readByteBuf, InetSocketAddress address);
 
     /**
      * 创建KCP对象
      *
      * @param ukcp kcp对象
-     * @param channel
      */
-    void addKcp(Ukcp ukcp, Channel channel);
+    void addKcp(Ukcp ukcp);
 
     /**
      * 移除KCP对象

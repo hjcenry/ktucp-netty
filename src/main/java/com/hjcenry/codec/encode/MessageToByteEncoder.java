@@ -1,11 +1,11 @@
 package com.hjcenry.codec.encode;
 
+import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.EncoderException;
-import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.TypeParameterMatcher;
 
 /**

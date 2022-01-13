@@ -1,7 +1,5 @@
 package com.hjcenry.kcp;
 
-import com.hjcenry.codec.decode.ByteBufDecoder;
-import com.hjcenry.codec.encode.ByteBufEncoder;
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.fec.FecAdapt;
@@ -12,14 +10,16 @@ import com.hjcenry.fec.fec.FecPacket;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.threadPool.IMessageExecutor;
+import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.jctools.queues.MpscLinkedQueue;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,7 +49,7 @@ public class Ukcp {
      */
     private final Queue<ByteBuf> readBufferQueue;
 
-    private final IMessageExecutor iMessageExecutor;
+    private final IMessageExecutor messageExecutor;
 
     private final KcpListener kcpListener;
 
@@ -72,11 +72,22 @@ public class Ukcp {
     private boolean controlReadBufferSize = false;
 
     private boolean controlWriteBufferSize = false;
-
     /**
      * 上次收到消息时间
      **/
-    private long lastReceiveTime = System.currentTimeMillis();
+    private long lastReceiveTime;
+    /**
+     * 网络切换最小检测时间长度
+     */
+    private long netChangeMinPeriod = 30 * 1000;
+    /**
+     * 网络切换最大次数，超过这个次数，则进行处理
+     */
+    private int netChangeMaxCount = 0;
+    /**
+     * 时间服务
+     */
+    private IKcpTimeService kcpTimeService;
 
     /**
      * Creates a new instance.
@@ -85,28 +96,38 @@ public class Ukcp {
      */
     public Ukcp(KcpOutput output,
                 KcpListener kcpListener,
-                IMessageExecutor iMessageExecutor,
+                IMessageExecutor messageExecutor,
                 ChannelConfig channelConfig,
                 IChannelManager channelManager,
                 IMessageEncoder messageEncoder,
                 IMessageDecoder messageDecoder) {
+        this.kcpTimeService = channelConfig.getTimeService();
+        long now = this.kcpTimeService.now();
+
         this.timeoutMillis = channelConfig.getTimeoutMillis();
-        this.kcp = new Kcp(channelConfig.getConv(), output);
+        this.lastReceiveTime = now;
+
+        // 网络切换检测时间
+        long configNetChangeMinPeriod = channelConfig.getNetChangeMinPeriod();
+        if (configNetChangeMinPeriod > 0) {
+            this.netChangeMinPeriod = configNetChangeMinPeriod;
+        }
+        this.netChangeMinPeriod = channelConfig.getNetChangeMinPeriod();
+        // 网络最大切换次数
+        int configNetChangeMaxCount = channelConfig.getNetChangeMaxCount();
+        if (configNetChangeMaxCount > 0) {
+            this.netChangeMaxCount = configNetChangeMaxCount;
+        }
+
+        this.kcp = new Kcp(channelConfig.getConv(), now, output);
         this.active = true;
         this.kcpListener = kcpListener;
-        this.iMessageExecutor = iMessageExecutor;
+        this.messageExecutor = messageExecutor;
         this.channelManager = channelManager;
 
-        // 自定义编解码
-        if (messageEncoder == null) {
-            // 默认使用byteBuf编码器
-            messageEncoder = new ByteBufEncoder();
-        }
+        // 写任务
         this.writeTask = new WriteTask(this, messageEncoder);
-        if (messageDecoder == null) {
-            // 默认使用byteBuf解码器
-            messageDecoder = new ByteBufDecoder();
-        }
+        // 读任务
         this.readTask = new ReadTask(this, messageDecoder);
 
         this.writeObjectQueue = new MpscLinkedQueue<>();
@@ -142,6 +163,72 @@ public class Ukcp {
         initKcpConfig(channelConfig);
     }
 
+    public void setClientMode() {
+        user().setClient(true);
+    }
+
+    public void setServerMode() {
+        user().setClient(false);
+    }
+
+    /**
+     * 网络切换计数
+     */
+    private AtomicInteger netChangeCounter = new AtomicInteger(0);
+    /**
+     * 网络切换计数过期时间
+     */
+    private long netChangeExpireTime = 0L;
+
+    /**
+     * 修改网络
+     * <p>直接修改，不提供网络切换踢下线策略，需要切换检测调用{@link Ukcp#changeCurrentNetId(int)}</p>
+     *
+     * @param netId 网络id
+     */
+    public void setCurrentNetId(int netId) {
+        // 设置当前网络id
+        User user = this.user();
+        user.setCurrentNetId(netId);
+    }
+
+    /**
+     * 切换网络
+     * <p>客户端可自定切换策略</p>
+     * <p>提供网络切换踢下线策略</p>
+     *
+     * @param netId 网络id
+     */
+    public void changeCurrentNetId(int netId) {
+        User user = this.user();
+        int oldNetId = user.getCurrentNetId();
+        // 设置当前网络id
+        this.setCurrentNetId(netId);
+
+        if (netChangeMaxCount <= 0 || netChangeMinPeriod <= 0) {
+            // 未配置开启网络切换检测
+            return;
+        }
+
+        // 网络切换
+        if (oldNetId != netId) {
+            // 网络切换计数
+            long now = this.kcpTimeService.now();
+            if (now >= this.netChangeExpireTime) {
+                // 计数超时，归零，计数1
+                netChangeCounter.set(1);
+                this.netChangeExpireTime = now + netChangeMinPeriod;
+                return;
+            }
+            // 切换计数
+            int counter = netChangeCounter.incrementAndGet();
+            if (counter > netChangeMaxCount) {
+                // 切换计数超了最大值，关闭所有连接
+                this.closeChannel();
+            }
+        }
+    }
+
     private void initKcpConfig(ChannelConfig channelConfig) {
         kcp.nodelay(channelConfig.isNodelay(), channelConfig.getInterval(), channelConfig.getFastResend(), channelConfig.isNocWnd());
         kcp.setSndWnd(channelConfig.getSndWnd());
@@ -167,7 +254,6 @@ public class Ukcp {
     }
 
     protected void input(ByteBuf data, long current) throws IOException {
-        //lastRecieveTime = System.currentTimeMillis();
         Snmp.snmp.InPkts.increment();
         Snmp.snmp.InBytes.add(data.readableBytes());
 
@@ -363,8 +449,11 @@ public class Ukcp {
     }
 
     /**
-     * 发送有序可靠消息
-     * 线程安全的
+     * 发送有序可靠消息<br/>
+     * 线程安全的<br/>
+     * <p>
+     * 写ByteBuf时不要调用release，内部会调用，否则可能抛出{@link io.netty.util.IllegalReferenceCountException}异常
+     * </p>
      *
      * @param byteBuf 发送后需要手动调用 {@link ByteBuf#release()}
      * @return true发送成功  false缓冲区满了
@@ -395,18 +484,18 @@ public class Ukcp {
      * 主动关闭连接调用
      */
     public void close() {
-        this.iMessageExecutor.execute(() -> internalClose());
+        this.messageExecutor.execute(() -> internalClose());
     }
 
     private void notifyReadEvent() {
         if (readProcessing.compareAndSet(false, true)) {
-            this.iMessageExecutor.execute(this.readTask);
+            this.messageExecutor.execute(this.readTask);
         }
     }
 
     protected void notifyWriteEvent() {
         if (writeProcessing.compareAndSet(false, true)) {
-            this.iMessageExecutor.execute(this.writeTask);
+            this.messageExecutor.execute(this.writeTask);
         }
     }
 
@@ -444,8 +533,8 @@ public class Ukcp {
         kcpListener.handleClose(this);
         //关闭之前尽量把消息都发出去
         notifyWriteEvent();
-        kcp.flush(false, System.currentTimeMillis());
         //连接删除
+        kcp.flush(false, this.kcpTimeService.now());
         channelManager.remove(this);
         //关闭channel
         closeChannel();
@@ -490,8 +579,8 @@ public class Ukcp {
         return readProcessing;
     }
 
-    protected IMessageExecutor getiMessageExecutor() {
-        return iMessageExecutor;
+    public IMessageExecutor getMessageExecutor() {
+        return messageExecutor;
     }
 
     protected long getTimeoutMillis() {
@@ -510,14 +599,26 @@ public class Ukcp {
         return controlWriteBufferSize;
     }
 
+    public IKcpTimeService getKcpTimeService() {
+        return kcpTimeService;
+    }
+
     @SuppressWarnings("unchecked")
     public User user() {
         return (User) kcp.getUser();
     }
 
-    protected Ukcp user(User user) {
+    public Ukcp user(User user) {
         kcp.setUser(user);
         return this;
+    }
+
+    public void setLocalAddress(InetSocketAddress localAddress) {
+        user().setLocalAddress(localAddress);
+    }
+
+    public void setRemoteAddress(InetSocketAddress remoteAddress) {
+        user().setRemoteAddress(remoteAddress);
     }
 
     @Override

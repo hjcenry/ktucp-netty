@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.kcp.KcpServer;
+import com.hjcenry.net.server.KcpServer;
 import com.hjcenry.kcp.Ukcp;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +19,7 @@ public class KcpIdleExampleServer implements KcpListener {
 
         KcpIdleExampleServer kcpIdleExampleServer = new KcpIdleExampleServer();
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.nodelay(true,40,2,true);
+        channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(1024);
         channelConfig.setRcvWnd(1024);
         channelConfig.setMtu(1400);
@@ -37,9 +37,8 @@ public class KcpIdleExampleServer implements KcpListener {
     private AtomicInteger recieveAtomicInteger = new AtomicInteger();
 
 
-
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         int id = atomicInteger.incrementAndGet();
         ukcp.user().setCache(id);
 
@@ -52,7 +51,7 @@ public class KcpIdleExampleServer implements KcpListener {
 
     @Override
     public void handleReceive(Object object, Ukcp kcp) {
-        System.out.println("收到消息 "+recieveAtomicInteger.incrementAndGet());
+        System.out.println("收到消息 " + recieveAtomicInteger.incrementAndGet());
         i++;
         long now = System.currentTimeMillis();
         if (now - start > 1000) {
@@ -61,6 +60,11 @@ public class KcpIdleExampleServer implements KcpListener {
             i = 0;
         }
         //kcp.write(buf);
+    }
+
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
     }
 
     @Override

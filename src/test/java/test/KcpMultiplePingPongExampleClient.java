@@ -1,9 +1,9 @@
 package test;
 
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.net.client.KcpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -20,7 +20,7 @@ public class KcpMultiplePingPongExampleClient implements KcpListener {
 
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.nodelay(true,40,0,true);
+        channelConfig.nodelay(true, 40, 0, true);
         channelConfig.setSndWnd(256);
         channelConfig.setRcvWnd(256);
         channelConfig.setMtu(400);
@@ -32,20 +32,20 @@ public class KcpMultiplePingPongExampleClient implements KcpListener {
         //channelConfig.setTimeoutMillis(10000);
 
         KcpClient kcpClient = new KcpClient();
-        kcpClient.init(channelConfig);
         KcpMultiplePingPongExampleClient kcpMultiplePingPongExampleClient = new KcpMultiplePingPongExampleClient();
+        kcpClient.init(kcpMultiplePingPongExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10011));
 
         int clientNumber = 1000;
         for (int i = 0; i < clientNumber; i++) {
             channelConfig.setConv(i);
-            kcpClient.connect(new InetSocketAddress("127.0.0.1", 10011), channelConfig, kcpMultiplePingPongExampleClient);
+            kcpClient.connect();
         }
     }
 
     Timer timer = new Timer();
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         System.out.println(ukcp.getConv());
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -57,7 +57,7 @@ public class KcpMultiplePingPongExampleClient implements KcpListener {
                 ukcp.write(byteBuf);
                 byteBuf.release();
             }
-        },100,100);
+        }, 100, 100);
     }
 
     @Override
@@ -71,13 +71,18 @@ public class KcpMultiplePingPongExampleClient implements KcpListener {
     }
 
     @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
+    }
+
+    @Override
     public void handleException(Throwable ex, Ukcp kcp) {
         ex.printStackTrace();
     }
 
     @Override
     public void handleClose(Ukcp kcp) {
-        System.out.println("连接断开了"+kcp.getConv());
+        System.out.println("连接断开了" + kcp.getConv());
     }
 
 

@@ -2,6 +2,7 @@ package com.hjcenry.kcp;
 
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.ITask;
+import com.hjcenry.time.IKcpTimeService;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
@@ -20,10 +21,16 @@ public class ScheduleTask implements ITask, Runnable, TimerTask {
 
     private final HashedWheelTimer hashedWheelTimer;
 
-    public ScheduleTask(IMessageExecutor messageExecutor, Ukcp ukcp, HashedWheelTimer hashedWheelTimer) {
+    private final IKcpTimeService kcpTimeService;
+
+    private final boolean kcpIdleTimeoutClose;
+
+    public ScheduleTask(IMessageExecutor messageExecutor, Ukcp ukcp, HashedWheelTimer hashedWheelTimer, boolean kcpIdleTimeoutClose) {
         this.messageExecutor = messageExecutor;
         this.ukcp = ukcp;
+        this.kcpTimeService = ukcp.getKcpTimeService();
         this.hashedWheelTimer = hashedWheelTimer;
+        this.kcpIdleTimeoutClose = kcpIdleTimeoutClose;
     }
 
     //flush策略
@@ -35,10 +42,14 @@ public class ScheduleTask implements ITask, Runnable, TimerTask {
     public void execute() {
         try {
             final Ukcp ukcp = this.ukcp;
-            long now = System.currentTimeMillis();
+            long now = this.kcpTimeService.now();
             //判断连接是否关闭
             if (ukcp.getTimeoutMillis() != 0 && now - ukcp.getTimeoutMillis() > ukcp.getLastReceiveTime()) {
-                ukcp.internalClose();
+                ukcp.getKcpListener().handleIdleTimeout(ukcp);
+                // 需要关闭连接
+                if (kcpIdleTimeoutClose) {
+                    ukcp.internalClose();
+                }
             }
             if (!ukcp.isActive()) {
                 return;

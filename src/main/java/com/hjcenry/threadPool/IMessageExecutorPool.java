@@ -10,8 +10,11 @@ public interface IMessageExecutorPool {
      *
      * @return
      */
-    IMessageExecutor getIMessageExecutor();
+    IMessageExecutor getMessageExecutor();
 
+    /**
+     * 停止
+     */
     void stop();
 
 }

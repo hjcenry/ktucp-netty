@@ -1,6 +1,7 @@
 package com.hjcenry.codec.encode;
 
 import com.hjcenry.codec.IMessageCoder;
+import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -14,7 +15,7 @@ public interface IMessageEncoder extends IMessageCoder {
      * byteBuf消息编码
      * <p>
      * <b>调用需要处理返回的ByteBuf的release</b><br/>
-     * invoke {@link io.netty.util.ReferenceCountUtil#release(Object)}
+     * invoke {@link ReferenceCountUtil#release(Object)}
      * </p>
      *
      * @param writeObject 写对象

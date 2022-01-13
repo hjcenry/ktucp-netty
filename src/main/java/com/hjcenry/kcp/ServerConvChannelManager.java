@@ -1,7 +1,6 @@
 package com.hjcenry.kcp;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -22,13 +21,13 @@ public class ServerConvChannelManager extends AbstractChannelManager {
     private Map<Integer, Ukcp> ukcpMap = new ConcurrentHashMap<>();
 
     @Override
-    public Ukcp getKcp(Channel channel, ByteBuf readByteBuf, InetSocketAddress address) {
+    public Ukcp getKcp(ByteBuf readByteBuf, InetSocketAddress address) {
         int conv = getConvIdByByteBuf(readByteBuf);
         return ukcpMap.get(conv);
     }
 
     @Override
-    public void addKcp(Ukcp ukcp, Channel channel) {
+    public void addKcp(Ukcp ukcp) {
         int conv = ukcp.getConv();
         ukcpMap.put(conv, ukcp);
     }

@@ -2,11 +2,13 @@ package com.hjcenry.kcp;
 
 import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.fec.fec.Snmp;
+import com.hjcenry.log.KcpLog;
 import com.hjcenry.threadPool.ITask;
+import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
-import io.netty.util.ReferenceCountUtil;
+import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.util.Queue;
 
 /**
@@ -15,11 +17,15 @@ import java.util.Queue;
  */
 public class WriteTask implements ITask {
 
+    protected static final Logger logger = KcpLog.logger;
+
     private final Ukcp ukcp;
     private final IMessageEncoder messageEncoder;
+    private final IKcpTimeService kcpTimeService;
 
     public WriteTask(Ukcp ukcp, IMessageEncoder messageEncoder) {
         this.ukcp = ukcp;
+        this.kcpTimeService = ukcp.getKcpTimeService();
         this.messageEncoder = messageEncoder;
     }
 
@@ -42,8 +48,13 @@ public class WriteTask implements ITask {
                 }
                 ByteBuf byteBuf = null;
                 try {
-                    // 消息编码
-                    byteBuf = this.messageEncoder.encode(object);
+                    if (this.messageEncoder == null) {
+                        byteBuf = (ByteBuf) object;
+                    } else {
+                        // 消息编码
+                        byteBuf = this.messageEncoder.encode(object);
+                    }
+
                     if (byteBuf == null) {
                         break;
                     }
@@ -51,15 +62,12 @@ public class WriteTask implements ITask {
                     writeBytes += byteBuf.readableBytes();
                     // 发送
                     ukcp.send(byteBuf);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     ukcp.getKcpListener().handleException(e, ukcp);
                     return;
                 } finally {
                     // release
-                    if (byteBuf != null) {
-                        byteBuf.release();
-                    }
-                    ReferenceCountUtil.release(object);
+                    ReferenceCountUtil.release(byteBuf);
                 }
             }
             Snmp.snmp.BytesSent.add(writeBytes);
@@ -68,12 +76,13 @@ public class WriteTask implements ITask {
             }
             //如果有发送 则检测时间
             if (!ukcp.canSend(false) || (ukcp.checkFlush() && ukcp.isFastFlush())) {
-                long now = System.currentTimeMillis();
+                long now = this.kcpTimeService.now();
                 long next = ukcp.flush(now);
                 ukcp.setTsUpdate(now + next);
             }
         } catch (Throwable e) {
             e.printStackTrace();
+            ukcp.getKcpListener().handleException(e, ukcp);
         } finally {
             release();
         }

@@ -2,10 +2,9 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.kcp.KcpServer;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.net.server.KcpServer;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -30,13 +29,15 @@ public class Kcp4sharpExampleServer extends SimpleKcpListener<ByteBuf> {
         //channelConfig.setFecParityShardCount(3);
         //c# crc32未实现
         channelConfig.setCrc32Check(false);
+//        KcpServer kcpServer = new KcpServer();
+//        kcpServer.init(kcpRttExampleServer, channelConfig, 10009);
         KcpServer kcpServer = new KcpServer();
-        kcpServer.init(kcpRttExampleServer, channelConfig, 10009);
+        kcpServer.init(kcpRttExampleServer, channelConfig);
     }
 
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         System.out.println("有连接进来" + Thread.currentThread().getName() + ukcp.user().getRemoteAddress());
     }
 
@@ -52,6 +53,11 @@ public class Kcp4sharpExampleServer extends SimpleKcpListener<ByteBuf> {
     @Override
     public void handleException(Throwable ex, Ukcp kcp) {
         ex.printStackTrace();
+    }
+
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
     }
 
     @Override

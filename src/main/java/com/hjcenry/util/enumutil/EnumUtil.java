@@ -1,9 +1,7 @@
 package com.hjcenry.util.enumutil;
 
-import com.hjcenry.server.AbstractNetServer;
+import com.hjcenry.log.KcpLog;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import sun.rmi.runtime.Log;
 
 import java.util.List;
 
@@ -15,7 +13,7 @@ import java.util.List;
  */
 public class EnumUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EnumUtil.class);
+    private static final Logger logger = KcpLog.logger;
 
     /**
      * 根据枚举index返回枚举元素，index从0开始
@@ -52,8 +50,8 @@ public class EnumUtil {
                     }
                 }
             }
-            if (printErrLog) {
-                LOG.error(String.format("从枚举中取元素时错误 type=%1$s index=%2$d", typeName, index), e);
+            if (printErrLog && logger.isErrorEnabled()) {
+                logger.error(String.format("从枚举中取元素时错误 type=%1$s index=%2$d", typeName, index), e);
             }
             return null;
         }

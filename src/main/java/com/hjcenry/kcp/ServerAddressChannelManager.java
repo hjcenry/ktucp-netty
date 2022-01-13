@@ -1,7 +1,6 @@
 package com.hjcenry.kcp;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -18,12 +17,12 @@ public class ServerAddressChannelManager extends AbstractChannelManager {
     private Map<SocketAddress, Ukcp> ukcpMap = new ConcurrentHashMap<>();
 
     @Override
-    public Ukcp getKcp(Channel channel, ByteBuf object, InetSocketAddress address) {
+    public Ukcp getKcp(ByteBuf object, InetSocketAddress address) {
         return ukcpMap.get(address);
     }
 
     @Override
-    public void addKcp(Ukcp ukcp, Channel channel) {
+    public void addKcp(Ukcp ukcp) {
         InetSocketAddress socketAddress = ukcp.user().getRemoteAddress();
         ukcpMap.put(socketAddress, ukcp);
     }

@@ -2,9 +2,9 @@ package test;
 
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.net.client.KcpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
@@ -33,11 +33,11 @@ public class Kcp4GoExampleClient implements KcpListener {
 
 
         KcpClient kcpClient = new KcpClient();
-        kcpClient.init(channelConfig);
-
-
         Kcp4GoExampleClient kcpGoExampleClient = new Kcp4GoExampleClient();
-        Ukcp ukcp = kcpClient.connect(new InetSocketAddress("127.0.0.1", 10000), channelConfig, kcpGoExampleClient);
+        kcpClient.init(kcpGoExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10000));
+        kcpClient.connect();
+
+        Ukcp ukcp = kcpClient.getUkcp();
         String msg = "hello!!!!!11111111111111111111111111";
         byte[] bytes = msg.getBytes();
         ByteBuf byteBuf = ByteBufAllocator.DEFAULT.ioBuffer(bytes.length);
@@ -47,7 +47,12 @@ public class Kcp4GoExampleClient implements KcpListener {
     }
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
+    }
+
+    @Override
+    public void onConnected(int netId, Ukcp ukcp) {
 
     }
 

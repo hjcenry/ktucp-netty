@@ -3,10 +3,9 @@ package test;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.net.client.KcpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -60,30 +59,24 @@ public class KcpRttExampleClient extends SimpleKcpListener<ByteBuf> {
 
         channelConfig.setFecAdapt(new FecAdapt(3, 1));
         channelConfig.setCrc32Check(true);
-        //channelConfig.setTimeoutMillis(10000);
+        channelConfig.setTimeoutMillis(10000);
         //channelConfig.setAckMaskSize(32);
         KcpClient kcpClient = new KcpClient();
-        kcpClient.init(channelConfig);
-
         KcpRttExampleClient kcpClientRttExample = new KcpRttExampleClient();
-        kcpClient.connect(new InetSocketAddress("127.0.0.1", 20003), channelConfig, kcpClientRttExample);
-
-        //kcpClient.connect(new InetSocketAddress("10.60.100.191",20003),channelConfig,kcpClientRttExample);
+        kcpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 20003));
+        kcpClient.connect();
     }
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         future = scheduleSrv.scheduleWithFixedDelay(() -> {
             ByteBuf byteBuf = rttMsg(++count);
             ukcp.write(byteBuf);
-            byteBuf.release();
             if (count >= rtts.length) {
                 // finish
                 future.cancel(true);
                 byteBuf = rttMsg(-1);
                 ukcp.write(byteBuf);
-                byteBuf.release();
-
             }
         }, 20, 20, TimeUnit.MILLISECONDS);
     }
@@ -148,6 +141,10 @@ public class KcpRttExampleClient extends SimpleKcpListener<ByteBuf> {
 
     }
 
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
+    }
 
     /**
      * count+timestamp+dataLen+data

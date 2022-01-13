@@ -1,10 +1,9 @@
 package test;
 
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.net.client.KcpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -35,9 +34,9 @@ public class KcpDisconnectExampleClient extends SimpleKcpListener<ByteBuf> {
         channelConfig.setUseConvChannel(true);
 
         KcpClient kcpClient = new KcpClient();
-        kcpClient.init(channelConfig);
-
         KcpDisconnectExampleClient kcpClientRttExample = new KcpDisconnectExampleClient();
+        kcpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 10031));
+
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -45,7 +44,7 @@ public class KcpDisconnectExampleClient extends SimpleKcpListener<ByteBuf> {
                 for (int i = 0; i < 100; i++) {
                     try {
                         channelConfig.setConv(id.incrementAndGet());
-                        kcpClient.connect(new InetSocketAddress("127.0.0.1", 10031), channelConfig, kcpClientRttExample);
+                        kcpClient.connect();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -57,7 +56,7 @@ public class KcpDisconnectExampleClient extends SimpleKcpListener<ByteBuf> {
     private static final AtomicInteger id = new AtomicInteger();
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         for (int i = 0; i < 100; i++) {
             ByteBuf byteBuf = UnpooledByteBufAllocator.DEFAULT.buffer(1024);
             byteBuf.writeInt(i);
@@ -73,6 +72,11 @@ public class KcpDisconnectExampleClient extends SimpleKcpListener<ByteBuf> {
         if (cast.getInt(0) == 99) {
             ukcp.close();
         }
+    }
+
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
     }
 
     @Override

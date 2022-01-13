@@ -2,8 +2,7 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.kcp.KcpServer;
+import com.hjcenry.net.server.KcpServer;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
@@ -19,7 +18,7 @@ public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf>
 
         KcpMultiplePingPongExampleServer kcpMultiplePingPongExampleServer = new KcpMultiplePingPongExampleServer();
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.nodelay(true,40,2,true);
+        channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(256);
         channelConfig.setRcvWnd(256);
         channelConfig.setMtu(400);
@@ -35,8 +34,8 @@ public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf>
 
 
     @Override
-    public void onConnected(Ukcp ukcp) {
-        System.out.println("有连接进来" + ukcp.user().getRemoteAddress() +"  conv: "+ ukcp.getConv());
+    public void onConnected(int netId, Ukcp ukcp) {
+        System.out.println("有连接进来" + ukcp.user().getRemoteAddress() + "  conv: " + ukcp.getConv());
     }
 
     //int i = 0;
@@ -56,6 +55,11 @@ public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf>
     }
 
     @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
+    }
+
+    @Override
     public void handleException(Throwable ex, Ukcp kcp) {
         ex.printStackTrace();
     }
@@ -63,7 +67,7 @@ public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf>
     @Override
     public void handleClose(Ukcp kcp) {
         System.out.println(Snmp.snmp.toString());
-        Snmp.snmp= new Snmp();
-        System.out.println("连接断开了"+kcp.getConv()+" "+System.currentTimeMillis());
+        Snmp.snmp = new Snmp();
+        System.out.println("连接断开了" + kcp.getConv() + " " + System.currentTimeMillis());
     }
 }

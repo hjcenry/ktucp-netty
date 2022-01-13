@@ -2,10 +2,9 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.net.client.KcpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.DefaultEventLoop;
@@ -20,9 +19,10 @@ import java.net.InetSocketAddress;
 public class KcpPingPongExampleClient extends SimpleKcpListener<ByteBuf> {
 
     static DefaultEventLoop logicThread = new DefaultEventLoop();
+
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.nodelay(true,40,2,true);
+        channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(1024);
         channelConfig.setRcvWnd(1024);
         channelConfig.setMtu(1400);
@@ -33,15 +33,16 @@ public class KcpPingPongExampleClient extends SimpleKcpListener<ByteBuf> {
         //channelConfig.setTimeoutMillis(10000);
 
         KcpClient kcpClient = new KcpClient();
-        kcpClient.init(channelConfig);
-
         KcpPingPongExampleClient kcpClientRttExample = new KcpPingPongExampleClient();
-        kcpClient.connect(new InetSocketAddress("127.0.0.1", 10001), channelConfig, kcpClientRttExample);
+        kcpClient.init(kcpClientRttExample, channelConfig,new InetSocketAddress("127.0.0.1", 10001));
+
+        kcpClient.connect();
     }
-    int i =0;
+
+    int i = 0;
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         for (int i = 0; i < 100; i++) {
             ByteBuf byteBuf = UnpooledByteBufAllocator.DEFAULT.buffer(1024);
             byteBuf.writeInt(i++);
@@ -51,7 +52,8 @@ public class KcpPingPongExampleClient extends SimpleKcpListener<ByteBuf> {
             byteBuf.release();
         }
     }
-    int j =0;
+
+    int j = 0;
 
 
     @Override
@@ -62,14 +64,19 @@ public class KcpPingPongExampleClient extends SimpleKcpListener<ByteBuf> {
                 ukcp.write(newBuf);
                 newBuf.release();
                 j++;
-                if(j%100000==0){
+                if (j % 100000 == 0) {
                     System.out.println(Snmp.snmp.toString());
-                    System.out.println("收到了 返回回去"+j);
+                    System.out.println("收到了 返回回去" + j);
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
     }
 
     @Override

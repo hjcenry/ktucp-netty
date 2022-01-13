@@ -29,10 +29,6 @@ public class NettyMessageExecutor implements IMessageExecutor {
 
     @Override
     public void execute(ITask iTask) {
-        //if(eventLoop.inEventLoop()){
-        //    iTask.execute();
-        //}else{
-            this.eventLoop.execute(() -> iTask.execute());
-        //}
+        this.eventLoop.execute(iTask::execute);
     }
 }

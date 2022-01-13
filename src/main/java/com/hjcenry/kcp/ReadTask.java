@@ -5,8 +5,9 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.internal.CodecOutputList;
 import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.threadPool.ITask;
+import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
-import io.netty.util.ReferenceCountUtil;
 
 import java.util.Queue;
 
@@ -18,9 +19,11 @@ public class ReadTask implements ITask {
 
     private final Ukcp ukcp;
     private final IMessageDecoder messageDecoder;
+    private final IKcpTimeService kcpTimeService;
 
     public ReadTask(Ukcp ukcp, IMessageDecoder messageDecoder) {
         this.ukcp = ukcp;
+        this.kcpTimeService = ukcp.getKcpTimeService();
         this.messageDecoder = messageDecoder;
     }
 
@@ -33,7 +36,7 @@ public class ReadTask implements ITask {
             if (!ukcp.isActive()) {
                 return;
             }
-            long current = System.currentTimeMillis();
+            long current = this.kcpTimeService.now();
             Queue<ByteBuf> receiveList = ukcp.getReadBufferQueue();
             int readCount = 0;
             for (; ; ) {
@@ -78,7 +81,8 @@ public class ReadTask implements ITask {
             if (!ukcp.getWriteObjectQueue().isEmpty() && ukcp.canSend(false)) {
                 ukcp.notifyWriteEvent();
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
+            ukcp.getKcpListener().handleException(e, ukcp);
             ukcp.internalClose();
             e.printStackTrace();
         } finally {
@@ -94,14 +98,18 @@ public class ReadTask implements ITask {
         Object object = null;
         try {
             // 消息解码
-            object = this.messageDecoder.decode(buf);
+            if (this.messageDecoder == null) {
+                object = buf;
+            } else {
+                object = this.messageDecoder.decode(buf);
+            }
             KcpListener kcpListener = ukcp.getKcpListener();
             // 处理读事件
             kcpListener.handleReceive(object, ukcp);
         } catch (Throwable throwable) {
             ukcp.getKcpListener().handleException(throwable, ukcp);
         } finally {
-            buf.release();
+            ReferenceCountUtil.release(buf);
             ReferenceCountUtil.release(object);
         }
     }

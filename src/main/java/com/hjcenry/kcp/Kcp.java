@@ -319,9 +319,18 @@ public class Kcp implements IKcp {
         return buf.writerIndex() - offset;
     }
 
+    private final long startTicks;
+
     public Kcp(int conv, KcpOutput output) {
         this.conv = conv;
         this.output = output;
+        this.startTicks = System.currentTimeMillis();
+    }
+
+    public Kcp(int conv, long now, KcpOutput output) {
+        this.conv = conv;
+        this.output = output;
+        this.startTicks = now;
     }
 
     @Override
@@ -993,8 +1002,9 @@ public class Kcp implements IKcp {
     }
 
     private void flushBuffer(ByteBuf buffer) {
-        if (buffer == null)
+        if (buffer == null) {
             return;
+        }
         if (buffer.readableBytes() > reserved) {
             output(buffer, this);
             return;
@@ -1003,14 +1013,10 @@ public class Kcp implements IKcp {
 
     }
 
-
-    private long startTicks = System.currentTimeMillis();
-
     @Override
     public long currentMs(long now) {
         return now - startTicks;
     }
-
 
     /**
      * ikcp_flush
@@ -1238,7 +1244,7 @@ public class Kcp implements IKcp {
             }
         }
 
-        // flash remain segments
+        // flush remain segments
         flushBuffer(buffer);
         seg.recycle(true);
 

@@ -27,8 +27,7 @@ public class ServerHandlerChannelManager {
         ukcpMap.put(channel, ukcp);
     }
 
-    public void remove(Ukcp ukcp, int netId) {
-        Channel channel = ukcp.user().getChannel(netId);
+    public void remove(Channel channel) {
         ukcpMap.remove(channel);
     }
 }

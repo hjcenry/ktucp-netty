@@ -1,9 +1,9 @@
 package test;
 
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.KcpClient;
-import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.net.client.KcpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -30,8 +30,8 @@ public class KcpIdleExampleClient implements KcpListener {
         //channelConfig.setTimeoutMillis(10000);
 
         KcpClient kcpClient = new KcpClient();
-        kcpClient.init(channelConfig);
-
+        KcpIdleExampleClient kcpIdleExampleClient = new KcpIdleExampleClient();
+        kcpClient.init(kcpIdleExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10020));
 
         for (int i = 0; i < 3; i++) {
             if (i % 1000 == 0) {
@@ -41,9 +41,9 @@ public class KcpIdleExampleClient implements KcpListener {
                     e.printStackTrace();
                 }
             }
-            KcpIdleExampleClient kcpIdleExampleClient = new KcpIdleExampleClient();
+            ;
             //kcpClient.connect(new InetSocketAddress("10.60.100.191", 10020), channelConfig, kcpIdleExampleClient);
-            kcpClient.connect(new InetSocketAddress("127.0.0.1", 10020), channelConfig, kcpIdleExampleClient);
+            kcpClient.connect();
         }
 
     }
@@ -51,7 +51,7 @@ public class KcpIdleExampleClient implements KcpListener {
     int i = 0;
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         ByteBuf byteBuf = UnpooledByteBufAllocator.DEFAULT.buffer(124);
         byteBuf.writeInt(i++);
         byte[] bytes = new byte[120];
@@ -74,6 +74,11 @@ public class KcpIdleExampleClient implements KcpListener {
         //    System.out.println(Snmp.snmp.toString());
         //    System.out.println("收到了 返回回去"+j);
         //}
+    }
+
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
     }
 
     @Override

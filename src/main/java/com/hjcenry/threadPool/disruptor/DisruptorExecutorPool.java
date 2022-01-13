@@ -1,5 +1,6 @@
 package com.hjcenry.threadPool.disruptor;
 
+import com.hjcenry.log.KcpLog;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 2014-9-12 上午9:51:09
  */
 public class DisruptorExecutorPool implements IMessageExecutorPool {
-    private static final Logger log = LoggerFactory.getLogger(DisruptorExecutorPool.class);
+    private static final Logger logger = KcpLog.logger;
 
     protected List<IMessageExecutor> executor = new Vector<>();
 
@@ -44,6 +45,7 @@ public class DisruptorExecutorPool implements IMessageExecutorPool {
     }
 
 
+    @Override
     public void stop() {
         for (IMessageExecutor process : executor) {
             process.stop();
@@ -60,7 +62,7 @@ public class DisruptorExecutorPool implements IMessageExecutorPool {
      * @return
      */
     @Override
-    public IMessageExecutor getIMessageExecutor() {
+    public IMessageExecutor getMessageExecutor() {
         int index = this.index.incrementAndGet();
         return executor.get(index % executor.size());
     }

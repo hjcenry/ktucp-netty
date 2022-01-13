@@ -25,7 +25,7 @@ public class NettyMessageExecutorPool implements IMessageExecutorPool {
     }
 
     @Override
-    public IMessageExecutor getIMessageExecutor() {
+    public IMessageExecutor getMessageExecutor() {
         return new NettyMessageExecutor(eventExecutors.next());
     }
 

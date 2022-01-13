@@ -1,5 +1,6 @@
 package com.hjcenry.threadPool.order.waiteStrategy;
 
+import com.hjcenry.log.KcpLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @author juebanlin
  */
 public final class YieldingWaitConditionStrategy implements WaitConditionStrategy {
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = KcpLog.logger;
     private static final int SPIN_TRIES = 1000;
 
 

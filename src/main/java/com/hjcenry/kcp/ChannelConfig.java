@@ -1,11 +1,11 @@
 package com.hjcenry.kcp;
 
 import com.hjcenry.fec.FecAdapt;
-import com.hjcenry.server.NetChannelConfig;
-import com.hjcenry.server.tcp.TcpChannelConfig;
-import com.hjcenry.server.udp.UdpChannelConfig;
+import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import com.hjcenry.threadPool.netty.NettyMessageExecutorPool;
+import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.time.SystemTimeService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,6 @@ public class ChannelConfig {
     private boolean stream;
 
     // 下面为新增参数
-
     private FecAdapt fecAdapt;
     /**
      * 收到包立刻回传ack包
@@ -55,7 +54,6 @@ public class ChannelConfig {
      * 发送窗口大小(字节 -1不限制)
      */
     private int writeBufferSize = -1;
-
     /**
      * 增加ack包回复成功率 填 /8/16/32
      */
@@ -63,17 +61,33 @@ public class ChannelConfig {
     /**
      * 使用conv确定一个channel 还是使用 socketAddress确定一个channel
      **/
-    private boolean useConvChannel = false;
+    private boolean useConvChannel = true;
     /**
      * 处理kcp消息接收和发送的线程池
      **/
-    private IMessageExecutorPool iMessageExecutorPool = new NettyMessageExecutorPool(Runtime.getRuntime().availableProcessors());
-
+    private IMessageExecutorPool messageExecutorPool = new NettyMessageExecutorPool(Runtime.getRuntime().availableProcessors());
+    /**
+     * 网络切换最小检测时间长度
+     */
+    private long netChangeMinPeriod = 30 * 1000;
+    /**
+     * 网络切换最大次数，超过这个次数，则进行处理
+     */
+    private int netChangeMaxCount = 0;
     /**
      * 网络配置
      * <b>有多少配置，就会启动多少网络服务</b>
      */
     private List<NetChannelConfig> netChannelConfigList = new ArrayList<>();
+    /**
+     * 时间服务，默认取系统时间
+     */
+    private IKcpTimeService timeService = new SystemTimeService();
+    /**
+     * kcp闲置超时是否关闭连接
+     * 默认true，不关闭则需要用户主动调用close方法，否则KCP对象会一致持有
+     */
+    private boolean kcpIdleTimeoutClose = true;
 
     public void nodelay(boolean nodelay, int interval, int resend, boolean nc) {
         this.nodelay = nodelay;
@@ -90,15 +104,15 @@ public class ChannelConfig {
         this.readBufferSize = readBufferSize;
     }
 
-    public IMessageExecutorPool getIMessageExecutorPool() {
-        return iMessageExecutorPool;
+    public IMessageExecutorPool getMessageExecutorPool() {
+        return messageExecutorPool;
     }
 
-    public void setIMessageExecutorPool(IMessageExecutorPool iMessageExecutorPool) {
-        if (this.iMessageExecutorPool != null) {
-            this.iMessageExecutorPool.stop();
+    public void setMessageExecutorPool(IMessageExecutorPool messageExecutorPool) {
+        if (this.messageExecutorPool != null) {
+            this.messageExecutorPool.stop();
         }
-        this.iMessageExecutorPool = iMessageExecutorPool;
+        this.messageExecutorPool = messageExecutorPool;
     }
 
     public boolean isNodelay() {
@@ -231,5 +245,37 @@ public class ChannelConfig {
 
     public int getNetNum() {
         return netChannelConfigList.size();
+    }
+
+    public long getNetChangeMinPeriod() {
+        return netChangeMinPeriod;
+    }
+
+    public void setNetChangeMinPeriod(long netChangeMinPeriod) {
+        this.netChangeMinPeriod = netChangeMinPeriod;
+    }
+
+    public int getNetChangeMaxCount() {
+        return netChangeMaxCount;
+    }
+
+    public void setNetChangeMaxCount(int netChangeMaxCount) {
+        this.netChangeMaxCount = netChangeMaxCount;
+    }
+
+    public IKcpTimeService getTimeService() {
+        return timeService;
+    }
+
+    public void setTimeService(IKcpTimeService timeService) {
+        this.timeService = timeService;
+    }
+
+    public boolean isKcpIdleTimeoutClose() {
+        return kcpIdleTimeoutClose;
+    }
+
+    public void setKcpIdleTimeoutClose(boolean kcpIdleTimeoutClose) {
+        this.kcpIdleTimeoutClose = kcpIdleTimeoutClose;
     }
 }

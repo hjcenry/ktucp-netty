@@ -1,6 +1,7 @@
 package com.hjcenry.util.enumutil;
 
 import com.hjcenry.kcp.AbstractServerChannelHandler;
+import com.hjcenry.log.KcpLog;
 import com.hjcenry.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public interface IndexedEnum {
 
-    static final Logger logger = LoggerFactory.getLogger(IndexedEnum.class);
+    static final Logger logger = KcpLog.logger;
 
     /**
      * 获取该枚举的索引值
@@ -82,7 +83,7 @@ public interface IndexedEnum {
                     maxIndex = curIdx;
                 }
             }
-            if (maxIndex >= WORNNING_MAX_INDEX) {
+            if (maxIndex >= WORNNING_MAX_INDEX && logger.isWarnEnabled()) {
                 logger.warn(String.format("警告：枚举类%s中有索引超过%d的索引，如果有很多索引空缺，可能会造成空间浪费", enums.getClass().getSimpleName(), WORNNING_MAX_INDEX));
             }
             List<Integer> instances = new ArrayList<>(maxIndex + 1);

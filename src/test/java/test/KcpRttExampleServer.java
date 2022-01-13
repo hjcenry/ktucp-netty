@@ -3,11 +3,11 @@ package test;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.kcp.KcpServer;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.net.server.KcpServer;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 /**
  * 测试延迟的例子
@@ -35,7 +35,7 @@ public class KcpRttExampleServer extends SimpleKcpListener<ByteBuf> {
     }
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         System.out.println("有连接进来" + Thread.currentThread().getName() + ukcp.user().getRemoteAddress());
     }
 
@@ -43,10 +43,19 @@ public class KcpRttExampleServer extends SimpleKcpListener<ByteBuf> {
     protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
         short curCount = cast.getShort(cast.readerIndex());
         System.out.println(Thread.currentThread().getName() + "  收到消息 " + curCount);
-        ukcp.write(cast);
+
+        ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer();
+        byteBuf.writeBytes(cast);
+        ukcp.write(byteBuf);
+
         if (curCount == -1) {
             ukcp.close();
         }
+    }
+
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
     }
 
     @Override

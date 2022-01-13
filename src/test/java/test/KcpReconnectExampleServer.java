@@ -2,8 +2,7 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.kcp.KcpServer;
+import com.hjcenry.net.server.KcpServer;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
@@ -34,7 +33,7 @@ public class KcpReconnectExampleServer extends SimpleKcpListener<ByteBuf> {
 
 
     @Override
-    public void onConnected(Ukcp ukcp) {
+    public void onConnected(int netId, Ukcp ukcp) {
         System.out.println("有连接进来" + Thread.currentThread().getName() + ukcp.user().getRemoteAddress());
     }
 
@@ -52,6 +51,11 @@ public class KcpReconnectExampleServer extends SimpleKcpListener<ByteBuf> {
             i = 0;
         }
         ukcp.write(cast);
+    }
+
+    @Override
+    public void handleIdleTimeout(Ukcp ukcp) {
+        System.out.println("handleTimeout!!!:" + ukcp);
     }
 
     @Override

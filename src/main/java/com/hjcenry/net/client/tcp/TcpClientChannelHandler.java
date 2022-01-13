@@ -1,0 +1,67 @@
+package com.hjcenry.net.client.tcp;
+
+import com.hjcenry.codec.decode.IMessageDecoder;
+import com.hjcenry.codec.encode.IMessageEncoder;
+import com.hjcenry.kcp.AbstractClientChannelHandler;
+import com.hjcenry.kcp.ChannelConfig;
+import com.hjcenry.kcp.IChannelManager;
+import com.hjcenry.kcp.ServerHandlerChannelManager;
+import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.net.NetChannelConfig;
+import com.hjcenry.threadPool.IMessageExecutorPool;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.HashedWheelTimer;
+
+import java.net.InetSocketAddress;
+
+/**
+ * TCP客户端处理器
+ *
+ * @author hejincheng
+ * @version 1.0
+ * @date 2022/1/13 14:57
+ **/
+@ChannelHandler.Sharable
+public class TcpClientChannelHandler extends AbstractClientChannelHandler {
+
+    /**
+     * TCP有连接存在，可通过连接映射KCP对象
+     */
+    private final ServerHandlerChannelManager clientChannelManager;
+
+    public TcpClientChannelHandler(int netId, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
+        super(netId, channelManager, channelConfig, netChannelConfig);
+        this.clientChannelManager = new ServerHandlerChannelManager();
+    }
+
+    @Override
+    protected ByteBuf getReadByteBuf(Channel channel, Object msg) {
+        return (ByteBuf) msg;
+    }
+
+    @Override
+    protected Ukcp getReadUkcp(Channel channel, Object msg) {
+        // 获取KCP对象
+        ByteBuf byteBuf = (ByteBuf) msg;
+        InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+        return this.channelManager.getKcp(byteBuf, remoteAddress);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        Channel channel = ctx.channel();
+        // 移除绑定
+        this.clientChannelManager.remove(channel);
+    }
+
+    @Override
+    protected Ukcp getUkcpByChannel(Channel channel) {
+        // 通过TCP Channel获取KCP对象
+        return this.clientChannelManager.getKcp(channel);
+    }
+}

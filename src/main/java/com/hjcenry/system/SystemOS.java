@@ -1,5 +1,6 @@
 package com.hjcenry.system;
 
+import com.hjcenry.log.KcpLog;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ import java.util.Enumeration;
 
 public class SystemOS {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SystemOS.class);
+    private static final Logger logger = KcpLog.logger;
 
     public static String osName;
     /**
@@ -54,7 +55,9 @@ public class SystemOS {
      */
     public static String getInternalIP() throws UnknownHostException {
         InetAddress inet;
-        LOG.info("当前操作系统 : " + osName);
+        if (logger.isInfoEnabled()) {
+            logger.info("当前操作系统 : " + osName);
+        }
         if (isWindows()) {
             inet = getWinLocalIp();
             // 针对linux系统
@@ -84,19 +87,19 @@ public class SystemOS {
             while (allNetInterfaces.hasMoreElements()) {
                 NetworkInterface netInterface = allNetInterfaces.nextElement();
                 // 打印网端名字
-                LOG.info(netInterface.getName());
+                logger.info(netInterface.getName());
                 // 同样再定义网络地址枚举类
                 Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     ip = addresses.nextElement();
-                    LOG.info(ip.getHostAddress());
+                    logger.info(ip.getHostAddress());
                     if (ip instanceof Inet4Address) {
                         return ip;
                     }
                 }
             }
         } catch (SocketException e) {
-            LOG.error("", e);
+            logger.error("", e);
         }
         return null;
     }

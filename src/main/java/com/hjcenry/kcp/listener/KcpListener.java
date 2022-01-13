@@ -11,9 +11,10 @@ public interface KcpListener {
     /**
      * 连接之后
      *
-     * @param ukcp
+     * @param netId 连接网络id
+     * @param ukcp  KCP对象
      */
-    void onConnected(Ukcp ukcp);
+    void onConnected(int netId, Ukcp ukcp);
 
     /**
      * kcp message
@@ -37,4 +38,11 @@ public interface KcpListener {
      * @param ukcp
      */
     void handleClose(Ukcp ukcp);
+
+    /**
+     * 闲置超时
+     *
+     * @param ukcp kcp对象
+     */
+    void handleIdleTimeout(Ukcp ukcp);
 }

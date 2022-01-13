@@ -1,12 +1,13 @@
 package com.hjcenry.threadPool.disruptor;
 
+import com.hjcenry.log.KcpLog;
 import com.hjcenry.threadPool.ITask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DistributorHandler {
 
-    protected static final Logger logger = LoggerFactory.getLogger(DistributorHandler.class);
+    protected static final Logger logger = KcpLog.logger;
     private ITask task;
 
     public void execute() {
