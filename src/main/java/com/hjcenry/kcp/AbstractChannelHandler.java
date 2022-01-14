@@ -77,14 +77,15 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
         // 获取KCP对象
         Ukcp ukcp = this.getReadUkcp(channel, readObject);
 
+        // 获取消息
+        ByteBuf byteBuf = this.getReadByteBuf(channel, readObject);
+
         INettyChannelEvent channelEvent = this.netChannelConfig.getNettyEventTrigger();
         if (channelEvent != null) {
             // 读事件
-            channelEvent.onChannelRead(channel, ukcp);
+            channelEvent.onChannelRead(channel, ukcp, byteBuf);
         }
 
-        // 获取消息
-        ByteBuf byteBuf = this.getReadByteBuf(channel, readObject);
         // 读消息
         this.channelRead0(channel, readObject, ukcp, byteBuf);
     }
@@ -97,7 +98,7 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
                 cause.printStackTrace(pw);
             }
             logger.warn("An exception was thrown by a user handler's exceptionCaught() " +
-                    "method while handling the following exception:" + sw.toString());
+                    "method while handling the following exception:" + sw);
         }
         super.exceptionCaught(ctx, cause);
     }

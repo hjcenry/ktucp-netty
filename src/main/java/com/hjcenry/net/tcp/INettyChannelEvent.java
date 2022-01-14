@@ -1,6 +1,7 @@
 package com.hjcenry.net.tcp;
 
 import com.hjcenry.kcp.Ukcp;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
 /**
@@ -32,8 +33,9 @@ public interface INettyChannelEvent {
      *
      * @param channel 通道
      * @param ukcp    kcp对象 可能为null
+     * @param byteBuf 读消息
      */
-    public void onChannelRead(Channel channel, Ukcp ukcp);
+    public void onChannelRead(Channel channel, Ukcp ukcp, ByteBuf byteBuf);
 
     /**
      * 触发事件

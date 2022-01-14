@@ -101,7 +101,7 @@ public class UdpNetClient extends AbstractNetClient {
             return;
         }
         // UDP写数据包
-        DatagramPacket msg = new DatagramPacket(data, user.getRemoteAddress(), user.getLocalAddress());
+        DatagramPacket msg = new DatagramPacket(data, user.getCurrentNetRemoteAddress(), user.getCurrentNetLocalAddress());
         channel.writeAndFlush(msg);
     }
 }

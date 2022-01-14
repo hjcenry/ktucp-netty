@@ -10,12 +10,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * 地址管理通道管理器只适用于单网络通道
+ * <p>
  * Created by JinMiao
  * 2019/10/16.
  */
 public class ClientAddressChannelManager extends AbstractChannelManager {
 
-    private Map<SocketAddress, Ukcp> ukcpMap = new ConcurrentHashMap<>();
+    private final Map<SocketAddress, Ukcp> ukcpMap = new ConcurrentHashMap<>();
 
     @Override
     public Ukcp getKcp(ByteBuf byteBuf, InetSocketAddress address) {
@@ -24,13 +26,16 @@ public class ClientAddressChannelManager extends AbstractChannelManager {
 
     @Override
     public void addKcp(Ukcp ukcp) {
-        InetSocketAddress localAddress = ukcp.user().getLocalAddress();
+        // 地址管理网络，只能是单通道网络
+        InetSocketAddress localAddress = ukcp.user().getUserNetManager().getLocalSocketAddress();
         ukcpMap.put(localAddress, ukcp);
     }
 
     @Override
     public void remove(Ukcp ukcp) {
-        ukcpMap.remove(ukcp.user().getLocalAddress());
+        // 地址管理网络，只能是单通道网络
+        InetSocketAddress localAddress = ukcp.user().getUserNetManager().getLocalSocketAddress();
+        ukcpMap.remove(localAddress);
         ukcp.closeChannel();
     }
 

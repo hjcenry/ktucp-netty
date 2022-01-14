@@ -35,7 +35,7 @@ public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf>
 
     @Override
     public void onConnected(int netId, Ukcp ukcp) {
-        System.out.println("有连接进来" + ukcp.user().getRemoteAddress() + "  conv: " + ukcp.getConv());
+        System.out.println("有连接进来" + ukcp.user().getUserNetManager().getRemoteSocketAddress(netId) + "  conv: " + ukcp.getConv());
     }
 
     //int i = 0;

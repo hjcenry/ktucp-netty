@@ -11,6 +11,7 @@ import com.hjcenry.kcp.KcpOutput;
 import com.hjcenry.kcp.ScheduleTask;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.User;
+import com.hjcenry.kcp.UserNetManager;
 import com.hjcenry.kcp.listener.KcpListener;
 import com.hjcenry.net.AbstractNet;
 import com.hjcenry.net.NetChannelConfig;
@@ -119,28 +120,35 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         }
         ukcp.getMessageExecutor().execute(() -> {
             User user = ukcp.user();
-            user.getChannel().close();
+
+            UserNetManager userNetManager = user.getUserNetManager();
+            Channel channel = userNetManager.getChannel(this.netId);
+            channel.close();
+            InetSocketAddress remoteAddress = userNetManager.getRemoteSocketAddress(this.netId);
             InetSocketAddress localAddress = new InetSocketAddress(0);
-            ChannelFuture channelFuture = bootstrap.connect(user.getRemoteAddress(), localAddress);
-            this.onReconnected(ukcp, channelFuture);
+
+            ChannelFuture channelFuture = bootstrap.connect(remoteAddress, localAddress);
+            this.onReconnected(ukcp, channelFuture, localAddress, remoteAddress);
         });
     }
 
-    protected void onReconnected(Ukcp ukcp, ChannelFuture future) {
+    protected void onReconnected(Ukcp ukcp, ChannelFuture future, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         Channel channel = future.channel();
+        // 修改网络
+        ukcp.setCurrentNetId(this.netId);
         // 绑定通道
-        this.bindChannel(ukcp, channel);
+        this.bindChannel(ukcp, channel, localAddress, remoteAddress);
     }
 
     /**
      * 启动服务
      *
-     * @param ukcp            KCP对象
-     * @param localAddress    本地地址
-     * @param remoteAddress   远端地址
-     * @param waiter          等待
-     * @param bindCallBack    绑定回调
-     * @param activeCallBack  激活回调
+     * @param ukcp           KCP对象
+     * @param localAddress   本地地址
+     * @param remoteAddress  远端地址
+     * @param waiter         等待
+     * @param bindCallBack   绑定回调
+     * @param activeCallBack 激活回调
      * @throws KcpInitException 初始异常
      */
     protected void connect(Ukcp ukcp, InetSocketAddress localAddress, InetSocketAddress remoteAddress, CountDownLatch waiter,
@@ -176,9 +184,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         // 修改网络
         ukcp.setCurrentNetId(this.netId);
         // 绑定通道
-        this.bindChannel(ukcp, channel);
-        // 绑定地址
-        this.bindAddress(ukcp, localAddress, remoteAddress);
+        this.bindChannel(ukcp, channel, localAddress, remoteAddress);
 
         KcpListener kcpListener = this.netConfigData.getListener();
 
@@ -208,46 +214,10 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         hashedWheelTimer.newTimeout(scheduleTask, delay, TimeUnit.MILLISECONDS);
     }
 
-    protected void bindAddress(Ukcp ukcp, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
-        ukcp.setLocalAddress(localAddress);
-        ukcp.setRemoteAddress(remoteAddress);
-    }
-
-    /**
-     * 创建KCP 对象
-     *
-     * @param messageExecutor 消息处理器
-     * @param localAddress    本地地址
-     * @param remoteAddress   远端地址
-     * @return kcp对象
-     */
-    protected Ukcp createUkcp(IMessageExecutor messageExecutor, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
-        // KCP输出接口
-        KcpOutput kcpOutput = this.getKcpOutput();
-        // Channel管理
-        IChannelManager channelManager = this.netConfigData.getChannelManager();
-        // 监听器
-        KcpListener kcpListener = this.netConfigData.getListener();
-        // 配置
-        ChannelConfig channelConfig = this.netConfigData.getChannelConfig();
-        // 编解码器
-        IMessageEncoder messageEncoder = this.netConfigData.getMessageEncoder();
-        IMessageDecoder messageDecoder = this.netConfigData.getMessageDecoder();
-        // 创建KCP对象
-        Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, messageExecutor, channelConfig, channelManager, messageEncoder, messageDecoder);
-        // 创建user
-        User user = new User(this.netId, remoteAddress, localAddress, channelConfig.getNetNum());
-        newUkcp.user(user);
-        // 客户端模式
-        newUkcp.setClientMode();
-
-        // 添加ukcp管理
-        channelManager.addKcp(newUkcp);
-        return newUkcp;
-    }
-
-    protected void bindChannel(Ukcp ukcp, Channel channel) {
-        ukcp.user().addChannel(this.netId, channel);
+    protected void bindChannel(Ukcp ukcp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+        User user = ukcp.user();
+        UserNetManager userNetManager = user.getUserNetManager();
+        userNetManager.addNetInfo(this.netId, channel, localAddress, remoteAddress);
     }
 
     protected KcpOutput getKcpOutput() {

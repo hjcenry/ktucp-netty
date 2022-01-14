@@ -34,7 +34,7 @@ public class KcpReconnectExampleServer extends SimpleKcpListener<ByteBuf> {
 
     @Override
     public void onConnected(int netId, Ukcp ukcp) {
-        System.out.println("有连接进来" + Thread.currentThread().getName() + ukcp.user().getRemoteAddress());
+        System.out.println("有连接进来" + Thread.currentThread().getName() + ukcp.user().getUserNetManager().getRemoteSocketAddress(netId));
     }
 
     int i = 0;

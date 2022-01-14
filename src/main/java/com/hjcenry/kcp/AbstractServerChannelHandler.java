@@ -65,22 +65,26 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
     /**
      * 绑定通道
      *
-     * @param ukcp    kcp对象
-     * @param channel 通道
+     * @param ukcp          kcp对象
+     * @param channel       通道
+     * @param localAddress  本地地址
+     * @param remoteAddress 远端地址
      */
-    protected void bindChannel(Ukcp ukcp, Channel channel) {
-        ukcp.user().addChannel(this.netId, channel);
+    protected void bindChannel(Ukcp ukcp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+        User user = ukcp.user();
+        UserNetManager userNetManager = user.getUserNetManager();
+        userNetManager.addNetInfo(this.netId, channel, localAddress, remoteAddress);
     }
 
     @Override
     protected void channelRead0(Channel channel, Object readObject, Ukcp ukcp, ByteBuf byteBuf) {
         if (ukcp != null) {
             User user = ukcp.user();
-            //每次收到消息重绑定地址
-            InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
-            user.setRemoteAddress(remoteAddress);
             //绑定当前网络
             ukcp.changeCurrentNetId(this.netId);
+            //每次收到消息重绑定地址
+            InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
+            user.changeRemoteAddress(this.netId, remoteAddress);
             // 读消息
             ukcp.read(byteBuf);
             return;
@@ -126,15 +130,14 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         KcpOutput kcpOutput = this.getKcpOutput();
         Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
         // 创建user
+        User user = new User(this.netId, this.channelConfig.getNetNum());
+        newUkcp.user(user);
+        // 服务端模式
+        newUkcp.setServerMode();
+        // 绑定通道
         InetSocketAddress localAddress = getLocalAddress(channel, readObject);
         InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
-        User user = new User(this.netId, remoteAddress, localAddress, this.channelConfig.getNetNum());
-        newUkcp.user(user);
-
-        newUkcp.setServerMode();
-
-        // 绑定通道
-        this.bindChannel(newUkcp, channel);
+        this.bindChannel(newUkcp, channel, localAddress, remoteAddress);
         // 绑定convId
         int conv = channelManager.getConvIdByByteBuf(readByteBuf);
         if (conv > 0) {
