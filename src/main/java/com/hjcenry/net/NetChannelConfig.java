@@ -55,6 +55,11 @@ public class NetChannelConfig {
      */
     private final List<ChannelHandler> customChannelHandlerList = new ArrayList<>();
 
+    /**
+     * 网络ID，需要>0，可不指定，由服务端工厂{@link com.hjcenry.net.server.NetServerFactory}或客户端工厂{@link com.hjcenry.net.client.NetClientFactory}分配
+     */
+    private int netId;
+
     // 客户端参数
 
     /**
@@ -146,5 +151,13 @@ public class NetChannelConfig {
 
     public InetSocketAddress getClientConnectRemoteAddress() {
         return clientConnectRemoteAddress;
+    }
+
+    public int getNetId() {
+        return netId;
+    }
+
+    public void setNetId(int netId) {
+        this.netId = netId;
     }
 }

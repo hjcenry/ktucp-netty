@@ -54,6 +54,11 @@ public class KcpServer {
     private IMessageExecutorPool messageExecutorPool;
 
     /**
+     * 网络服务ID
+     */
+    static AtomicInteger autoNetId = new AtomicInteger(0);
+
+    /**
      * 定时器线程工厂
      **/
     private static class TimerThreadFactory implements ThreadFactory {
@@ -133,7 +138,7 @@ public class KcpServer {
         this.messageExecutorPool = channelConfig.getMessageExecutorPool();
 
         // 创建网络服务
-        createNetServers(messageExecutorPool);
+        createNetServers();
 
         // 启动网络服务
         for (INet net : KcpNetManager.getAllNet()) {
@@ -152,15 +157,27 @@ public class KcpServer {
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
 
-    protected void createNetServers(IMessageExecutorPool iMessageExecutorPool) {
+    protected void createNetServers() {
         for (NetChannelConfig netChannelConfig : channelConfig.getNetChannelConfigList()) {
+            int autoId = autoNetId.incrementAndGet();
+            int netId = netChannelConfig.getNetId();
+            // 配置了取自定义id，否则取自增id
+            netId = netId > 0 ? netId : autoId;
+            // 判重
+            if (KcpNetManager.containsNet(netId)) {
+                // ID重复
+                if (logger.isErrorEnabled()) {
+                    logger.error(String.format("create net failed : netId[%d] exist", netId));
+                }
+                continue;
+            }
             // 网络服务数据
             NetConfigData netConfigData = new NetConfigData();
             // 配置数据
             netConfigData.setChannelConfig(channelConfig);
             netConfigData.setNetChannelConfig(netChannelConfig);
             // 处理器
-            netConfigData.setMessageExecutorPool(iMessageExecutorPool);
+            netConfigData.setMessageExecutorPool(this.messageExecutorPool);
             netConfigData.setChannelManager(channelManager);
             netConfigData.setHashedWheelTimer(hashedWheelTimer);
             // 监听和解码
@@ -168,7 +185,10 @@ public class KcpServer {
             netConfigData.setMessageEncoder(messageEncoder);
             netConfigData.setMessageDecoder(messageDecoder);
             // 创建网络服务
-            INet netServer = createNetServer(netChannelConfig.getNetTypeEnum(), netConfigData);
+            INet netServer = createNetServer(netId, netChannelConfig.getNetTypeEnum(), netConfigData);
+            if (netServer == null) {
+                continue;
+            }
             // 添加到网络manager
             KcpNetManager.addNet(netServer);
         }
@@ -186,9 +206,9 @@ public class KcpServer {
                 this.getClass().getSimpleName(), stringBuilder));
     }
 
-    private INet createNetServer(NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
+    private INet createNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
         try {
-            return NetServerFactory.createNetServer(netTypeEnum, netConfigData);
+            return NetServerFactory.createNetServer(netId, netTypeEnum, netConfigData);
         } catch (KcpInitException e) {
             logger.error("", e);
             return null;
@@ -229,7 +249,7 @@ public class KcpServer {
                     }
 
                     @Override
-                    protected void handleReceive0(String cast, Ukcp ukcp) throws Exception {
+                    protected void handleReceive0(String cast, Ukcp ukcp) {
                         System.out.println("handleReceive!!!:" + cast);
                     }
 

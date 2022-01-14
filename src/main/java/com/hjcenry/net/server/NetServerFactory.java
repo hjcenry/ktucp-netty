@@ -17,18 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 public class NetServerFactory {
 
-    /**
-     * 网络服务ID
-     */
-    static AtomicInteger netId = new AtomicInteger(0);
-
-    public static INet createNetServer(NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KcpInitException {
-        int id = netId.incrementAndGet();
+    public static INet createNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KcpInitException {
         switch (netTypeEnum) {
             case NET_UDP:
-                return new UdpNetServer(id, netTypeEnum, netConfigData);
+                return new UdpNetServer(netId, netTypeEnum, netConfigData);
             case NET_TCP:
-                return new TcpNetServer(id, netTypeEnum, netConfigData);
+                return new TcpNetServer(netId, netTypeEnum, netConfigData);
             default:
                 break;
         }

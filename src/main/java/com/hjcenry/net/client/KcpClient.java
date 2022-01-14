@@ -80,6 +80,10 @@ public class KcpClient {
      * 解码器
      */
     private IMessageDecoder messageDecoder;
+    /**
+     * 网络服务ID
+     */
+    static AtomicInteger autoNetId = new AtomicInteger(0);
 
     /**
      * 定时器线程工厂
@@ -245,6 +249,18 @@ public class KcpClient {
 
     protected void createNetClients() {
         for (NetChannelConfig netChannelConfig : channelConfig.getNetChannelConfigList()) {
+            int autoId = autoNetId.incrementAndGet();
+            int netId = netChannelConfig.getNetId();
+            // 配置了取自定义id，否则取自增id
+            netId = netId > 0 ? netId : autoId;
+            // 判重
+            if (KcpNetManager.containsNet(netId)) {
+                // ID重复
+                if (logger.isErrorEnabled()) {
+                    logger.error(String.format("create net failed : netId[%d] exist", netId));
+                }
+                continue;
+            }
             // 网络服务数据
             NetConfigData netConfigData = new NetConfigData();
             // 配置数据
@@ -258,9 +274,8 @@ public class KcpClient {
             netConfigData.setListener(kcpListener);
             netConfigData.setMessageEncoder(messageEncoder);
             netConfigData.setMessageDecoder(messageDecoder);
-
             // 创建网络服务
-            INet netClient = createNetClient(netChannelConfig.getNetTypeEnum(), netConfigData);
+            INet netClient = createNetClient(netId, netChannelConfig.getNetTypeEnum(), netConfigData);
             if (netClient == null) {
                 continue;
             }
@@ -281,9 +296,9 @@ public class KcpClient {
                 this.getClass().getSimpleName(), stringBuilder));
     }
 
-    private INet createNetClient(NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
+    private INet createNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
         try {
-            return NetClientFactory.createNetClient(netTypeEnum, netConfigData);
+            return NetClientFactory.createNetClient(netId, netTypeEnum, netConfigData);
         } catch (KcpInitException e) {
             logger.error("", e);
             return null;
