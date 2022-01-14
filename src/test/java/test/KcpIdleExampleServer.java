@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.net.server.KcpServer;
+import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Ukcp;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,8 +28,8 @@ public class KcpIdleExampleServer implements KcpListener {
         channelConfig.setAckNoDelay(false);
         channelConfig.setCrc32Check(true);
         //channelConfig.setTimeoutMillis(10000);
-        KcpServer kcpServer = new KcpServer();
-        kcpServer.init(kcpIdleExampleServer, channelConfig, 10020);
+        KtucpServer ktucpServer = new KtucpServer();
+        ktucpServer.init(kcpIdleExampleServer, channelConfig, 10020);
     }
 
     private AtomicInteger atomicInteger = new AtomicInteger();

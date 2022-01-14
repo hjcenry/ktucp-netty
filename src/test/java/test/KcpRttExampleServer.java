@@ -5,7 +5,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
-import com.hjcenry.net.server.KcpServer;
+import com.hjcenry.net.server.KtucpServer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
@@ -30,8 +30,8 @@ public class KcpRttExampleServer extends SimpleKcpListener<ByteBuf> {
         channelConfig.setTimeoutMillis(10000);
         channelConfig.setUseConvChannel(true);
         channelConfig.setCrc32Check(true);
-        KcpServer kcpServer = new KcpServer();
-        kcpServer.init(kcpRttExampleServer, channelConfig, 20003);
+        KtucpServer ktucpServer = new KtucpServer();
+        ktucpServer.init(kcpRttExampleServer, channelConfig, 20003);
     }
 
     @Override

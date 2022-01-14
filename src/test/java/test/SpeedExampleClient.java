@@ -4,7 +4,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.KcpListener;
-import com.hjcenry.net.client.KcpClient;
+import com.hjcenry.net.client.KtucpClient;
 import com.hjcenry.threadPool.disruptor.DisruptorExecutorPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -34,11 +34,11 @@ public class SpeedExampleClient implements KcpListener {
         //channelConfig.setFecParityShardCount(3);
         channelConfig.setCrc32Check(false);
         channelConfig.setWriteBufferSize(channelConfig.getMtu() * 300000);
-        KcpClient kcpClient = new KcpClient();
+        KtucpClient ktucpClient = new KtucpClient();
         SpeedExampleClient speedExampleClient = new SpeedExampleClient();
-        kcpClient.init(speedExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 20004));
+        ktucpClient.init(speedExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 20004));
 
-        kcpClient.connect();
+        ktucpClient.connect();
 
     }
 

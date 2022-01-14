@@ -2,7 +2,7 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.net.server.KcpServer;
+import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
@@ -28,8 +28,8 @@ public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf>
         channelConfig.setUseConvChannel(true);
         //channelConfig.setCrc32Check(true);
         channelConfig.setTimeoutMillis(10000);
-        KcpServer kcpServer = new KcpServer();
-        kcpServer.init(kcpMultiplePingPongExampleServer, channelConfig, 10011);
+        KtucpServer ktucpServer = new KtucpServer();
+        ktucpServer.init(kcpMultiplePingPongExampleServer, channelConfig, 10011);
     }
 
 

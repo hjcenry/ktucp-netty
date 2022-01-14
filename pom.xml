@@ -4,9 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
-    <artifactId>ktucp</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <name>ktucp-netty</name>
+    <description>Java implementation of KCP(TCP/UDP multiple channel) based on Netty(include fec implement)</description>
+    <url>https://github.com/hjcenry/ktucp-netty</url>
+
+    <groupId>io.github.hjcenry</groupId>
+    <artifactId>ktucp-netty</artifactId>
+    <version>1.0</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -30,10 +34,14 @@
         <developer>
             <name>hjcenry</name>
             <email>hejincheng1209@163.com</email>
-            <url>https://github.com/hjcenry/</url>
-            <organization>hjcenry.com</organization>
+            <url>https://hjcenry.com</url>
         </developer>
     </developers>
+    <scm>
+        <url>https://github.com/hjcenry/ktucp-netty.git</url>
+        <connection>https://github.com/hjcenry/ktucp-netty.git</connection>
+        <developerConnection>https://github.com/hjcenry/ktucp-netty.git</developerConnection>
+    </scm>
 
     <dependencies>
         <dependency>

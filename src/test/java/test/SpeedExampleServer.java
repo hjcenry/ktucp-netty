@@ -2,7 +2,7 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.net.server.KcpServer;
+import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
 import com.hjcenry.threadPool.disruptor.DisruptorExecutorPool;
@@ -29,8 +29,8 @@ public class SpeedExampleServer extends SimpleKcpListener<ByteBuf> {
         channelConfig.setTimeoutMillis(5000);
         channelConfig.setUseConvChannel(true);
         channelConfig.setCrc32Check(false);
-        KcpServer kcpServer = new KcpServer();
-        kcpServer.init(speedExampleServer, channelConfig, 20004);
+        KtucpServer ktucpServer = new KtucpServer();
+        ktucpServer.init(speedExampleServer, channelConfig, 20004);
     }
 
     long start = System.currentTimeMillis();

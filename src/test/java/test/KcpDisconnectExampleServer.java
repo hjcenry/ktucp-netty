@@ -1,7 +1,7 @@
 package test;
 
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.net.server.KcpServer;
+import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
 import io.netty.buffer.ByteBuf;
@@ -27,8 +27,8 @@ public class KcpDisconnectExampleServer extends SimpleKcpListener<ByteBuf> {
         //channelConfig.setCrc32Check(true);
         channelConfig.setUseConvChannel(true);
         channelConfig.setTimeoutMillis(5000);
-        KcpServer kcpServer = new KcpServer();
-        kcpServer.init(kcpRttExampleServer, channelConfig, 10031);
+        KtucpServer ktucpServer = new KtucpServer();
+        ktucpServer.init(kcpRttExampleServer, channelConfig, 10031);
     }
 
 

@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.0
  * @date 2022/1/10 11:56
  **/
-public class KcpClient {
+public class KtucpClient {
 
     private static final Logger logger = KcpLog.logger;
 

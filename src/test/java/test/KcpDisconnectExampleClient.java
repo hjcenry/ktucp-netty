@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
-import com.hjcenry.net.client.KcpClient;
+import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -33,9 +33,9 @@ public class KcpDisconnectExampleClient extends SimpleKcpListener<ByteBuf> {
         channelConfig.setConv(55);
         channelConfig.setUseConvChannel(true);
 
-        KcpClient kcpClient = new KcpClient();
+        KtucpClient ktucpClient = new KtucpClient();
         KcpDisconnectExampleClient kcpClientRttExample = new KcpDisconnectExampleClient();
-        kcpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 10031));
+        ktucpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 10031));
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -44,7 +44,7 @@ public class KcpDisconnectExampleClient extends SimpleKcpListener<ByteBuf> {
                 for (int i = 0; i < 100; i++) {
                     try {
                         channelConfig.setConv(id.incrementAndGet());
-                        kcpClient.connect();
+                        ktucpClient.connect();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

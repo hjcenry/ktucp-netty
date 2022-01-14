@@ -4,7 +4,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
-import com.hjcenry.net.client.KcpClient;
+import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -33,18 +33,18 @@ public class KcpReconnectExampleClient extends SimpleKcpListener<ByteBuf> {
         channelConfig.setConv(55);
         channelConfig.setUseConvChannel(true);
 
-        KcpClient kcpClient = new KcpClient();
+        KtucpClient ktucpClient = new KtucpClient();
 
         KcpReconnectExampleClient kcpClientRttExample = new KcpReconnectExampleClient();
-        kcpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 20004));
+        ktucpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 20004));
 
-        kcpClient.connect();
+        ktucpClient.connect();
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                kcpClient.reconnect();
+                ktucpClient.reconnect();
             }
         }, 1000, 1000);
     }

@@ -4,7 +4,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.listener.SimpleKcpListener;
-import com.hjcenry.net.client.KcpClient;
+import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.DefaultEventLoop;
@@ -32,11 +32,11 @@ public class KcpPingPongExampleClient extends SimpleKcpListener<ByteBuf> {
         //channelConfig.setCrc32Check(true);
         //channelConfig.setTimeoutMillis(10000);
 
-        KcpClient kcpClient = new KcpClient();
+        KtucpClient ktucpClient = new KtucpClient();
         KcpPingPongExampleClient kcpClientRttExample = new KcpPingPongExampleClient();
-        kcpClient.init(kcpClientRttExample, channelConfig,new InetSocketAddress("127.0.0.1", 10001));
+        ktucpClient.init(kcpClientRttExample, channelConfig,new InetSocketAddress("127.0.0.1", 10001));
 
-        kcpClient.connect();
+        ktucpClient.connect();
     }
 
     int i = 0;

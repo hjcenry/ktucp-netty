@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.0
  * @date 2022/1/10 11:56
  **/
-public class KcpServer {
+public class KtucpServer {
 
     private static final Logger logger = KcpLog.logger;
 
@@ -239,8 +239,8 @@ public class KcpServer {
         channelConfig.addNetChannelConfig(TcpChannelConfig.buildServerConfig(1111));
         // 添加KCP服务
         channelConfig.addNetChannelConfig(UdpChannelConfig.buildServerConfig(1111));
-        KcpServer kcpServer = new KcpServer();
-        kcpServer.init(
+        KtucpServer ktucpServer = new KtucpServer();
+        ktucpServer.init(
                 // 监听器
                 new SimpleKcpListener<String>() {
                     @Override
