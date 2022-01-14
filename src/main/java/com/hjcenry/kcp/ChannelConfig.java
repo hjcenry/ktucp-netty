@@ -2,6 +2,7 @@ package com.hjcenry.kcp;
 
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.net.NetChannelConfig;
+import com.hjcenry.net.callback.IKtucpStartUpCallback;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import com.hjcenry.threadPool.netty.NettyMessageExecutorPool;
 import com.hjcenry.time.IKtucpTimeService;
@@ -88,6 +89,10 @@ public class ChannelConfig {
      * 默认true，不关闭则需要用户主动调用close方法，否则KCP对象会一致持有
      */
     private boolean kcpIdleTimeoutClose = true;
+    /**
+     * 启动完成回调
+     */
+    private IKtucpStartUpCallback startUpCallback;
 
     public void nodelay(boolean nodelay, int interval, int resend, boolean nc) {
         this.nodelay = nodelay;
@@ -277,5 +282,13 @@ public class ChannelConfig {
 
     public void setKcpIdleTimeoutClose(boolean kcpIdleTimeoutClose) {
         this.kcpIdleTimeoutClose = kcpIdleTimeoutClose;
+    }
+
+    public IKtucpStartUpCallback getStartUpCallback() {
+        return startUpCallback;
+    }
+
+    public void setStartUpCallback(IKtucpStartUpCallback startUpCallback) {
+        this.startUpCallback = startUpCallback;
     }
 }

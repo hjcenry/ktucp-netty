@@ -14,6 +14,7 @@ import com.hjcenry.log.KtucpLog;
 import com.hjcenry.net.INet;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.NetConfigData;
+import com.hjcenry.net.callback.IKtucpStartUpCallback;
 import com.hjcenry.net.udp.UdpChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.util.HashedWheelTimer;
@@ -146,6 +147,12 @@ public class KtucpServer {
 
         // 打印启动网络信息
         this.logPrintNetServer();
+
+        // 启动完成回调
+        IKtucpStartUpCallback callback = channelConfig.getStartUpCallback();
+        if (callback != null) {
+            callback.apply();
+        }
 
         // 停服钩子
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
