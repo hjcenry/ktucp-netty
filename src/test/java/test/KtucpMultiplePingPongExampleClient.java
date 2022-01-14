@@ -2,7 +2,7 @@ package test;
 
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -16,7 +16,7 @@ import java.util.TimerTask;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpMultiplePingPongExampleClient implements KcpListener {
+public class KtucpMultiplePingPongExampleClient implements KtucpListener {
 
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
@@ -32,7 +32,7 @@ public class KcpMultiplePingPongExampleClient implements KcpListener {
         //channelConfig.setTimeoutMillis(10000);
 
         KtucpClient ktucpClient = new KtucpClient();
-        KcpMultiplePingPongExampleClient kcpMultiplePingPongExampleClient = new KcpMultiplePingPongExampleClient();
+        KtucpMultiplePingPongExampleClient kcpMultiplePingPongExampleClient = new KtucpMultiplePingPongExampleClient();
         ktucpClient.init(kcpMultiplePingPongExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10011));
 
         int clientNumber = 1000;

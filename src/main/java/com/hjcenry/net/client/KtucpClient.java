@@ -13,7 +13,7 @@ import com.hjcenry.kcp.KcpOutPutImp;
 import com.hjcenry.kcp.KcpOutput;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.User;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.log.KcpLog;
 import com.hjcenry.net.INet;
 import com.hjcenry.net.NetChannelConfig;
@@ -22,16 +22,11 @@ import com.hjcenry.net.server.NetTypeEnum;
 import com.hjcenry.net.udp.UdpChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.EventLoopGroup;
 import io.netty.util.HashedWheelTimer;
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -71,7 +66,7 @@ public class KtucpClient {
     /**
      * 监听器
      */
-    private KcpListener kcpListener;
+    private KtucpListener ktucpListener;
     /**
      * 编码器
      */
@@ -101,36 +96,36 @@ public class KtucpClient {
      * 默认初始化KCP网络
      * <p>该方法只启动一个UDP</p>
      *
-     * @param kcpListener   KCP监听器
+     * @param ktucpListener   KCP监听器
      * @param channelConfig 连接配置
      * @param remoteAddress 远端地址
      */
-    public void init(KcpListener kcpListener, ChannelConfig channelConfig, InetSocketAddress remoteAddress) {
+    public void init(KtucpListener ktucpListener, ChannelConfig channelConfig, InetSocketAddress remoteAddress) {
         channelConfig.addNetChannelConfig(UdpChannelConfig.buildClientConfig(remoteAddress));
         // 使用默认编解码（传原始ByteBuf）
-        this.init(kcpListener, channelConfig, null, null);
+        this.init(ktucpListener, channelConfig, null, null);
     }
 
     /**
      * 初始化KCP网络服务
      *
-     * @param kcpListener   KCP监听器
+     * @param ktucpListener   KCP监听器
      * @param channelConfig 连接配置
      */
-    public void init(KcpListener kcpListener, ChannelConfig channelConfig) {
+    public void init(KtucpListener ktucpListener, ChannelConfig channelConfig) {
         // 使用默认编解码（传原始ByteBuf）
-        this.init(kcpListener, channelConfig, null, null);
+        this.init(ktucpListener, channelConfig, null, null);
     }
 
     /**
      * 初始化KCP网络服务
      *
-     * @param kcpListener    KCP监听器
+     * @param ktucpListener    KCP监听器
      * @param channelConfig  连接配置
      * @param messageDecoder 解码器
      * @param messageEncoder 编码器
      */
-    public void init(KcpListener kcpListener, ChannelConfig channelConfig, IMessageEncoder messageEncoder, IMessageDecoder messageDecoder) {
+    public void init(KtucpListener ktucpListener, ChannelConfig channelConfig, IMessageEncoder messageEncoder, IMessageDecoder messageDecoder) {
         if (channelConfig.isUseConvChannel()) {
             int convIndex = 0;
             if (channelConfig.getFecAdapt() != null) {
@@ -155,7 +150,7 @@ public class KtucpClient {
         }
 
         this.channelConfig = channelConfig;
-        this.kcpListener = kcpListener;
+        this.ktucpListener = ktucpListener;
         this.messageEncoder = messageEncoder;
         this.messageDecoder = messageDecoder;
 
@@ -235,7 +230,7 @@ public class KtucpClient {
         // KCP输出接口
         KcpOutput kcpOutput = new KcpOutPutImp();
         // 创建KCP对象
-        Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, messageExecutor, channelConfig, channelManager, messageEncoder, messageDecoder);
+        Ukcp newUkcp = new Ukcp(kcpOutput, ktucpListener, messageExecutor, channelConfig, channelManager, messageEncoder, messageDecoder);
         // 创建user
         User user = new User(channelConfig.getNetNum());
         newUkcp.user(user);
@@ -271,7 +266,7 @@ public class KtucpClient {
             netConfigData.setChannelManager(channelManager);
             netConfigData.setHashedWheelTimer(hashedWheelTimer);
             // 监听和解码
-            netConfigData.setListener(kcpListener);
+            netConfigData.setListener(ktucpListener);
             netConfigData.setMessageEncoder(messageEncoder);
             netConfigData.setMessageDecoder(messageDecoder);
             // 创建网络服务

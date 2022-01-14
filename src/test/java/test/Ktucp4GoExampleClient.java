@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
  * Created by JinMiao
  * 2019/11/29.
  */
-public class Kcp4GoExampleClient implements KcpListener {
+public class Ktucp4GoExampleClient implements KtucpListener {
 
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
@@ -33,7 +33,7 @@ public class Kcp4GoExampleClient implements KcpListener {
 
 
         KtucpClient ktucpClient = new KtucpClient();
-        Kcp4GoExampleClient kcpGoExampleClient = new Kcp4GoExampleClient();
+        Ktucp4GoExampleClient kcpGoExampleClient = new Ktucp4GoExampleClient();
         ktucpClient.init(kcpGoExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10000));
         ktucpClient.connect();
 

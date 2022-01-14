@@ -6,7 +6,7 @@ import com.hjcenry.kcp.Ukcp;
  * Created by JinMiao
  * 2018/9/11.
  */
-public interface KcpListener {
+public interface KtucpListener {
 
     /**
      * 连接之后

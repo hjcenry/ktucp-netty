@@ -4,7 +4,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -12,11 +12,11 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpMultiplePingPongExampleServer extends SimpleKcpListener<ByteBuf> {
+public class KtucpMultiplePingPongExampleServer extends SimpleKtucpListener<ByteBuf> {
 
     public static void main(String[] args) {
 
-        KcpMultiplePingPongExampleServer kcpMultiplePingPongExampleServer = new KcpMultiplePingPongExampleServer();
+        KtucpMultiplePingPongExampleServer kcpMultiplePingPongExampleServer = new KtucpMultiplePingPongExampleServer();
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(256);

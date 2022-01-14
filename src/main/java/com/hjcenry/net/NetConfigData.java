@@ -4,11 +4,9 @@ import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import io.netty.util.HashedWheelTimer;
-
-import java.net.InetSocketAddress;
 
 /**
  * 网络服务数据
@@ -42,7 +40,7 @@ public class NetConfigData {
     /**
      * 监听器
      */
-    private KcpListener listener;
+    private KtucpListener listener;
     /**
      * 消息编码
      */
@@ -92,11 +90,11 @@ public class NetConfigData {
         this.hashedWheelTimer = hashedWheelTimer;
     }
 
-    public KcpListener getListener() {
+    public KtucpListener getListener() {
         return listener;
     }
 
-    public void setListener(KcpListener listener) {
+    public void setListener(KtucpListener listener) {
         this.listener = listener;
     }
 

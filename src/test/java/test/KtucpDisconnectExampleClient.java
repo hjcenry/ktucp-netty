@@ -1,9 +1,8 @@
 package test;
 
-import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -11,13 +10,14 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 重连测试客户端
+ * 重复新连接进入断开测试内存泄漏客户端
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpReconnectExampleClient extends SimpleKcpListener<ByteBuf> {
+public class KtucpDisconnectExampleClient extends SimpleKtucpListener<ByteBuf> {
 
     public static void main(String[] args) {
         ChannelConfig channelConfig = new ChannelConfig();
@@ -34,26 +34,32 @@ public class KcpReconnectExampleClient extends SimpleKcpListener<ByteBuf> {
         channelConfig.setUseConvChannel(true);
 
         KtucpClient ktucpClient = new KtucpClient();
-
-        KcpReconnectExampleClient kcpClientRttExample = new KcpReconnectExampleClient();
-        ktucpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 20004));
-
-        ktucpClient.connect();
+        KtucpDisconnectExampleClient kcpClientRttExample = new KtucpDisconnectExampleClient();
+        ktucpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 10031));
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                ktucpClient.reconnect();
+                for (int i = 0; i < 100; i++) {
+                    try {
+                        channelConfig.setConv(id.incrementAndGet());
+                        ktucpClient.connect();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }, 1000, 1000);
     }
+
+    private static final AtomicInteger id = new AtomicInteger();
 
     @Override
     public void onConnected(int netId, Ukcp ukcp) {
         for (int i = 0; i < 100; i++) {
             ByteBuf byteBuf = UnpooledByteBufAllocator.DEFAULT.buffer(1024);
-            byteBuf.writeInt(i++);
+            byteBuf.writeInt(i);
             byte[] bytes = new byte[1020];
             byteBuf.writeBytes(bytes);
             ukcp.write(byteBuf);
@@ -61,20 +67,10 @@ public class KcpReconnectExampleClient extends SimpleKcpListener<ByteBuf> {
         }
     }
 
-    int j = 0;
-
     @Override
     protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
-        ukcp.write(cast);
-        int id = cast.getInt(0);
-        //if(j-id%10!=0){
-        //    System.out.println("id"+id +"  j" +j);
-        //}
-
-        j++;
-        if (j % 100000 == 0) {
-            System.out.println(Snmp.snmp.toString());
-            System.out.println("收到了 返回回去" + j);
+        if (cast.getInt(0) == 99) {
+            ukcp.close();
         }
     }
 

@@ -2,7 +2,7 @@ package test;
 
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -14,7 +14,7 @@ import java.net.InetSocketAddress;
  * Created by JinMiao
  * 2019-07-10.
  */
-public class KcpIdleExampleClient implements KcpListener {
+public class KtucpIdleExampleClient implements KtucpListener {
 
     public static void main(String[] args) {
 
@@ -30,7 +30,7 @@ public class KcpIdleExampleClient implements KcpListener {
         //channelConfig.setTimeoutMillis(10000);
 
         KtucpClient ktucpClient = new KtucpClient();
-        KcpIdleExampleClient kcpIdleExampleClient = new KcpIdleExampleClient();
+        KtucpIdleExampleClient kcpIdleExampleClient = new KtucpIdleExampleClient();
         ktucpClient.init(kcpIdleExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10020));
 
         for (int i = 0; i < 3; i++) {

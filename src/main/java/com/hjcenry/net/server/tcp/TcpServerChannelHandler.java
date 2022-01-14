@@ -7,7 +7,7 @@ import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
 import com.hjcenry.kcp.ServerHandlerChannelManager;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
@@ -37,7 +37,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     public TcpServerChannelHandler(int netId, IChannelManager channelManager,
                                    ChannelConfig channelConfig,
                                    NetChannelConfig netChannelConfig, IMessageExecutorPool iMessageExecutorPool,
-                                   KcpListener kcpListener,
+                                   KtucpListener ktucpListener,
                                    HashedWheelTimer hashedWheelTimer,
                                    IMessageEncoder messageEncoder,
                                    IMessageDecoder messageDecoder) {
@@ -45,7 +45,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
                 channelConfig,
                 netChannelConfig,
                 iMessageExecutorPool,
-                kcpListener,
+                ktucpListener,
                 hashedWheelTimer,
                 messageEncoder,
                 messageDecoder);

@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -11,11 +11,11 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2019-06-27.
  */
-public class KcpDisconnectExampleServer extends SimpleKcpListener<ByteBuf> {
+public class KtucpDisconnectExampleServer extends SimpleKtucpListener<ByteBuf> {
 
     public static void main(String[] args) {
 
-        KcpDisconnectExampleServer kcpRttExampleServer = new KcpDisconnectExampleServer();
+        KtucpDisconnectExampleServer kcpRttExampleServer = new KtucpDisconnectExampleServer();
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true, 40, 2, true);
         channelConfig.setSndWnd(1024);

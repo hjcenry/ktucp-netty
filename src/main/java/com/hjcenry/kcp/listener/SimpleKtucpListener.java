@@ -5,13 +5,13 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.TypeParameterMatcher;
 
 /**
- * {@link KcpListener} which allows to explicit only handle a specific type of messages.
+ * {@link KtucpListener} which allows to explicit only handle a specific type of messages.
  * <p>
  * For example here is an implementation which only handle {@link String} messages.
  *
  * <pre>
  *     public class StringHandler extends
- *             {@link SimpleKcpListener}&lt;{@link String}&gt; {
+ *             {@link SimpleKtucpListener}&lt;{@link String}&gt; {
  *
  *         {@code @Override}
  *         protected void handleReceive0({@link String} message, {@link Ukcp} ukcp)
@@ -29,15 +29,15 @@ import io.netty.util.internal.TypeParameterMatcher;
  * @version 1.0
  * @date 2022/1/11 15:26
  **/
-public abstract class SimpleKcpListener<I> implements KcpListener {
+public abstract class SimpleKtucpListener<I> implements KtucpListener {
 
     private final TypeParameterMatcher matcher;
 
     /**
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
      */
-    protected SimpleKcpListener() {
-        this.matcher = TypeParameterMatcher.find(this, SimpleKcpListener.class, "I");
+    protected SimpleKtucpListener() {
+        this.matcher = TypeParameterMatcher.find(this, SimpleKtucpListener.class, "I");
     }
 
     @Override

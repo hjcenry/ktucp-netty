@@ -3,7 +3,7 @@ package com.hjcenry.kcp;
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.internal.CodecOutputList;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.threadPool.ITask;
 import com.hjcenry.time.IKcpTimeService;
 import com.hjcenry.util.ReferenceCountUtil;
@@ -103,9 +103,9 @@ public class ReadTask implements ITask {
             } else {
                 object = this.messageDecoder.decode(buf);
             }
-            KcpListener kcpListener = ukcp.getKcpListener();
+            KtucpListener ktucpListener = ukcp.getKcpListener();
             // 处理读事件
-            kcpListener.handleReceive(object, ukcp);
+            ktucpListener.handleReceive(object, ukcp);
         } catch (Throwable throwable) {
             ukcp.getKcpListener().handleException(throwable, ukcp);
         } finally {

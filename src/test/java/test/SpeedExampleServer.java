@@ -4,7 +4,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import com.hjcenry.threadPool.disruptor.DisruptorExecutorPool;
 import io.netty.buffer.ByteBuf;
 
@@ -13,7 +13,7 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2020/12/23.
  */
-public class SpeedExampleServer extends SimpleKcpListener<ByteBuf> {
+public class SpeedExampleServer extends SimpleKtucpListener<ByteBuf> {
     public static void main(String[] args) {
 
         SpeedExampleServer speedExampleServer = new SpeedExampleServer();

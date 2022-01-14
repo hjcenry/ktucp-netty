@@ -1,18 +1,15 @@
 package com.hjcenry.net.client;
 
-import com.hjcenry.codec.decode.IMessageDecoder;
-import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.exception.KcpInitException;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.ClientConvChannelManager;
-import com.hjcenry.kcp.IChannelManager;
 import com.hjcenry.kcp.KcpOutPutImp;
 import com.hjcenry.kcp.KcpOutput;
 import com.hjcenry.kcp.ScheduleTask;
 import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.kcp.User;
 import com.hjcenry.kcp.UserNetManager;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.AbstractNet;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.NetConfigData;
@@ -186,7 +183,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         // 绑定通道
         this.bindChannel(ukcp, channel, localAddress, remoteAddress);
 
-        KcpListener kcpListener = this.netConfigData.getListener();
+        KtucpListener ktucpListener = this.netConfigData.getListener();
 
         // 消息处理器
         IMessageExecutorPool messageExecutorPool = this.netConfigData.getMessageExecutorPool();
@@ -198,9 +195,9 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         messageExecutor.execute(() -> {
             try {
                 // 所有网络共用一个连接事件
-                kcpListener.onConnected(this.netId, ukcp);
+                ktucpListener.onConnected(this.netId, ukcp);
             } catch (Throwable throwable) {
-                kcpListener.handleException(throwable, ukcp);
+                ktucpListener.handleException(throwable, ukcp);
             }
         });
 

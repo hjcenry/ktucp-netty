@@ -8,7 +8,7 @@ import com.hjcenry.fec.IFecEncode;
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.fec.fec.FecPacket;
 import com.hjcenry.fec.fec.Snmp;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.time.IKcpTimeService;
 import com.hjcenry.util.ReferenceCountUtil;
@@ -19,7 +19,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.jctools.queues.MpscLinkedQueue;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,7 +50,7 @@ public class Ukcp {
 
     private final IMessageExecutor messageExecutor;
 
-    private final KcpListener kcpListener;
+    private final KtucpListener ktucpListener;
 
     private final long timeoutMillis;
 
@@ -95,7 +94,7 @@ public class Ukcp {
      * @param output output for kcp
      */
     public Ukcp(KcpOutput output,
-                KcpListener kcpListener,
+                KtucpListener ktucpListener,
                 IMessageExecutor messageExecutor,
                 ChannelConfig channelConfig,
                 IChannelManager channelManager,
@@ -121,7 +120,7 @@ public class Ukcp {
 
         this.kcp = new Kcp(channelConfig.getConv(), now, output);
         this.active = true;
-        this.kcpListener = kcpListener;
+        this.ktucpListener = ktucpListener;
         this.messageExecutor = messageExecutor;
         this.channelManager = channelManager;
 
@@ -516,8 +515,8 @@ public class Ukcp {
         return writeObjectQueue;
     }
 
-    protected KcpListener getKcpListener() {
-        return kcpListener;
+    protected KtucpListener getKcpListener() {
+        return ktucpListener;
     }
 
     public boolean isActive() {
@@ -530,7 +529,7 @@ public class Ukcp {
         }
         this.active = false;
         notifyReadEvent();
-        kcpListener.handleClose(this);
+        ktucpListener.handleClose(this);
         //关闭之前尽量把消息都发出去
         notifyWriteEvent();
         //连接删除

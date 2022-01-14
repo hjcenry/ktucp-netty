@@ -4,7 +4,7 @@ import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Created by JinMiao
  * 2019-06-26.
  */
-public class KcpRttExampleClient extends SimpleKcpListener<ByteBuf> {
+public class KtucpRttExampleClient extends SimpleKtucpListener<ByteBuf> {
 
     private final ByteBuf data;
 
@@ -34,7 +34,7 @@ public class KcpRttExampleClient extends SimpleKcpListener<ByteBuf> {
 
     private final long startTime;
 
-    public KcpRttExampleClient() {
+    public KtucpRttExampleClient() {
         data = Unpooled.buffer(200);
         for (int i = 0; i < data.capacity(); i++) {
             data.writeByte((byte) i);
@@ -62,7 +62,7 @@ public class KcpRttExampleClient extends SimpleKcpListener<ByteBuf> {
         channelConfig.setTimeoutMillis(10000);
         //channelConfig.setAckMaskSize(32);
         KtucpClient ktucpClient = new KtucpClient();
-        KcpRttExampleClient kcpClientRttExample = new KcpRttExampleClient();
+        KtucpRttExampleClient kcpClientRttExample = new KtucpRttExampleClient();
         ktucpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 20003));
         ktucpClient.connect();
     }

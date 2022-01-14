@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import com.hjcenry.threadPool.disruptor.DisruptorExecutorPool;
 import io.netty.buffer.ByteBuf;
@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
  * Created by JinMiao
  * 2020/12/23.
  */
-public class SpeedExampleClient implements KcpListener {
+public class SpeedExampleClient implements KtucpListener {
 
 
     public SpeedExampleClient() {

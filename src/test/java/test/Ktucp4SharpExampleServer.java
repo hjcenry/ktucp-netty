@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.SimpleKcpListener;
+import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import com.hjcenry.net.server.KtucpServer;
 import io.netty.buffer.ByteBuf;
 
@@ -12,11 +12,11 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2019-07-23.
  */
-public class Kcp4sharpExampleServer extends SimpleKcpListener<ByteBuf> {
+public class Ktucp4SharpExampleServer extends SimpleKtucpListener<ByteBuf> {
 
     public static void main(String[] args) {
 
-        Kcp4sharpExampleServer kcpRttExampleServer = new Kcp4sharpExampleServer();
+        Ktucp4SharpExampleServer kcpRttExampleServer = new Ktucp4SharpExampleServer();
 
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.nodelay(true, 10, 2, true);

@@ -3,7 +3,7 @@ package com.hjcenry.kcp;
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.fec.fec.Fec;
-import com.hjcenry.kcp.listener.KcpListener;
+import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
@@ -31,7 +31,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
     /**
      * KCP监听
      */
-    protected KcpListener kcpListener;
+    protected KtucpListener ktucpListener;
     /**
      * 时间轮
      */
@@ -50,13 +50,13 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
                                         ChannelConfig channelConfig,
                                         NetChannelConfig netChannelConfig,
                                         IMessageExecutorPool iMessageExecutorPool,
-                                        KcpListener kcpListener,
+                                        KtucpListener ktucpListener,
                                         HashedWheelTimer hashedWheelTimer,
                                         IMessageEncoder messageEncoder,
                                         IMessageDecoder messageDecoder) {
         super(netId, channelManager, channelConfig, netChannelConfig);
         this.iMessageExecutorPool = iMessageExecutorPool;
-        this.kcpListener = kcpListener;
+        this.ktucpListener = ktucpListener;
         this.hashedWheelTimer = hashedWheelTimer;
         this.messageEncoder = messageEncoder;
         this.messageDecoder = messageDecoder;
@@ -128,7 +128,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
      */
     protected Ukcp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
         KcpOutput kcpOutput = this.getKcpOutput();
-        Ukcp newUkcp = new Ukcp(kcpOutput, kcpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
+        Ukcp newUkcp = new Ukcp(kcpOutput, ktucpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
         // 创建user
         User user = new User(this.netId, this.channelConfig.getNetNum());
         newUkcp.user(user);
