@@ -74,7 +74,7 @@ public class KtucpServer {
      * 默认初始化KCP网络服务
      * <p>该方法只启动一个UDP服务</p>
      *
-     * @param ktucpListener   KCP监听器
+     * @param ktucpListener KCP监听器
      * @param channelConfig 连接配置
      * @param bindPort      绑定端口
      */
@@ -87,7 +87,7 @@ public class KtucpServer {
     /**
      * 初始化KCP网络服务
      *
-     * @param ktucpListener   KCP监听器
+     * @param ktucpListener KCP监听器
      * @param channelConfig 连接配置
      */
     public void init(KtucpListener ktucpListener, ChannelConfig channelConfig) {
@@ -98,7 +98,7 @@ public class KtucpServer {
     /**
      * 初始化KCP网络服务
      *
-     * @param ktucpListener    KCP监听器
+     * @param ktucpListener  KCP监听器
      * @param channelConfig  连接配置
      * @param messageDecoder 解码器
      * @param messageEncoder 编码器
@@ -228,59 +228,5 @@ public class KtucpServer {
 
     public IChannelManager getChannelManager() {
         return channelManager;
-    }
-
-    /**
-     * TEST CODE
-     */
-    public static void main(String[] args) {
-        ChannelConfig channelConfig = new ChannelConfig();
-        // 添加TCP服务
-        channelConfig.addNetChannelConfig(TcpChannelConfig.buildServerConfig(1111));
-        // 添加KCP服务
-        channelConfig.addNetChannelConfig(UdpChannelConfig.buildServerConfig(1111));
-        KtucpServer ktucpServer = new KtucpServer();
-        ktucpServer.init(
-                // 监听器
-                new SimpleKtucpListener<String>() {
-                    @Override
-                    public void onConnected(int netId, Ukcp ukcp) {
-                        System.out.println("onConnected!!!:" + ukcp);
-                    }
-
-                    @Override
-                    protected void handleReceive0(String cast, Ukcp ukcp) {
-                        System.out.println("handleReceive!!!:" + cast);
-                    }
-
-                    @Override
-                    public void handleException(Throwable ex, Ukcp ukcp) {
-                        System.out.println("handleException!!!:" + ukcp);
-                    }
-
-                    @Override
-                    public void handleClose(Ukcp ukcp) {
-                        System.out.println("handleClose!!!:" + ukcp);
-                    }
-
-                    @Override
-                    public void handleIdleTimeout(Ukcp ukcp) {
-                        System.out.println("handleTimeout!!!:" + ukcp);
-                    }
-                }, channelConfig,
-                // 编码器
-                new MessageToByteEncoder<String>() {
-                    @Override
-                    protected void encodeObject(String writeObject, ByteBuf targetByteBuf) {
-                        targetByteBuf.writeBytes(writeObject.getBytes());
-                    }
-                },
-                // 解码器
-                new ByteToMessageDecoder<String>() {
-                    @Override
-                    protected String decodeByteBuf(ByteBuf readByteBuf) {
-                        return new String(readByteBuf.array());
-                    }
-                });
     }
 }

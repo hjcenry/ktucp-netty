@@ -1,5 +1,6 @@
 package com.hjcenry.codec.encode;
 
+import com.hjcenry.kcp.Ukcp;
 import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -36,7 +37,7 @@ public abstract class MessageToByteEncoder<I> implements IMessageEncoder {
     }
 
     @Override
-    public ByteBuf encode(Object writeObject) {
+    public ByteBuf encode(Ukcp ukcp, Object writeObject) {
         ByteBuf buf;
         try {
             if (!acceptOutboundMessage(writeObject)) {
@@ -46,7 +47,7 @@ public abstract class MessageToByteEncoder<I> implements IMessageEncoder {
             I cast = (I) writeObject;
             buf = allocateBuffer(byteBufAllocator, cast, preferDirect);
             try {
-                encodeObject(cast, buf);
+                encodeObject(ukcp, cast, buf);
             } finally {
                 ReferenceCountUtil.release(cast);
             }
@@ -61,11 +62,12 @@ public abstract class MessageToByteEncoder<I> implements IMessageEncoder {
     /**
      * byteBuf消息编码
      *
+     * @param ukcp
      * @param writeObject   写对象
      * @param targetByteBuf 目标byteBuf
      * @return 编码对象
      */
-    protected abstract void encodeObject(I writeObject, ByteBuf targetByteBuf);
+    protected abstract void encodeObject(Ukcp ukcp, I writeObject, ByteBuf targetByteBuf);
 
     /**
      * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
@@ -76,7 +78,7 @@ public abstract class MessageToByteEncoder<I> implements IMessageEncoder {
     }
 
     /**
-     * Allocate a {@link ByteBuf} which will be used as argument of {@link #encodeObject(Object, ByteBuf)}.
+     * Allocate a {@link ByteBuf} which will be used as argument of {@link #encodeObject(Ukcp, Object, ByteBuf)}.
      * Sub-classes may override this method to return {@link ByteBuf} with a perfect matching {@code initialCapacity}.
      */
     protected ByteBuf allocateBuffer(ByteBufAllocator byteBufAllocator, @SuppressWarnings("unused") I msg, boolean preferDirect) {

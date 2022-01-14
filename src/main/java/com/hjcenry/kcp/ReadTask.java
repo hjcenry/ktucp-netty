@@ -101,7 +101,7 @@ public class ReadTask implements ITask {
             if (this.messageDecoder == null) {
                 object = buf;
             } else {
-                object = this.messageDecoder.decode(buf);
+                object = this.messageDecoder.decode(ukcp, buf);
             }
             KtucpListener ktucpListener = ukcp.getKcpListener();
             // 处理读事件

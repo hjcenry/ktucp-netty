@@ -53,7 +53,7 @@ public class WriteTask implements ITask {
                         byteBuf = (ByteBuf) object;
                     } else {
                         // 消息编码
-                        byteBuf = this.messageEncoder.encode(object);
+                        byteBuf = this.messageEncoder.encode(ukcp, object);
                     }
 
                     if (byteBuf == null) {
