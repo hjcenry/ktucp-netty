@@ -13,7 +13,7 @@ import java.util.Map;
  * @version 1.0
  * @date 2022/1/13 10:11
  **/
-public class KcpNetManager {
+public class KtucpNetManager {
 
     /**
      * 网络map

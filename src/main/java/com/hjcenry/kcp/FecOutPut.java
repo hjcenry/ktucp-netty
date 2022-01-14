@@ -8,14 +8,14 @@ import io.netty.buffer.ByteBuf;
  * Created by JinMiao
  * 2018/7/27.
  */
-public class FecOutPut implements KcpOutput {
+public class FecOutPut implements KtucpOutput {
 
-    private KcpOutput output;
+    private KtucpOutput output;
 
     private IFecEncode fecEncode;
 
 
-    protected FecOutPut(KcpOutput output, IFecEncode fecEncode) {
+    protected FecOutPut(KtucpOutput output, IFecEncode fecEncode) {
         this.output = output;
         this.fecEncode = fecEncode;
     }

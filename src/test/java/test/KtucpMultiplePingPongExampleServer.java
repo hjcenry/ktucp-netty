@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.net.server.KtucpServer;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import io.netty.buffer.ByteBuf;
 
@@ -34,8 +34,8 @@ public class KtucpMultiplePingPongExampleServer extends SimpleKtucpListener<Byte
 
 
     @Override
-    public void onConnected(int netId, Ukcp ukcp) {
-        System.out.println("有连接进来" + ukcp.user().getUserNetManager().getRemoteSocketAddress(netId) + "  conv: " + ukcp.getConv());
+    public void onConnected(int netId, Uktucp uktucp) {
+        System.out.println("有连接进来" + uktucp.user().getUserNetManager().getRemoteSocketAddress(netId) + "  conv: " + uktucp.getConv());
     }
 
     //int i = 0;
@@ -43,7 +43,7 @@ public class KtucpMultiplePingPongExampleServer extends SimpleKtucpListener<Byte
     //long start = System.currentTimeMillis();
 
     @Override
-    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+    protected void handleReceive0(ByteBuf cast, Uktucp uktucp) throws Exception {
         //i++;
         //long now = System.currentTimeMillis();
         //if(now-start>1000){
@@ -51,21 +51,21 @@ public class KtucpMultiplePingPongExampleServer extends SimpleKtucpListener<Byte
         //    start = now;
         //    i=0;
         //}
-        ukcp.write(cast);
+        uktucp.write(cast);
     }
 
     @Override
-    public void handleIdleTimeout(Ukcp ukcp) {
-        System.out.println("handleTimeout!!!:" + ukcp);
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleTimeout!!!:" + uktucp);
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp kcp) {
+    public void handleException(Throwable ex, Uktucp kcp) {
         ex.printStackTrace();
     }
 
     @Override
-    public void handleClose(Ukcp kcp) {
+    public void handleClose(Uktucp kcp) {
         System.out.println(Snmp.snmp.toString());
         Snmp.snmp = new Snmp();
         System.out.println("连接断开了" + kcp.getConv() + " " + System.currentTimeMillis());

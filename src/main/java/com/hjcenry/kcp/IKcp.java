@@ -122,9 +122,9 @@ public interface IKcp {
 
     void setByteBufAllocator(ByteBufAllocator byteBufAllocator);
 
-    KcpOutput getOutput();
+    KtucpOutput getOutput();
 
-    void setOutput(KcpOutput output);
+    void setOutput(KtucpOutput output);
 
     void setAckNoDelay(boolean ackNoDelay);
 }

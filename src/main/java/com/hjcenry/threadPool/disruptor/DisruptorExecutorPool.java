@@ -1,10 +1,9 @@
 package com.hjcenry.threadPool.disruptor;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Vector;
@@ -17,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 2014-9-12 上午9:51:09
  */
 public class DisruptorExecutorPool implements IMessageExecutorPool {
-    private static final Logger logger = KcpLog.logger;
+    private static final Logger logger = KtucpLog.logger;
 
     protected List<IMessageExecutor> executor = new Vector<>();
 

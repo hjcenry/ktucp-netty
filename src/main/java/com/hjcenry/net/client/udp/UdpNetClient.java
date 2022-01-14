@@ -1,6 +1,6 @@
 package com.hjcenry.net.client.udp;
 
-import com.hjcenry.exception.KcpInitException;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.kcp.AbstractClientChannelHandler;
 import com.hjcenry.kcp.Crc32Decode;
 import com.hjcenry.kcp.Crc32Encode;
@@ -33,7 +33,7 @@ public class UdpNetClient extends AbstractNetClient {
 
     private final AbstractClientChannelHandler clientChannelHandler;
 
-    public UdpNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KcpInitException {
+    public UdpNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         super(netId, netTypeEnum, netConfigData);
         clientChannelHandler = new UdpClientChannelHandler(this.netId, netConfigData.getChannelManager(), netConfigData.getChannelConfig(), netConfigData.getNetChannelConfig());
     }

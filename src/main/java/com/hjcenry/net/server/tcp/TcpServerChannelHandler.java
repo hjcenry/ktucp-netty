@@ -6,7 +6,7 @@ import com.hjcenry.kcp.AbstractServerChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
 import com.hjcenry.kcp.ServerHandlerChannelManager;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutor;
@@ -53,11 +53,11 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     }
 
     @Override
-    protected Ukcp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
-        Ukcp ukcp = super.createUkcp(channel, readObject, readByteBuf, iMessageExecutor);
+    protected Uktucp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
+        Uktucp uktucp = super.createUkcp(channel, readObject, readByteBuf, iMessageExecutor);
         // 添加TCP通道管理
-        this.clientChannelManager.addKcp(ukcp, channel);
-        return ukcp;
+        this.clientChannelManager.addKcp(uktucp, channel);
+        return uktucp;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     }
 
     @Override
-    protected Ukcp getReadUkcp(Channel channel, Object msg) {
+    protected Uktucp getReadUkcp(Channel channel, Object msg) {
         // 获取KCP对象
         ByteBuf byteBuf = (ByteBuf) msg;
         InetSocketAddress remoteAddress = this.getRemoteAddress(channel, msg);
@@ -82,7 +82,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     }
 
     @Override
-    protected Ukcp getUkcpByChannel(Channel channel) {
+    protected Uktucp getUkcpByChannel(Channel channel) {
         // 通过TCP Channel获取KCP对象
         return this.clientChannelManager.getKcp(channel);
     }

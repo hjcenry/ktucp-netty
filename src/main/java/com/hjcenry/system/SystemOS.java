@@ -1,10 +1,9 @@
 package com.hjcenry.system;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -15,7 +14,7 @@ import java.util.Enumeration;
 
 public class SystemOS {
 
-    private static final Logger logger = KcpLog.logger;
+    private static final Logger logger = KtucpLog.logger;
 
     public static String osName;
     /**

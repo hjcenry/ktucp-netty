@@ -4,7 +4,7 @@ import com.hjcenry.kcp.AbstractClientChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
 import com.hjcenry.kcp.ServerHandlerChannelManager;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.net.NetChannelConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -39,7 +39,7 @@ public class TcpClientChannelHandler extends AbstractClientChannelHandler {
     }
 
     @Override
-    protected Ukcp getReadUkcp(Channel channel, Object msg) {
+    protected Uktucp getReadUkcp(Channel channel, Object msg) {
         // 获取KCP对象
         ByteBuf byteBuf = (ByteBuf) msg;
         InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
@@ -55,7 +55,7 @@ public class TcpClientChannelHandler extends AbstractClientChannelHandler {
     }
 
     @Override
-    protected Ukcp getUkcpByChannel(Channel channel) {
+    protected Uktucp getUkcpByChannel(Channel channel) {
         // 通过TCP Channel获取KCP对象
         return this.clientChannelManager.getKcp(channel);
     }

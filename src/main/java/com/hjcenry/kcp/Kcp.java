@@ -258,7 +258,7 @@ public class Kcp implements IKcp {
      **/
     private int reserved;
 
-    private KcpOutput output;
+    private KtucpOutput output;
 
     private ByteBufAllocator byteBufAllocator = ByteBufAllocator.DEFAULT;
     /**
@@ -321,13 +321,13 @@ public class Kcp implements IKcp {
 
     private final long startTicks;
 
-    public Kcp(int conv, KcpOutput output) {
+    public Kcp(int conv, KtucpOutput output) {
         this.conv = conv;
         this.output = output;
         this.startTicks = System.currentTimeMillis();
     }
 
-    public Kcp(int conv, long now, KcpOutput output) {
+    public Kcp(int conv, long now, KtucpOutput output) {
         this.conv = conv;
         this.output = output;
         this.startTicks = now;
@@ -1555,12 +1555,12 @@ public class Kcp implements IKcp {
     }
 
     @Override
-    public KcpOutput getOutput() {
+    public KtucpOutput getOutput() {
         return output;
     }
 
     @Override
-    public void setOutput(KcpOutput output) {
+    public void setOutput(KtucpOutput output) {
         this.output = output;
     }
 

@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @date 2022/1/13 17:04
  **/
-public class KcpLog {
+public class KtucpLog {
     /**
      * KCP log
      */
-    public static final Logger logger = LoggerFactory.getLogger(KcpLog.class);
+    public static final Logger logger = LoggerFactory.getLogger(KtucpLog.class);
 }

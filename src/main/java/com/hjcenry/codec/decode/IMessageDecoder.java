@@ -1,7 +1,7 @@
 package com.hjcenry.codec.decode;
 
 import com.hjcenry.codec.IMessageCoder;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -14,9 +14,9 @@ public interface IMessageDecoder extends IMessageCoder {
     /**
      * byteBuf消息解码
      *
-     * @param ukcp        KCP对象
+     * @param uktucp        KCP对象
      * @param readByteBuf 读取byteBuf消息
      * @return 解码对象
      */
-    public Object decode(Ukcp ukcp, ByteBuf readByteBuf);
+    public Object decode(Uktucp uktucp, ByteBuf readByteBuf);
 }

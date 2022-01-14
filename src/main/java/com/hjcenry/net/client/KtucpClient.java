@@ -2,19 +2,19 @@ package com.hjcenry.net.client;
 
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
-import com.hjcenry.exception.KcpInitException;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.ClientAddressChannelManager;
 import com.hjcenry.kcp.ClientConvChannelManager;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.KcpNetManager;
-import com.hjcenry.kcp.KcpOutPutImp;
-import com.hjcenry.kcp.KcpOutput;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.KtucpNetManager;
+import com.hjcenry.kcp.KtucpOutPutImp;
+import com.hjcenry.kcp.KtucpOutput;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.User;
 import com.hjcenry.kcp.listener.KtucpListener;
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.net.INet;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.NetConfigData;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 public class KtucpClient {
 
-    private static final Logger logger = KcpLog.logger;
+    private static final Logger logger = KtucpLog.logger;
 
     /**
      * 线程池
@@ -58,7 +58,7 @@ public class KtucpClient {
     /**
      * KCP对象
      */
-    private Ukcp ukcp;
+    private Uktucp uktucp;
     /**
      * 配置
      */
@@ -161,7 +161,7 @@ public class KtucpClient {
         IMessageExecutor messageExecutor = messageExecutorPool.getMessageExecutor();
 
         // 创建KCP对象
-        this.ukcp = this.createUkcp(messageExecutor);
+        this.uktucp = this.createUkcp(messageExecutor);
 
         // 创建网络服务
         createNetClients();
@@ -175,11 +175,11 @@ public class KtucpClient {
      */
     public void connect() {
         // 启动网络服务
-        for (INet net : KcpNetManager.getAllNet()) {
+        for (INet net : KtucpNetManager.getAllNet()) {
             try {
                 INetClient client = (INetClient) net;
-                client.connect(this.ukcp);
-            } catch (KcpInitException e) {
+                client.connect(this.uktucp);
+            } catch (KtucpInitException e) {
                 logger.error(String.format("%s Start Failed", net.getClass().getSimpleName()));
             }
         }
@@ -195,11 +195,11 @@ public class KtucpClient {
      */
     public void reconnect() {
         // 启动网络服务
-        for (INet net : KcpNetManager.getAllNet()) {
+        for (INet net : KtucpNetManager.getAllNet()) {
             try {
                 INetClient client = (INetClient) net;
-                client.reconnect(this.ukcp);
-            } catch (KcpInitException e) {
+                client.reconnect(this.uktucp);
+            } catch (KtucpInitException e) {
                 logger.error(String.format("%s Start Failed", net.getClass().getSimpleName()));
             }
         }
@@ -207,14 +207,14 @@ public class KtucpClient {
 
     public void reconnect(int netId) {
         // 启动网络服务
-        INet net = KcpNetManager.getNet(netId);
+        INet net = KtucpNetManager.getNet(netId);
         if (net == null) {
             return;
         }
         try {
             INetClient client = (INetClient) net;
-            client.reconnect(this.ukcp);
-        } catch (KcpInitException e) {
+            client.reconnect(this.uktucp);
+        } catch (KtucpInitException e) {
             logger.error(String.format("%s Reconnect Failed", net.getClass().getSimpleName()));
         }
     }
@@ -226,20 +226,20 @@ public class KtucpClient {
      * @param messageExecutor 消息处理器
      * @return KCP对象
      */
-    protected Ukcp createUkcp(IMessageExecutor messageExecutor) {
+    protected Uktucp createUkcp(IMessageExecutor messageExecutor) {
         // KCP输出接口
-        KcpOutput kcpOutput = new KcpOutPutImp();
+        KtucpOutput ktucpOutput = new KtucpOutPutImp();
         // 创建KCP对象
-        Ukcp newUkcp = new Ukcp(kcpOutput, ktucpListener, messageExecutor, channelConfig, channelManager, messageEncoder, messageDecoder);
+        Uktucp newUktucp = new Uktucp(ktucpOutput, ktucpListener, messageExecutor, channelConfig, channelManager, messageEncoder, messageDecoder);
         // 创建user
         User user = new User(channelConfig.getNetNum());
-        newUkcp.user(user);
+        newUktucp.user(user);
         // 客户端模式
-        newUkcp.setClientMode();
+        newUktucp.setClientMode();
 
         // 添加ukcp管理
-        channelManager.addKcp(newUkcp);
-        return newUkcp;
+        channelManager.addKcp(newUktucp);
+        return newUktucp;
     }
 
     protected void createNetClients() {
@@ -249,7 +249,7 @@ public class KtucpClient {
             // 配置了取自定义id，否则取自增id
             netId = netId > 0 ? netId : autoId;
             // 判重
-            if (KcpNetManager.containsNet(netId)) {
+            if (KtucpNetManager.containsNet(netId)) {
                 // ID重复
                 if (logger.isErrorEnabled()) {
                     logger.error(String.format("create net failed : netId[%d] exist", netId));
@@ -275,13 +275,13 @@ public class KtucpClient {
                 continue;
             }
             // 添加到网络manager
-            KcpNetManager.addNet(netClient);
+            KtucpNetManager.addNet(netClient);
         }
     }
 
     private void logPrintNetServer() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (INet netServer : KcpNetManager.getAllNet()) {
+        for (INet netServer : KtucpNetManager.getAllNet()) {
             stringBuilder.append(netServer.toString()).append("\n");
         }
         logger.info(String.format("%s Connect : " +
@@ -294,7 +294,7 @@ public class KtucpClient {
     private INet createNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
         try {
             return NetClientFactory.createNetClient(netId, netTypeEnum, netConfigData);
-        } catch (KcpInitException e) {
+        } catch (KtucpInitException e) {
             logger.error("", e);
             return null;
         }
@@ -302,7 +302,7 @@ public class KtucpClient {
 
     public void stop() {
         // 停止所有网络
-        KcpNetManager.getAllNet().forEach(INet::stop);
+        KtucpNetManager.getAllNet().forEach(INet::stop);
         if (this.messageExecutorPool != null) {
             this.messageExecutorPool.stop();
         }
@@ -311,8 +311,8 @@ public class KtucpClient {
         }
     }
 
-    public Ukcp getUkcp() {
-        return ukcp;
+    public Uktucp getUkcp() {
+        return uktucp;
     }
 
     public IChannelManager getChannelManager() {

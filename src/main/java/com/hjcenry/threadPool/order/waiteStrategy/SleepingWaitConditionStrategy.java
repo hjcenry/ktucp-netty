@@ -1,8 +1,7 @@
 package com.hjcenry.threadPool.order.waiteStrategy;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
@@ -15,7 +14,7 @@ import java.util.concurrent.locks.LockSupport;
  * 而且事件发布对于生产者的影响比较小的情况下。比如异步日志功能。
  */
 public final class SleepingWaitConditionStrategy implements WaitConditionStrategy {
-    private final Logger log = KcpLog.logger;
+    private final Logger log = KtucpLog.logger;
     private static final int DEFAULT_RETRIES = 200;
 
     private final int retries;

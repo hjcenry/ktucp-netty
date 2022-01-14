@@ -1,10 +1,8 @@
 package com.hjcenry.util.enumutil;
 
-import com.hjcenry.kcp.AbstractServerChannelHandler;
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.util.Assert;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +16,7 @@ import java.util.List;
  */
 public interface IndexedEnum {
 
-    static final Logger logger = KcpLog.logger;
+    static final Logger logger = KtucpLog.logger;
 
     /**
      * 获取该枚举的索引值

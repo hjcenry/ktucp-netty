@@ -1,10 +1,7 @@
 package com.hjcenry.net.server;
 
-import com.hjcenry.exception.KcpInitException;
-import com.hjcenry.kcp.User;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.net.INet;
-import com.hjcenry.net.client.INetClient;
-import io.netty.buffer.ByteBuf;
 
 /**
  * 网络服务接口
@@ -18,7 +15,7 @@ public interface INetServer extends INet {
     /**
      * 启动服务
      *
-     * @throws KcpInitException KCP初始化异常
+     * @throws KtucpInitException KCP初始化异常
      */
-    public void start() throws KcpInitException;
+    public void start() throws KtucpInitException;
 }

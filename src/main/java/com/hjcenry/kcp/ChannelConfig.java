@@ -4,7 +4,7 @@ import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import com.hjcenry.threadPool.netty.NettyMessageExecutorPool;
-import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.time.IKtucpTimeService;
 import com.hjcenry.time.SystemTimeService;
 
 import java.util.ArrayList;
@@ -78,11 +78,11 @@ public class ChannelConfig {
      * 网络配置
      * <b>有多少配置，就会启动多少网络服务</b>
      */
-    private List<NetChannelConfig> netChannelConfigList = new ArrayList<>();
+    private final List<NetChannelConfig> netChannelConfigList = new ArrayList<>();
     /**
      * 时间服务，默认取系统时间
      */
-    private IKcpTimeService timeService = new SystemTimeService();
+    private IKtucpTimeService timeService = new SystemTimeService();
     /**
      * kcp闲置超时是否关闭连接
      * 默认true，不关闭则需要用户主动调用close方法，否则KCP对象会一致持有
@@ -263,11 +263,11 @@ public class ChannelConfig {
         this.netChangeMaxCount = netChangeMaxCount;
     }
 
-    public IKcpTimeService getTimeService() {
+    public IKtucpTimeService getTimeService() {
         return timeService;
     }
 
-    public void setTimeService(IKcpTimeService timeService) {
+    public void setTimeService(IKtucpTimeService timeService) {
         this.timeService = timeService;
     }
 

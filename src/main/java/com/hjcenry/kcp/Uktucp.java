@@ -10,10 +10,11 @@ import com.hjcenry.fec.fec.FecPacket;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.threadPool.IMessageExecutor;
-import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.time.IKtucpTimeService;
 import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.DefaultAttributeMap;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.jctools.queues.MpscLinkedQueue;
@@ -24,9 +25,9 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Ukcp {
+public class Uktucp extends DefaultAttributeMap {
 
-    private static final InternalLogger log = InternalLoggerFactory.getInstance(Ukcp.class);
+    private static final InternalLogger log = InternalLoggerFactory.getInstance(Uktucp.class);
 
     private final IKcp kcp;
 
@@ -52,8 +53,6 @@ public class Ukcp {
 
     private final KtucpListener ktucpListener;
 
-    private final long timeoutMillis;
-
     private final IChannelManager channelManager;
 
     private final AtomicBoolean writeProcessing = new AtomicBoolean(false);
@@ -67,6 +66,11 @@ public class Ukcp {
     private final WriteTask writeTask;
 
     private final ReadTask readTask;
+
+    /**
+     * 超时时间可修改
+     */
+    private long timeoutMillis;
 
     private boolean controlReadBufferSize = false;
 
@@ -86,20 +90,20 @@ public class Ukcp {
     /**
      * 时间服务
      */
-    private IKcpTimeService kcpTimeService;
+    private IKtucpTimeService kcpTimeService;
 
     /**
      * Creates a new instance.
      *
      * @param output output for kcp
      */
-    public Ukcp(KcpOutput output,
-                KtucpListener ktucpListener,
-                IMessageExecutor messageExecutor,
-                ChannelConfig channelConfig,
-                IChannelManager channelManager,
-                IMessageEncoder messageEncoder,
-                IMessageDecoder messageDecoder) {
+    public Uktucp(KtucpOutput output,
+                  KtucpListener ktucpListener,
+                  IMessageExecutor messageExecutor,
+                  ChannelConfig channelConfig,
+                  IChannelManager channelManager,
+                  IMessageEncoder messageEncoder,
+                  IMessageDecoder messageDecoder) {
         this.kcpTimeService = channelConfig.getTimeService();
         long now = this.kcpTimeService.now();
 
@@ -150,11 +154,11 @@ public class Ukcp {
 
         //init fec
         if (fecAdapt != null) {
-            KcpOutput kcpOutput = kcp.getOutput();
+            KtucpOutput ktucpOutput = kcp.getOutput();
             fecEncode = fecAdapt.fecEncode(headerSize, channelConfig.getMtu());
             fecDecode = fecAdapt.fecDecode(channelConfig.getMtu());
-            kcpOutput = new FecOutPut(kcpOutput, fecEncode);
-            kcp.setOutput(kcpOutput);
+            ktucpOutput = new FecOutPut(ktucpOutput, fecEncode);
+            kcp.setOutput(ktucpOutput);
             headerSize += Fec.fecHeaderSizePlus2;
         }
 
@@ -181,7 +185,7 @@ public class Ukcp {
 
     /**
      * 修改网络
-     * <p>直接修改，不提供网络切换踢下线策略，需要切换检测调用{@link Ukcp#changeCurrentNetId(int)}</p>
+     * <p>直接修改，不提供网络切换踢下线策略，需要切换检测调用{@link Uktucp#changeCurrentNetId(int)}</p>
      *
      * @param netId 网络id
      */
@@ -419,7 +423,7 @@ public class Ukcp {
      * @param allocator the allocator is used for the kcp to allocate buffers
      * @return this object
      */
-    public Ukcp setByteBufAllocator(ByteBufAllocator allocator) {
+    public Uktucp setByteBufAllocator(ByteBufAllocator allocator) {
         kcp.setByteBufAllocator(allocator);
         return this;
     }
@@ -506,7 +510,7 @@ public class Ukcp {
         return readBufferQueue;
     }
 
-    protected Ukcp setTsUpdate(long tsUpdate) {
+    protected Uktucp setTsUpdate(long tsUpdate) {
         this.tsUpdate = tsUpdate;
         return this;
     }
@@ -586,6 +590,10 @@ public class Ukcp {
         return timeoutMillis;
     }
 
+    public void changeTimeoutMillis(long timeoutMillis) {
+        this.timeoutMillis = timeoutMillis;
+    }
+
     protected AtomicInteger getWriteBufferIncr() {
         return writeBufferIncr;
     }
@@ -598,7 +606,7 @@ public class Ukcp {
         return controlWriteBufferSize;
     }
 
-    public IKcpTimeService getKcpTimeService() {
+    public IKtucpTimeService getKcpTimeService() {
         return kcpTimeService;
     }
 
@@ -607,7 +615,7 @@ public class Ukcp {
         return (User) kcp.getUser();
     }
 
-    public Ukcp user(User user) {
+    public Uktucp user(User user) {
         kcp.setUser(user);
         return this;
     }

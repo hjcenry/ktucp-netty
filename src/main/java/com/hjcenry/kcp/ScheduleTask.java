@@ -2,7 +2,7 @@ package com.hjcenry.kcp;
 
 import com.hjcenry.threadPool.IMessageExecutor;
 import com.hjcenry.threadPool.ITask;
-import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.time.IKtucpTimeService;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
@@ -17,18 +17,18 @@ public class ScheduleTask implements ITask, Runnable, TimerTask {
 
     private final IMessageExecutor messageExecutor;
 
-    private final Ukcp ukcp;
+    private final Uktucp uktucp;
 
     private final HashedWheelTimer hashedWheelTimer;
 
-    private final IKcpTimeService kcpTimeService;
+    private final IKtucpTimeService kcpTimeService;
 
     private final boolean kcpIdleTimeoutClose;
 
-    public ScheduleTask(IMessageExecutor messageExecutor, Ukcp ukcp, HashedWheelTimer hashedWheelTimer, boolean kcpIdleTimeoutClose) {
+    public ScheduleTask(IMessageExecutor messageExecutor, Uktucp uktucp, HashedWheelTimer hashedWheelTimer, boolean kcpIdleTimeoutClose) {
         this.messageExecutor = messageExecutor;
-        this.ukcp = ukcp;
-        this.kcpTimeService = ukcp.getKcpTimeService();
+        this.uktucp = uktucp;
+        this.kcpTimeService = uktucp.getKcpTimeService();
         this.hashedWheelTimer = hashedWheelTimer;
         this.kcpIdleTimeoutClose = kcpIdleTimeoutClose;
     }
@@ -41,30 +41,30 @@ public class ScheduleTask implements ITask, Runnable, TimerTask {
     @Override
     public void execute() {
         try {
-            final Ukcp ukcp = this.ukcp;
+            final Uktucp uktucp = this.uktucp;
             long now = this.kcpTimeService.now();
             //判断连接是否关闭
-            if (ukcp.getTimeoutMillis() != 0 && now - ukcp.getTimeoutMillis() > ukcp.getLastReceiveTime()) {
-                ukcp.getKcpListener().handleIdleTimeout(ukcp);
+            if (uktucp.getTimeoutMillis() != 0 && now - uktucp.getTimeoutMillis() > uktucp.getLastReceiveTime()) {
+                uktucp.getKcpListener().handleIdleTimeout(uktucp);
                 // 需要关闭连接
                 if (kcpIdleTimeoutClose) {
-                    ukcp.internalClose();
+                    uktucp.internalClose();
                 }
             }
-            if (!ukcp.isActive()) {
+            if (!uktucp.isActive()) {
                 return;
             }
-            long timeLeft = ukcp.getTsUpdate() - now;
+            long timeLeft = uktucp.getTsUpdate() - now;
             //判断执行时间是否到了
             if (timeLeft > 0) {
                 hashedWheelTimer.newTimeout(this, timeLeft, TimeUnit.MILLISECONDS);
                 return;
             }
-            long next = ukcp.flush(now);
+            long next = uktucp.flush(now);
             hashedWheelTimer.newTimeout(this, next, TimeUnit.MILLISECONDS);
             //检测写缓冲区 如果能写则触发写事件
-            if (!ukcp.getWriteObjectQueue().isEmpty() && ukcp.canSend(false)) {
-                ukcp.notifyWriteEvent();
+            if (!uktucp.getWriteObjectQueue().isEmpty() && uktucp.canSend(false)) {
+                uktucp.notifyWriteEvent();
             }
         } catch (Throwable e) {
             e.printStackTrace();

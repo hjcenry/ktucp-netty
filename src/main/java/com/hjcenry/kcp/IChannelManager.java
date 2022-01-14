@@ -21,28 +21,28 @@ public interface IChannelManager {
      * @param address
      * @return kcp对象
      */
-    Ukcp getKcp(ByteBuf readByteBuf, InetSocketAddress address);
+    Uktucp getKcp(ByteBuf readByteBuf, InetSocketAddress address);
 
     /**
      * 创建KCP对象
      *
-     * @param ukcp kcp对象
+     * @param uktucp kcp对象
      */
-    void addKcp(Ukcp ukcp);
+    void addKcp(Uktucp uktucp);
 
     /**
      * 移除KCP对象
      *
-     * @param ukcp KCP对象
+     * @param uktucp KCP对象
      */
-    void remove(Ukcp ukcp);
+    void remove(Uktucp uktucp);
 
     /**
      * 获取所有KCP对象
      *
      * @return KCP对象集合
      */
-    Collection<Ukcp> getAll();
+    Collection<Uktucp> getAll();
 
     /**
      * 读取convId

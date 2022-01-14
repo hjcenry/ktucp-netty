@@ -3,7 +3,7 @@ package com.hjcenry.net.client.udp;
 import com.hjcenry.kcp.AbstractClientChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.net.NetChannelConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -25,7 +25,7 @@ public class UdpClientChannelHandler extends AbstractClientChannelHandler {
     }
 
     @Override
-    protected Ukcp getReadUkcp(Channel channel, Object object) {
+    protected Uktucp getReadUkcp(Channel channel, Object object) {
         DatagramPacket msg = (DatagramPacket) object;
         ByteBuf readByteBuf = msg.content();
         // 获取KCP对象

@@ -1,6 +1,6 @@
 package com.hjcenry.kcp;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.tcp.INettyChannelEvent;
 import io.netty.buffer.ByteBuf;
@@ -8,7 +8,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -22,7 +21,7 @@ import java.io.StringWriter;
  **/
 public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapter {
 
-    protected static final Logger logger = KcpLog.logger;
+    protected static final Logger logger = KtucpLog.logger;
     /**
      * Channel管理器
      */
@@ -66,8 +65,8 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
         if (channelEvent != null) {
             // 掉线事件
             Channel channel = ctx.channel();
-            Ukcp ukcp = this.getUkcpByChannel(channel);
-            channelEvent.onChannelInactive(channel, ukcp);
+            Uktucp uktucp = this.getUkcpByChannel(channel);
+            channelEvent.onChannelInactive(channel, uktucp);
         }
     }
 
@@ -75,7 +74,7 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
     public void channelRead(ChannelHandlerContext ctx, Object readObject) throws Exception {
         Channel channel = ctx.channel();
         // 获取KCP对象
-        Ukcp ukcp = this.getReadUkcp(channel, readObject);
+        Uktucp uktucp = this.getReadUkcp(channel, readObject);
 
         // 获取消息
         ByteBuf byteBuf = this.getReadByteBuf(channel, readObject);
@@ -83,11 +82,11 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
         INettyChannelEvent channelEvent = this.netChannelConfig.getNettyEventTrigger();
         if (channelEvent != null) {
             // 读事件
-            channelEvent.onChannelRead(channel, ukcp, byteBuf);
+            channelEvent.onChannelRead(channel, uktucp, byteBuf);
         }
 
         // 读消息
-        this.channelRead0(channel, readObject, ukcp, byteBuf);
+        this.channelRead0(channel, readObject, uktucp, byteBuf);
     }
 
     @Override
@@ -110,8 +109,8 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
             // 触发事件
             Channel channel = ctx.channel();
             // 仅TCP连接能通过Channel取出KCP对象
-            Ukcp ukcp = this.getUkcpByChannel(channel);
-            channelEvent.onUserEventTriggered(channel, ukcp, evt);
+            Uktucp uktucp = this.getUkcpByChannel(channel);
+            channelEvent.onUserEventTriggered(channel, uktucp, evt);
         }
     }
 
@@ -121,7 +120,7 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
      * @param channel 通道
      * @return Ukcp
      */
-    protected Ukcp getUkcpByChannel(Channel channel) {
+    protected Uktucp getUkcpByChannel(Channel channel) {
         return null;
     }
 
@@ -130,10 +129,10 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
      *
      * @param channel    通道
      * @param readObject 数据
-     * @param ukcp       kcp对象
+     * @param uktucp       kcp对象
      * @param byteBuf    字节流
      */
-    protected abstract void channelRead0(Channel channel, Object readObject, Ukcp ukcp, ByteBuf byteBuf);
+    protected abstract void channelRead0(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf);
 
     /**
      * 读取ByteBuf
@@ -151,5 +150,5 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
      * @param msg     消息
      * @return Ukcp
      */
-    protected abstract Ukcp getReadUkcp(Channel channel, Object msg);
+    protected abstract Uktucp getReadUkcp(Channel channel, Object msg);
 }

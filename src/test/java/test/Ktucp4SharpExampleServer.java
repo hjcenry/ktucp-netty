@@ -2,7 +2,7 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import com.hjcenry.net.server.KtucpServer;
 import io.netty.buffer.ByteBuf;
@@ -37,31 +37,31 @@ public class Ktucp4SharpExampleServer extends SimpleKtucpListener<ByteBuf> {
 
 
     @Override
-    public void onConnected(int netId, Ukcp ukcp) {
-        System.out.println("有连接进来" + Thread.currentThread().getName() + ukcp.user().getUserNetManager().getRemoteSocketAddress(netId));
+    public void onConnected(int netId, Uktucp uktucp) {
+        System.out.println("有连接进来" + Thread.currentThread().getName() + uktucp.user().getUserNetManager().getRemoteSocketAddress(netId));
     }
 
 
     @Override
-    protected void handleReceive0(ByteBuf buf, Ukcp ukcp) throws Exception {
+    protected void handleReceive0(ByteBuf buf, Uktucp uktucp) throws Exception {
         byte[] bytes = new byte[buf.readableBytes()];
         buf.getBytes(buf.readerIndex(), bytes);
         System.out.println("收到消息: " + new String(bytes));
-        ukcp.write(buf);
+        uktucp.write(buf);
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp kcp) {
+    public void handleException(Throwable ex, Uktucp kcp) {
         ex.printStackTrace();
     }
 
     @Override
-    public void handleIdleTimeout(Ukcp ukcp) {
-        System.out.println("handleTimeout!!!:" + ukcp);
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleTimeout!!!:" + uktucp);
     }
 
     @Override
-    public void handleClose(Ukcp kcp) {
+    public void handleClose(Uktucp kcp) {
         System.out.println(Snmp.snmp.toString());
         Snmp.snmp = new Snmp();
     }

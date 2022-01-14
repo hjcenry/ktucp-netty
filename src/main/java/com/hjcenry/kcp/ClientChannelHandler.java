@@ -1,12 +1,11 @@
 package com.hjcenry.kcp;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.DatagramPacket;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Created by JinMiao
@@ -14,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
-    static final Logger logger = KcpLog.logger;
+    static final Logger logger = KtucpLog.logger;
 
     private IChannelManager channelManager;
 
@@ -33,9 +32,9 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object object) {
         DatagramPacket msg = (DatagramPacket) object;
         ByteBuf readByteBuf = msg.content();
-        Ukcp ukcp = this.channelManager.getKcp(readByteBuf, msg.recipient());
-        if (ukcp != null) {
-            ukcp.read(readByteBuf);
+        Uktucp uktucp = this.channelManager.getKcp(readByteBuf, msg.recipient());
+        if (uktucp != null) {
+            uktucp.read(readByteBuf);
         }
     }
 }

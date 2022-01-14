@@ -16,29 +16,29 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServerAddressChannelManager extends AbstractChannelManager {
 
-    private final Map<SocketAddress, Ukcp> ukcpMap = new ConcurrentHashMap<>();
+    private final Map<SocketAddress, Uktucp> ukcpMap = new ConcurrentHashMap<>();
 
     @Override
-    public Ukcp getKcp(ByteBuf object, InetSocketAddress address) {
+    public Uktucp getKcp(ByteBuf object, InetSocketAddress address) {
         return ukcpMap.get(address);
     }
 
     @Override
-    public void addKcp(Ukcp ukcp) {
+    public void addKcp(Uktucp uktucp) {
         // 地址管理网络，只能是单通道网络
-        InetSocketAddress remoteSocketAddress = ukcp.user().getUserNetManager().getRemoteSocketAddress();
-        ukcpMap.put(remoteSocketAddress, ukcp);
+        InetSocketAddress remoteSocketAddress = uktucp.user().getUserNetManager().getRemoteSocketAddress();
+        ukcpMap.put(remoteSocketAddress, uktucp);
     }
 
     @Override
-    public void remove(Ukcp ukcp) {
+    public void remove(Uktucp uktucp) {
         // 地址管理网络，只能是单通道网络
-        InetSocketAddress remoteSocketAddress = ukcp.user().getUserNetManager().getRemoteSocketAddress();
+        InetSocketAddress remoteSocketAddress = uktucp.user().getUserNetManager().getRemoteSocketAddress();
         ukcpMap.remove(remoteSocketAddress);
     }
 
     @Override
-    public Collection<Ukcp> getAll() {
+    public Collection<Uktucp> getAll() {
         return this.ukcpMap.values();
     }
 }

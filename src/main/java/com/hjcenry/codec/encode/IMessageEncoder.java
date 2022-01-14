@@ -1,7 +1,7 @@
 package com.hjcenry.codec.encode;
 
 import com.hjcenry.codec.IMessageCoder;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 
@@ -19,9 +19,9 @@ public interface IMessageEncoder extends IMessageCoder {
      * invoke {@link ReferenceCountUtil#release(Object)}
      * </p>
      *
-     * @param ukcp        KCP对象
+     * @param uktucp        KCP对象
      * @param writeObject 写对象
      * @return 编码对象
      */
-    public ByteBuf encode(Ukcp ukcp, Object writeObject);
+    public ByteBuf encode(Uktucp uktucp, Object writeObject);
 }

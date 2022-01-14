@@ -2,7 +2,7 @@ package test;
 
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
@@ -37,37 +37,37 @@ public class Ktucp4GoExampleClient implements KtucpListener {
         ktucpClient.init(kcpGoExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10000));
         ktucpClient.connect();
 
-        Ukcp ukcp = ktucpClient.getUkcp();
+        Uktucp uktucp = ktucpClient.getUkcp();
         String msg = "hello!!!!!11111111111111111111111111";
         byte[] bytes = msg.getBytes();
         ByteBuf byteBuf = ByteBufAllocator.DEFAULT.ioBuffer(bytes.length);
         byteBuf.writeBytes(bytes);
-        ukcp.write(byteBuf);
+        uktucp.write(byteBuf);
 
     }
 
     @Override
-    public void handleIdleTimeout(Ukcp ukcp) {
-        System.out.println("handleTimeout!!!:" + ukcp);
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleTimeout!!!:" + uktucp);
     }
 
     @Override
-    public void onConnected(int netId, Ukcp ukcp) {
-
-    }
-
-    @Override
-    public void handleReceive(Object object, Ukcp ukcp) {
+    public void onConnected(int netId, Uktucp uktucp) {
 
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp ukcp) {
+    public void handleReceive(Object object, Uktucp uktucp) {
 
     }
 
     @Override
-    public void handleClose(Ukcp ukcp) {
+    public void handleException(Throwable ex, Uktucp uktucp) {
+
+    }
+
+    @Override
+    public void handleClose(Uktucp uktucp) {
 
     }
 }

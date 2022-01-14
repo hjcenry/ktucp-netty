@@ -1,27 +1,21 @@
 package com.hjcenry.net.server;
 
-import com.hjcenry.codec.decode.ByteToMessageDecoder;
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
-import com.hjcenry.codec.encode.MessageToByteEncoder;
-import com.hjcenry.exception.KcpInitException;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.fec.fec.Fec;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.KcpNetManager;
+import com.hjcenry.kcp.KtucpNetManager;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.kcp.ServerAddressChannelManager;
 import com.hjcenry.kcp.ServerConvChannelManager;
-import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.kcp.listener.SimpleKtucpListener;
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.net.INet;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.NetConfigData;
-import com.hjcenry.net.tcp.TcpChannelConfig;
 import com.hjcenry.net.udp.UdpChannelConfig;
 import com.hjcenry.threadPool.IMessageExecutorPool;
-import io.netty.buffer.ByteBuf;
 import io.netty.util.HashedWheelTimer;
 import org.slf4j.Logger;
 
@@ -40,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 public class KtucpServer {
 
-    private static final Logger logger = KcpLog.logger;
+    private static final Logger logger = KtucpLog.logger;
 
     /**
      * 连接管理器
@@ -141,11 +135,11 @@ public class KtucpServer {
         createNetServers();
 
         // 启动网络服务
-        for (INet net : KcpNetManager.getAllNet()) {
+        for (INet net : KtucpNetManager.getAllNet()) {
             try {
                 INetServer netServer = (INetServer) net;
                 netServer.start();
-            } catch (KcpInitException e) {
+            } catch (KtucpInitException e) {
                 logger.error(String.format("%s Start Failed", net.getClass().getSimpleName()));
             }
         }
@@ -164,7 +158,7 @@ public class KtucpServer {
             // 配置了取自定义id，否则取自增id
             netId = netId > 0 ? netId : autoId;
             // 判重
-            if (KcpNetManager.containsNet(netId)) {
+            if (KtucpNetManager.containsNet(netId)) {
                 // ID重复
                 if (logger.isErrorEnabled()) {
                     logger.error(String.format("create net failed : netId[%d] exist", netId));
@@ -190,13 +184,13 @@ public class KtucpServer {
                 continue;
             }
             // 添加到网络manager
-            KcpNetManager.addNet(netServer);
+            KtucpNetManager.addNet(netServer);
         }
     }
 
     private void logPrintNetServer() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (INet netServer : KcpNetManager.getAllNet()) {
+        for (INet netServer : KtucpNetManager.getAllNet()) {
             stringBuilder.append(netServer.toString()).append("\n");
         }
         logger.info(String.format("%s Start : " +
@@ -209,7 +203,7 @@ public class KtucpServer {
     private INet createNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
         try {
             return NetServerFactory.createNetServer(netId, netTypeEnum, netConfigData);
-        } catch (KcpInitException e) {
+        } catch (KtucpInitException e) {
             logger.error("", e);
             return null;
         }
@@ -217,7 +211,7 @@ public class KtucpServer {
 
     public void stop() {
         // 停止所有网络服务
-        KcpNetManager.getAllNet().forEach(INet::stop);
+        KtucpNetManager.getAllNet().forEach(INet::stop);
         if (this.messageExecutorPool != null) {
             this.messageExecutorPool.stop();
         }

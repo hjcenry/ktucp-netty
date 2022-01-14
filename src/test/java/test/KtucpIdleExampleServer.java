@@ -4,7 +4,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.server.KtucpServer;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,9 +38,9 @@ public class KtucpIdleExampleServer implements KtucpListener {
 
 
     @Override
-    public void onConnected(int netId, Ukcp ukcp) {
+    public void onConnected(int netId, Uktucp uktucp) {
         int id = atomicInteger.incrementAndGet();
-        ukcp.user().setCache(id);
+        uktucp.user().setCache(id);
 
         System.out.println("有连接进来,当前连接" + id);
     }
@@ -50,7 +50,7 @@ public class KtucpIdleExampleServer implements KtucpListener {
     long start = System.currentTimeMillis();
 
     @Override
-    public void handleReceive(Object object, Ukcp kcp) {
+    public void handleReceive(Object object, Uktucp kcp) {
         System.out.println("收到消息 " + recieveAtomicInteger.incrementAndGet());
         i++;
         long now = System.currentTimeMillis();
@@ -63,17 +63,17 @@ public class KtucpIdleExampleServer implements KtucpListener {
     }
 
     @Override
-    public void handleIdleTimeout(Ukcp ukcp) {
-        System.out.println("handleTimeout!!!:" + ukcp);
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleTimeout!!!:" + uktucp);
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp kcp) {
+    public void handleException(Throwable ex, Uktucp kcp) {
         ex.printStackTrace();
     }
 
     @Override
-    public void handleClose(Ukcp kcp) {
+    public void handleClose(Uktucp kcp) {
         System.out.println(Snmp.snmp.toString());
         Snmp.snmp = new Snmp();
         System.out.println("连接断开了,当前连接" + atomicInteger.decrementAndGet());

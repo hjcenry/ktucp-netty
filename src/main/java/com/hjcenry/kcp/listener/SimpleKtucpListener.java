@@ -1,6 +1,6 @@
 package com.hjcenry.kcp.listener;
 
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.TypeParameterMatcher;
 
@@ -14,7 +14,7 @@ import io.netty.util.internal.TypeParameterMatcher;
  *             {@link SimpleKtucpListener}&lt;{@link String}&gt; {
  *
  *         {@code @Override}
- *         protected void handleReceive0({@link String} message, {@link Ukcp} ukcp)
+ *         protected void handleReceive0({@link String} message, {@link Uktucp} ukcp)
  *                 throws {@link Exception} {
  *             System.out.println(message);
  *         }
@@ -41,11 +41,11 @@ public abstract class SimpleKtucpListener<I> implements KtucpListener {
     }
 
     @Override
-    public void handleReceive(Object object, Ukcp ukcp) throws Exception {
+    public void handleReceive(Object object, Uktucp uktucp) throws Exception {
         if (acceptInboundMessage(object)) {
             @SuppressWarnings("unchecked")
             I msg = (I) object;
-            handleReceive0(msg, ukcp);
+            handleReceive0(msg, uktucp);
         }
     }
 
@@ -53,10 +53,10 @@ public abstract class SimpleKtucpListener<I> implements KtucpListener {
      * Is called for each message of type {@link I}.
      *
      * @param cast the message to handle
-     * @param ukcp kcp user instance
+     * @param uktucp kcp user instance
      * @throws Exception is thrown if an error occurred
      */
-    protected abstract void handleReceive0(I cast, Ukcp ukcp) throws Exception;
+    protected abstract void handleReceive0(I cast, Uktucp uktucp) throws Exception;
 
     /**
      * Returns {@code true} if the given message should be handled.

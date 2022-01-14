@@ -18,27 +18,27 @@ public class ServerConvChannelManager extends AbstractChannelManager {
         this.convIndex = convIndex;
     }
 
-    private Map<Integer, Ukcp> ukcpMap = new ConcurrentHashMap<>();
+    private Map<Integer, Uktucp> ukcpMap = new ConcurrentHashMap<>();
 
     @Override
-    public Ukcp getKcp(ByteBuf readByteBuf, InetSocketAddress address) {
+    public Uktucp getKcp(ByteBuf readByteBuf, InetSocketAddress address) {
         int conv = getConvIdByByteBuf(readByteBuf);
         return ukcpMap.get(conv);
     }
 
     @Override
-    public void addKcp(Ukcp ukcp) {
-        int conv = ukcp.getConv();
-        ukcpMap.put(conv, ukcp);
+    public void addKcp(Uktucp uktucp) {
+        int conv = uktucp.getConv();
+        ukcpMap.put(conv, uktucp);
     }
 
     @Override
-    public void remove(Ukcp ukcp) {
-        ukcpMap.remove(ukcp.getConv());
+    public void remove(Uktucp uktucp) {
+        ukcpMap.remove(uktucp.getConv());
     }
 
     @Override
-    public Collection<Ukcp> getAll() {
+    public Collection<Uktucp> getAll() {
         return this.ukcpMap.values();
     }
 }

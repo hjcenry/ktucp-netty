@@ -1,12 +1,12 @@
 package com.hjcenry.net.client;
 
-import com.hjcenry.exception.KcpInitException;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.ClientConvChannelManager;
-import com.hjcenry.kcp.KcpOutPutImp;
-import com.hjcenry.kcp.KcpOutput;
+import com.hjcenry.kcp.KtucpOutPutImp;
+import com.hjcenry.kcp.KtucpOutput;
 import com.hjcenry.kcp.ScheduleTask;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.User;
 import com.hjcenry.kcp.UserNetManager;
 import com.hjcenry.kcp.listener.KtucpListener;
@@ -42,12 +42,12 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
      */
     protected Bootstrap bootstrap;
 
-    public AbstractNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KcpInitException {
+    public AbstractNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         super(netId, netTypeEnum, netConfigData);
     }
 
     @Override
-    public void connect(Ukcp ukcp) throws KcpInitException {
+    public void connect(Uktucp uktucp) throws KtucpInitException {
         NetChannelConfig netChannelConfig = this.netConfigData.getNetChannelConfig();
 
         // 读取连接地址
@@ -98,7 +98,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         // 需要等待两个callback都成功执行
         final CountDownLatch waiter = new CountDownLatch(2);
         // 连接
-        this.connect(ukcp, localAddress, remoteAddress, waiter, bindCallBack, activeCallBack);
+        this.connect(uktucp, localAddress, remoteAddress, waiter, bindCallBack, activeCallBack);
         try {
             // 等待服务成功启动。再继续后面的逻辑，1min超时
             if (!waiter.await(1, TimeUnit.MINUTES)) {
@@ -106,17 +106,17 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
             }
         } catch (InterruptedException e) {
             // 抛出异常
-            throw new KcpInitException(e);
+            throw new KtucpInitException(e);
         }
     }
 
     @Override
-    public void reconnect(Ukcp ukcp) throws KcpInitException, UnsupportedOperationException {
+    public void reconnect(Uktucp uktucp) throws KtucpInitException, UnsupportedOperationException {
         if (!(this.netConfigData.getChannelManager() instanceof ClientConvChannelManager)) {
             throw new UnsupportedOperationException("Reconnect can only be used in convChannel");
         }
-        ukcp.getMessageExecutor().execute(() -> {
-            User user = ukcp.user();
+        uktucp.getMessageExecutor().execute(() -> {
+            User user = uktucp.user();
 
             UserNetManager userNetManager = user.getUserNetManager();
             Channel channel = userNetManager.getChannel(this.netId);
@@ -125,31 +125,31 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
             InetSocketAddress localAddress = new InetSocketAddress(0);
 
             ChannelFuture channelFuture = bootstrap.connect(remoteAddress, localAddress);
-            this.onReconnected(ukcp, channelFuture, localAddress, remoteAddress);
+            this.onReconnected(uktucp, channelFuture, localAddress, remoteAddress);
         });
     }
 
-    protected void onReconnected(Ukcp ukcp, ChannelFuture future, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+    protected void onReconnected(Uktucp uktucp, ChannelFuture future, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         Channel channel = future.channel();
         // 修改网络
-        ukcp.setCurrentNetId(this.netId);
+        uktucp.setCurrentNetId(this.netId);
         // 绑定通道
-        this.bindChannel(ukcp, channel, localAddress, remoteAddress);
+        this.bindChannel(uktucp, channel, localAddress, remoteAddress);
     }
 
     /**
      * 启动服务
      *
-     * @param ukcp           KCP对象
+     * @param uktucp           KCP对象
      * @param localAddress   本地地址
      * @param remoteAddress  远端地址
      * @param waiter         等待
      * @param bindCallBack   绑定回调
      * @param activeCallBack 激活回调
-     * @throws KcpInitException 初始异常
+     * @throws KtucpInitException 初始异常
      */
-    protected void connect(Ukcp ukcp, InetSocketAddress localAddress, InetSocketAddress remoteAddress, CountDownLatch waiter,
-                           StartUpNettyServerCallBack bindCallBack, StartUpNettyServerCallBack activeCallBack) throws KcpInitException {
+    protected void connect(Uktucp uktucp, InetSocketAddress localAddress, InetSocketAddress remoteAddress, CountDownLatch waiter,
+                           StartUpNettyServerCallBack bindCallBack, StartUpNettyServerCallBack activeCallBack) throws KtucpInitException {
         // 初始线程组
         initGroups();
         // 初始并配置Netty启动类
@@ -170,18 +170,18 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
             if (activeCallBack != null) {
                 activeCallBack.apply(future);
             }
-            this.onConnected(ukcp, (ChannelFuture) future, localAddress, remoteAddress);
+            this.onConnected(uktucp, (ChannelFuture) future, localAddress, remoteAddress);
             // 计数
             waiter.countDown();
         });
     }
 
-    protected void onConnected(Ukcp ukcp, ChannelFuture future, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+    protected void onConnected(Uktucp uktucp, ChannelFuture future, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         Channel channel = future.channel();
         // 修改网络
-        ukcp.setCurrentNetId(this.netId);
+        uktucp.setCurrentNetId(this.netId);
         // 绑定通道
-        this.bindChannel(ukcp, channel, localAddress, remoteAddress);
+        this.bindChannel(uktucp, channel, localAddress, remoteAddress);
 
         KtucpListener ktucpListener = this.netConfigData.getListener();
 
@@ -190,14 +190,14 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         IMessageExecutor messageExecutor = messageExecutorPool.getMessageExecutor();
 
         // 切换网络
-        ukcp.changeCurrentNetId(this.netId);
+        uktucp.changeCurrentNetId(this.netId);
 
         messageExecutor.execute(() -> {
             try {
                 // 所有网络共用一个连接事件
-                ktucpListener.onConnected(this.netId, ukcp);
+                ktucpListener.onConnected(this.netId, uktucp);
             } catch (Throwable throwable) {
-                ktucpListener.handleException(throwable, ukcp);
+                ktucpListener.handleException(throwable, uktucp);
             }
         });
 
@@ -205,20 +205,20 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         // 配置
         ChannelConfig channelConfig = this.netConfigData.getChannelConfig();
         boolean isKcpIdleTimeoutClose = channelConfig.isKcpIdleTimeoutClose();
-        ScheduleTask scheduleTask = new ScheduleTask(messageExecutor, ukcp, hashedWheelTimer, isKcpIdleTimeoutClose);
+        ScheduleTask scheduleTask = new ScheduleTask(messageExecutor, uktucp, hashedWheelTimer, isKcpIdleTimeoutClose);
         long delay = channelConfig.getInterval();
         // 启动客户端时间轮
         hashedWheelTimer.newTimeout(scheduleTask, delay, TimeUnit.MILLISECONDS);
     }
 
-    protected void bindChannel(Ukcp ukcp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
-        User user = ukcp.user();
+    protected void bindChannel(Uktucp uktucp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+        User user = uktucp.user();
         UserNetManager userNetManager = user.getUserNetManager();
         userNetManager.addNetInfo(this.netId, channel, localAddress, remoteAddress);
     }
 
-    protected KcpOutput getKcpOutput() {
-        return new KcpOutPutImp();
+    protected KtucpOutput getKcpOutput() {
+        return new KtucpOutPutImp();
     }
 
     @Override

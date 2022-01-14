@@ -1,8 +1,7 @@
 package com.hjcenry.threadPool.order.waiteStrategy;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -13,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * 例如：在禁用超线程技术的时候。
  */
 public final class BusySpinWaitConditionStrategy implements WaitConditionStrategy {
-    private final Logger log = KcpLog.logger;
+    private final Logger log = KtucpLog.logger;
 
     @Override
     public <T> T waitFor(WaitCondition<T> waitCondition, long timeOut, TimeUnit unit) {

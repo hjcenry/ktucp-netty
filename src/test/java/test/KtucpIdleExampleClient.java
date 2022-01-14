@@ -1,7 +1,7 @@
 package test;
 
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
@@ -51,18 +51,18 @@ public class KtucpIdleExampleClient implements KtucpListener {
     int i = 0;
 
     @Override
-    public void onConnected(int netId, Ukcp ukcp) {
+    public void onConnected(int netId, Uktucp uktucp) {
         ByteBuf byteBuf = UnpooledByteBufAllocator.DEFAULT.buffer(124);
         byteBuf.writeInt(i++);
         byte[] bytes = new byte[120];
         byteBuf.writeBytes(bytes);
-        ukcp.write(byteBuf);
+        uktucp.write(byteBuf);
         byteBuf.release();
     }
     //int j =0;
 
     @Override
-    public void handleReceive(Object object, Ukcp ukcp) {
+    public void handleReceive(Object object, Uktucp uktucp) {
         //ukcp.write(byteBuf);
         //int id = byteBuf.getInt(0);
         ////if(j-id%10!=0){
@@ -77,17 +77,17 @@ public class KtucpIdleExampleClient implements KtucpListener {
     }
 
     @Override
-    public void handleIdleTimeout(Ukcp ukcp) {
-        System.out.println("handleTimeout!!!:" + ukcp);
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleTimeout!!!:" + uktucp);
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp kcp) {
+    public void handleException(Throwable ex, Uktucp kcp) {
         ex.printStackTrace();
     }
 
     @Override
-    public void handleClose(Ukcp kcp) {
+    public void handleClose(Uktucp kcp) {
         System.out.println("连接断开了");
     }
 

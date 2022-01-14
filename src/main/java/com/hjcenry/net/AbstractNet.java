@@ -1,16 +1,14 @@
 package com.hjcenry.net;
 
-import com.hjcenry.exception.KcpInitException;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.Ukcp;
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.kcp.Uktucp;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.net.server.NetTypeEnum;
 import com.hjcenry.system.SystemOS;
-import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author hejincheng
@@ -19,7 +17,7 @@ import org.slf4j.LoggerFactory;
  **/
 public abstract class AbstractNet implements INet {
 
-    protected static final Logger logger = KcpLog.logger;
+    protected static final Logger logger = KtucpLog.logger;
     /**
      * IO线程组
      */
@@ -39,7 +37,7 @@ public abstract class AbstractNet implements INet {
 
     protected NetTypeEnum netTypeEnum;
 
-    public AbstractNet(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KcpInitException {
+    public AbstractNet(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         this.netId = netId;
         this.netTypeEnum = netTypeEnum;
         this.netConfigData = netConfigData;
@@ -49,27 +47,27 @@ public abstract class AbstractNet implements INet {
     /**
      * 检测网络服务参数合法性
      */
-    protected void checkConfigData() throws KcpInitException {
+    protected void checkConfigData() throws KtucpInitException {
         if (this.netConfigData == null) {
-            throw new KcpInitException("NetConfigData null");
+            throw new KtucpInitException("NetConfigData null");
         }
         if (this.netConfigData.getChannelConfig() == null) {
-            throw new KcpInitException("NetServer Channel Config can not be null");
+            throw new KtucpInitException("NetServer Channel Config can not be null");
         }
         if (this.netConfigData.getNetChannelConfig() == null) {
-            throw new KcpInitException("NetServer Net Channel Config can not be null");
+            throw new KtucpInitException("NetServer Net Channel Config can not be null");
         }
         if (this.netConfigData.getListener() == null) {
-            throw new KcpInitException("NetServer Listener can not be null");
+            throw new KtucpInitException("NetServer Listener can not be null");
         }
         if (this.netConfigData.getChannelManager() == null) {
-            throw new KcpInitException("NetServer ChannelManager can not be null");
+            throw new KtucpInitException("NetServer ChannelManager can not be null");
         }
         if (this.netConfigData.getHashedWheelTimer() == null) {
-            throw new KcpInitException("NetServer HashedWheelTimer can not be null");
+            throw new KtucpInitException("NetServer HashedWheelTimer can not be null");
         }
         if (this.netConfigData.getMessageExecutorPool() == null) {
-            throw new KcpInitException("NetServer MessageExecutorPool can not be null");
+            throw new KtucpInitException("NetServer MessageExecutorPool can not be null");
         }
     }
 
@@ -107,7 +105,7 @@ public abstract class AbstractNet implements INet {
     @Override
     public void stop() {
         IChannelManager channelManager = netConfigData.getChannelManager();
-        channelManager.getAll().forEach(Ukcp::close);
+        channelManager.getAll().forEach(Uktucp::close);
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
         }

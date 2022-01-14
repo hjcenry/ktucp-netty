@@ -1,10 +1,7 @@
 package com.hjcenry.kcp;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,14 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class ServerHandlerChannelManager {
 
-    private Map<Channel, Ukcp> ukcpMap = new ConcurrentHashMap<>();
+    private Map<Channel, Uktucp> ukcpMap = new ConcurrentHashMap<>();
 
-    public Ukcp getKcp(Channel channel) {
+    public Uktucp getKcp(Channel channel) {
         return ukcpMap.get(channel);
     }
 
-    public void addKcp(Ukcp ukcp, Channel channel) {
-        ukcpMap.put(channel, ukcp);
+    public void addKcp(Uktucp uktucp, Channel channel) {
+        ukcpMap.put(channel, uktucp);
     }
 
     public void remove(Channel channel) {

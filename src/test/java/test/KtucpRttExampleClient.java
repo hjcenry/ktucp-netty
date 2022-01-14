@@ -3,7 +3,7 @@ package test;
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import io.netty.buffer.ByteBuf;
@@ -68,21 +68,21 @@ public class KtucpRttExampleClient extends SimpleKtucpListener<ByteBuf> {
     }
 
     @Override
-    public void onConnected(int netId, Ukcp ukcp) {
+    public void onConnected(int netId, Uktucp uktucp) {
         future = scheduleSrv.scheduleWithFixedDelay(() -> {
             ByteBuf byteBuf = rttMsg(++count);
-            ukcp.write(byteBuf);
+            uktucp.write(byteBuf);
             if (count >= rtts.length) {
                 // finish
                 future.cancel(true);
                 byteBuf = rttMsg(-1);
-                ukcp.write(byteBuf);
+                uktucp.write(byteBuf);
             }
         }, 20, 20, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    protected void handleReceive0(ByteBuf cast, Ukcp ukcp) throws Exception {
+    protected void handleReceive0(ByteBuf cast, Uktucp uktucp) throws Exception {
         int curCount = cast.readShort();
 
         if (curCount == -1) {
@@ -95,7 +95,7 @@ public class KtucpRttExampleClient extends SimpleKtucpListener<ByteBuf> {
                     }
                     System.out.println("average: " + (sum / rtts.length));
                     System.out.println(Snmp.snmp.toString());
-                    ukcp.close();
+                    uktucp.close();
                     //ukcp.setTimeoutMillis(System.currentTimeMillis());
                     System.exit(0);
                 }
@@ -113,12 +113,12 @@ public class KtucpRttExampleClient extends SimpleKtucpListener<ByteBuf> {
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp kcp) {
+    public void handleException(Throwable ex, Uktucp kcp) {
         ex.printStackTrace();
     }
 
     @Override
-    public void handleClose(Ukcp kcp) {
+    public void handleClose(Uktucp kcp) {
         scheduleSrv.shutdown();
         try {
             scheduleSrv.awaitTermination(3, TimeUnit.SECONDS);
@@ -142,8 +142,8 @@ public class KtucpRttExampleClient extends SimpleKtucpListener<ByteBuf> {
     }
 
     @Override
-    public void handleIdleTimeout(Ukcp ukcp) {
-        System.out.println("handleTimeout!!!:" + ukcp);
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleTimeout!!!:" + uktucp);
     }
 
     /**

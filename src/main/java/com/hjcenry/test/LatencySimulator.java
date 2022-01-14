@@ -4,7 +4,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.internal.CodecOutputList;
 import com.hjcenry.kcp.IKcp;
 import com.hjcenry.kcp.Kcp;
-import com.hjcenry.kcp.KcpOutput;
+import com.hjcenry.kcp.KtucpOutput;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
@@ -168,11 +168,11 @@ public class LatencySimulator {
     public void test(int mode) throws InterruptedException {
         LatencySimulator vnet = new LatencySimulator();
         vnet.init(20, 600, 600);
-        KcpOutput output1 = (buf, kcp) -> {
+        KtucpOutput output1 = (buf, kcp) -> {
             vnet.send(0, buf);
             buf.release();
         };
-        KcpOutput output2 = (buf, kcp) -> {
+        KtucpOutput output2 = (buf, kcp) -> {
             vnet.send(1, buf);
             buf.release();
         };

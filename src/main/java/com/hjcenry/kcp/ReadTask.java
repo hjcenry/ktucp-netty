@@ -5,7 +5,7 @@ import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.internal.CodecOutputList;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.threadPool.ITask;
-import com.hjcenry.time.IKcpTimeService;
+import com.hjcenry.time.IKtucpTimeService;
 import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 
@@ -17,27 +17,27 @@ import java.util.Queue;
  */
 public class ReadTask implements ITask {
 
-    private final Ukcp ukcp;
+    private final Uktucp uktucp;
     private final IMessageDecoder messageDecoder;
-    private final IKcpTimeService kcpTimeService;
+    private final IKtucpTimeService kcpTimeService;
 
-    public ReadTask(Ukcp ukcp, IMessageDecoder messageDecoder) {
-        this.ukcp = ukcp;
-        this.kcpTimeService = ukcp.getKcpTimeService();
+    public ReadTask(Uktucp uktucp, IMessageDecoder messageDecoder) {
+        this.uktucp = uktucp;
+        this.kcpTimeService = uktucp.getKcpTimeService();
         this.messageDecoder = messageDecoder;
     }
 
     @Override
     public void execute() {
         CodecOutputList<ByteBuf> bufList = null;
-        Ukcp ukcp = this.ukcp;
+        Uktucp uktucp = this.uktucp;
         try {
             //查看连接状态
-            if (!ukcp.isActive()) {
+            if (!uktucp.isActive()) {
                 return;
             }
             long current = this.kcpTimeService.now();
-            Queue<ByteBuf> receiveList = ukcp.getReadBufferQueue();
+            Queue<ByteBuf> receiveList = uktucp.getReadBufferQueue();
             int readCount = 0;
             for (; ; ) {
                 ByteBuf byteBuf = receiveList.poll();
@@ -45,45 +45,45 @@ public class ReadTask implements ITask {
                     break;
                 }
                 readCount++;
-                ukcp.input(byteBuf, current);
+                uktucp.input(byteBuf, current);
                 byteBuf.release();
             }
             if (readCount == 0) {
                 return;
             }
-            if (ukcp.isControlReadBufferSize()) {
-                ukcp.getReadBufferIncr().addAndGet(readCount);
+            if (uktucp.isControlReadBufferSize()) {
+                uktucp.getReadBufferIncr().addAndGet(readCount);
             }
             long readBytes = 0;
-            if (ukcp.isStream()) {
+            if (uktucp.isStream()) {
                 int size = 0;
-                while (ukcp.canRecv()) {
+                while (uktucp.canRecv()) {
                     if (bufList == null) {
                         bufList = CodecOutputList.newInstance();
                     }
-                    ukcp.receive(bufList);
+                    uktucp.receive(bufList);
                     size = bufList.size();
                 }
                 for (int i = 0; i < size; i++) {
                     ByteBuf byteBuf = bufList.getUnsafe(i);
                     readBytes += byteBuf.readableBytes();
-                    readByteBuf(byteBuf, current, ukcp);
+                    readByteBuf(byteBuf, current, uktucp);
                 }
             } else {
-                while (ukcp.canRecv()) {
-                    ByteBuf recvBuf = ukcp.mergeReceive();
+                while (uktucp.canRecv()) {
+                    ByteBuf recvBuf = uktucp.mergeReceive();
                     readBytes += recvBuf.readableBytes();
-                    readByteBuf(recvBuf, current, ukcp);
+                    readByteBuf(recvBuf, current, uktucp);
                 }
             }
             Snmp.snmp.BytesReceived.add(readBytes);
             //判断写事件
-            if (!ukcp.getWriteObjectQueue().isEmpty() && ukcp.canSend(false)) {
-                ukcp.notifyWriteEvent();
+            if (!uktucp.getWriteObjectQueue().isEmpty() && uktucp.canSend(false)) {
+                uktucp.notifyWriteEvent();
             }
         } catch (Exception e) {
-            ukcp.getKcpListener().handleException(e, ukcp);
-            ukcp.internalClose();
+            uktucp.getKcpListener().handleException(e, uktucp);
+            uktucp.internalClose();
             e.printStackTrace();
         } finally {
             release();
@@ -93,21 +93,21 @@ public class ReadTask implements ITask {
         }
     }
 
-    private void readByteBuf(ByteBuf buf, long current, Ukcp ukcp) {
-        ukcp.setLastReceiveTime(current);
+    private void readByteBuf(ByteBuf buf, long current, Uktucp uktucp) {
+        uktucp.setLastReceiveTime(current);
         Object object = null;
         try {
             // 消息解码
             if (this.messageDecoder == null) {
                 object = buf;
             } else {
-                object = this.messageDecoder.decode(ukcp, buf);
+                object = this.messageDecoder.decode(uktucp, buf);
             }
-            KtucpListener ktucpListener = ukcp.getKcpListener();
+            KtucpListener ktucpListener = uktucp.getKcpListener();
             // 处理读事件
-            ktucpListener.handleReceive(object, ukcp);
+            ktucpListener.handleReceive(object, uktucp);
         } catch (Throwable throwable) {
-            ukcp.getKcpListener().handleException(throwable, ukcp);
+            uktucp.getKcpListener().handleException(throwable, uktucp);
         } finally {
             ReferenceCountUtil.release(buf);
             ReferenceCountUtil.release(object);
@@ -115,7 +115,7 @@ public class ReadTask implements ITask {
     }
 
     public void release() {
-        ukcp.getReadProcessing().set(false);
+        uktucp.getReadProcessing().set(false);
     }
 
 }

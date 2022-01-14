@@ -1,6 +1,6 @@
 package com.hjcenry.util.enumutil;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class EnumUtil {
 
-    private static final Logger logger = KcpLog.logger;
+    private static final Logger logger = KtucpLog.logger;
 
     /**
      * 根据枚举index返回枚举元素，index从0开始

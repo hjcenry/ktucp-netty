@@ -1,11 +1,10 @@
 package com.hjcenry.threadPool.order;
 
-import com.hjcenry.log.KcpLog;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.threadPool.order.waiteStrategy.BlockingWaitConditionStrategy;
 import com.hjcenry.threadPool.order.waiteStrategy.WaitCondition;
 import com.hjcenry.threadPool.order.waiteStrategy.WaitConditionStrategy;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,7 +32,7 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
     /**
      * A logger for this class (commented as it breaks MDCFlter tests)
      */
-    private static final Logger LOGGER = KcpLog.logger;
+    private static final Logger LOGGER = KtucpLog.logger;
 
     /**
      * A default value for the initial pool size

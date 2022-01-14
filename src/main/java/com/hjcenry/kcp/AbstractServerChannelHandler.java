@@ -65,28 +65,28 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
     /**
      * 绑定通道
      *
-     * @param ukcp          kcp对象
+     * @param uktucp          kcp对象
      * @param channel       通道
      * @param localAddress  本地地址
      * @param remoteAddress 远端地址
      */
-    protected void bindChannel(Ukcp ukcp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
-        User user = ukcp.user();
+    protected void bindChannel(Uktucp uktucp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+        User user = uktucp.user();
         UserNetManager userNetManager = user.getUserNetManager();
         userNetManager.addNetInfo(this.netId, channel, localAddress, remoteAddress);
     }
 
     @Override
-    protected void channelRead0(Channel channel, Object readObject, Ukcp ukcp, ByteBuf byteBuf) {
-        if (ukcp != null) {
-            User user = ukcp.user();
+    protected void channelRead0(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf) {
+        if (uktucp != null) {
+            User user = uktucp.user();
             //绑定当前网络
-            ukcp.changeCurrentNetId(this.netId);
+            uktucp.changeCurrentNetId(this.netId);
             //每次收到消息重绑定地址
             InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
             user.changeRemoteAddress(this.netId, remoteAddress);
             // 读消息
-            ukcp.read(byteBuf);
+            uktucp.read(byteBuf);
             return;
         }
 
@@ -100,21 +100,21 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         IMessageExecutor iMessageExecutor = iMessageExecutorPool.getMessageExecutor();
 
         // 创建kcp对象
-        Ukcp newUkcp = createUkcp(channel, readObject, byteBuf, iMessageExecutor);
+        Uktucp newUktucp = createUkcp(channel, readObject, byteBuf, iMessageExecutor);
 
         iMessageExecutor.execute(() -> {
             try {
-                newUkcp.getKcpListener().onConnected(this.netId, newUkcp);
+                newUktucp.getKcpListener().onConnected(this.netId, newUktucp);
             } catch (Throwable throwable) {
-                newUkcp.getKcpListener().handleException(throwable, newUkcp);
+                newUktucp.getKcpListener().handleException(throwable, newUktucp);
             }
         });
 
         // 读消息
-        newUkcp.read(byteBuf);
+        newUktucp.read(byteBuf);
 
-        ScheduleTask scheduleTask = new ScheduleTask(iMessageExecutor, newUkcp, hashedWheelTimer, channelConfig.isKcpIdleTimeoutClose());
-        hashedWheelTimer.newTimeout(scheduleTask, newUkcp.getInterval(), TimeUnit.MILLISECONDS);
+        ScheduleTask scheduleTask = new ScheduleTask(iMessageExecutor, newUktucp, hashedWheelTimer, channelConfig.isKcpIdleTimeoutClose());
+        hashedWheelTimer.newTimeout(scheduleTask, newUktucp.getInterval(), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -126,26 +126,26 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
      * @param iMessageExecutor 处理器
      * @return kcp对象
      */
-    protected Ukcp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
-        KcpOutput kcpOutput = this.getKcpOutput();
-        Ukcp newUkcp = new Ukcp(kcpOutput, ktucpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
+    protected Uktucp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
+        KtucpOutput ktucpOutput = this.getKcpOutput();
+        Uktucp newUktucp = new Uktucp(ktucpOutput, ktucpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
         // 创建user
         User user = new User(this.netId, this.channelConfig.getNetNum());
-        newUkcp.user(user);
+        newUktucp.user(user);
         // 服务端模式
-        newUkcp.setServerMode();
+        newUktucp.setServerMode();
         // 绑定通道
         InetSocketAddress localAddress = getLocalAddress(channel, readObject);
         InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
-        this.bindChannel(newUkcp, channel, localAddress, remoteAddress);
+        this.bindChannel(newUktucp, channel, localAddress, remoteAddress);
         // 绑定convId
         int conv = channelManager.getConvIdByByteBuf(readByteBuf);
         if (conv > 0) {
-            newUkcp.setConv(conv);
+            newUktucp.setConv(conv);
         }
         // 添加ukcp管理
-        channelManager.addKcp(newUkcp);
-        return newUkcp;
+        channelManager.addKcp(newUktucp);
+        return newUktucp;
     }
 
     /**
@@ -153,8 +153,8 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
      *
      * @return KCP输出方法
      */
-    protected KcpOutput getKcpOutput() {
-        return new KcpOutPutImp();
+    protected KtucpOutput getKcpOutput() {
+        return new KtucpOutPutImp();
     }
 
     /**

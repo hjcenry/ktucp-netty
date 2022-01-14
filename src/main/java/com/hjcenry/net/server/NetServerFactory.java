@@ -1,12 +1,10 @@
 package com.hjcenry.net.server;
 
-import com.hjcenry.exception.KcpInitException;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.net.INet;
 import com.hjcenry.net.NetConfigData;
 import com.hjcenry.net.server.tcp.TcpNetServer;
 import com.hjcenry.net.server.udp.UdpNetServer;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 网络服务工厂
@@ -17,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 public class NetServerFactory {
 
-    public static INet createNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KcpInitException {
+    public static INet createNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         switch (netTypeEnum) {
             case NET_UDP:
                 return new UdpNetServer(netId, netTypeEnum, netConfigData);

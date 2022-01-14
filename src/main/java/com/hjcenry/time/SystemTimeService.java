@@ -7,7 +7,7 @@ package com.hjcenry.time;
  * @version 1.0
  * @date 2022/1/12 16:09
  **/
-public class SystemTimeService implements IKcpTimeService {
+public class SystemTimeService implements IKtucpTimeService {
 
     @Override
     public long now() {

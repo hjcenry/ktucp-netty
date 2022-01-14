@@ -1,6 +1,6 @@
 package com.hjcenry.kcp.listener;
 
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 
 /**
  * Created by JinMiao
@@ -12,37 +12,37 @@ public interface KtucpListener {
      * 连接之后
      *
      * @param netId 连接网络id
-     * @param ukcp  KCP对象
+     * @param uktucp  KCP对象
      */
-    void onConnected(int netId, Ukcp ukcp);
+    void onConnected(int netId, Uktucp uktucp);
 
     /**
      * kcp message
      *
      * @param object
-     * @param ukcp
+     * @param uktucp
      */
-    void handleReceive(Object object, Ukcp ukcp) throws Exception;
+    void handleReceive(Object object, Uktucp uktucp) throws Exception;
 
     /**
      * kcp异常，之后此kcp就会被关闭
      *
      * @param ex   异常
-     * @param ukcp 发生异常的kcp，null表示非kcp错误
+     * @param uktucp 发生异常的kcp，null表示非kcp错误
      */
-    void handleException(Throwable ex, Ukcp ukcp);
+    void handleException(Throwable ex, Uktucp uktucp);
 
     /**
      * 关闭
      *
-     * @param ukcp
+     * @param uktucp
      */
-    void handleClose(Ukcp ukcp);
+    void handleClose(Uktucp uktucp);
 
     /**
      * 闲置超时
      *
-     * @param ukcp kcp对象
+     * @param uktucp kcp对象
      */
-    void handleIdleTimeout(Ukcp ukcp);
+    void handleIdleTimeout(Uktucp uktucp);
 }

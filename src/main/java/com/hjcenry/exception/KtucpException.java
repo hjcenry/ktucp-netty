@@ -7,13 +7,13 @@ package com.hjcenry.exception;
  * @version 1.0
  * @date 2022/1/10 16:30
  **/
-public class KcpException extends Exception {
+public class KtucpException extends Exception {
 
-    public KcpException(String msg) {
+    public KtucpException(String msg) {
         super(msg);
     }
 
-    public KcpException(Exception e) {
+    public KtucpException(Exception e) {
         super(e);
     }
 }

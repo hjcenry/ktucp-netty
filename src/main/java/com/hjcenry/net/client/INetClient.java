@@ -1,7 +1,7 @@
 package com.hjcenry.net.client;
 
-import com.hjcenry.exception.KcpInitException;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.exception.KtucpInitException;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.net.INet;
 
 /**
@@ -16,16 +16,16 @@ public interface INetClient extends INet {
     /**
      * 连接服务端
      *
-     * @param ukcp KCP对象
-     * @throws KcpInitException KCP初始化异常
+     * @param uktucp KCP对象
+     * @throws KtucpInitException KCP初始化异常
      */
-    public void connect(Ukcp ukcp) throws KcpInitException;
+    public void connect(Uktucp uktucp) throws KtucpInitException;
 
     /**
      * 重连客户端
      *
-     * @param ukcp KCP对象
-     * @throws KcpInitException KCP初始化异常
+     * @param uktucp KCP对象
+     * @throws KtucpInitException KCP初始化异常
      */
-    public void reconnect(Ukcp ukcp) throws KcpInitException;
+    public void reconnect(Uktucp uktucp) throws KtucpInitException;
 }

@@ -1,6 +1,6 @@
 package com.hjcenry.net.tcp;
 
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
@@ -24,25 +24,25 @@ public interface INettyChannelEvent {
      * 通道关闭事件
      *
      * @param channel 通道
-     * @param ukcp    kcp对象 <b>仅TCP连接能通过channel找到KCP对象</b>
+     * @param uktucp    kcp对象 <b>仅TCP连接能通过channel找到KCP对象</b>
      */
-    public void onChannelInactive(Channel channel, Ukcp ukcp);
+    public void onChannelInactive(Channel channel, Uktucp uktucp);
 
     /**
      * 读取消息事件
      *
      * @param channel 通道
-     * @param ukcp    kcp对象 可能为null
+     * @param uktucp    kcp对象 可能为null
      * @param byteBuf 读消息
      */
-    public void onChannelRead(Channel channel, Ukcp ukcp, ByteBuf byteBuf);
+    public void onChannelRead(Channel channel, Uktucp uktucp, ByteBuf byteBuf);
 
     /**
      * 触发事件
      *
      * @param channel 通道
-     * @param ukcp    KCP对象 <b>仅TCP连接能通过channel找到KCP对象</b>
+     * @param uktucp    KCP对象 <b>仅TCP连接能通过channel找到KCP对象</b>
      * @param evt     事件
      */
-    public void onUserEventTriggered(Channel channel, Ukcp ukcp, Object evt);
+    public void onUserEventTriggered(Channel channel, Uktucp uktucp, Object evt);
 }

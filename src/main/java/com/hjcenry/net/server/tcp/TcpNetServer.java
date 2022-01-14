@@ -1,6 +1,6 @@
 package com.hjcenry.net.server.tcp;
 
-import com.hjcenry.exception.KcpInitException;
+import com.hjcenry.exception.KtucpInitException;
 import com.hjcenry.kcp.AbstractServerChannelHandler;
 import com.hjcenry.kcp.Crc32Decode;
 import com.hjcenry.kcp.Crc32Encode;
@@ -42,7 +42,7 @@ public class TcpNetServer extends AbstractNetServer {
 
     private final AbstractServerChannelHandler serverChannelHandler;
 
-    public TcpNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KcpInitException {
+    public TcpNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         super(netId, netTypeEnum, netConfigData);
         serverChannelHandler = new TcpServerChannelHandler(netId,
                 netConfigData.getChannelManager(),

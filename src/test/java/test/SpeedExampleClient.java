@@ -2,7 +2,7 @@ package test;
 
 import com.hjcenry.fec.fec.Snmp;
 import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.Ukcp;
+import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import com.hjcenry.threadPool.disruptor.DisruptorExecutorPool;
@@ -46,7 +46,7 @@ public class SpeedExampleClient implements KtucpListener {
     private long start = System.currentTimeMillis();
 
     @Override
-    public void onConnected(int netId, Ukcp ukcp) {
+    public void onConnected(int netId, Uktucp uktucp) {
         new Thread(() -> {
             for (; ; ) {
                 long now = System.currentTimeMillis();
@@ -58,7 +58,7 @@ public class SpeedExampleClient implements KtucpListener {
                 }
                 ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(messageSize);
                 byteBuf.writeBytes(new byte[messageSize]);
-                if (!ukcp.write(byteBuf)) {
+                if (!uktucp.write(byteBuf)) {
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
@@ -71,20 +71,20 @@ public class SpeedExampleClient implements KtucpListener {
     }
 
     @Override
-    public void handleReceive(Object object, Ukcp ukcp) {
+    public void handleReceive(Object object, Uktucp uktucp) {
     }
 
     @Override
-    public void handleIdleTimeout(Ukcp ukcp) {
-        System.out.println("handleTimeout!!!:" + ukcp);
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleTimeout!!!:" + uktucp);
     }
 
     @Override
-    public void handleException(Throwable ex, Ukcp kcp) {
+    public void handleException(Throwable ex, Uktucp kcp) {
         ex.printStackTrace();
     }
 
     @Override
-    public void handleClose(Ukcp kcp) {
+    public void handleClose(Uktucp kcp) {
     }
 }
