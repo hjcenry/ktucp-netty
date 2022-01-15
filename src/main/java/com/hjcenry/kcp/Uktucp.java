@@ -536,7 +536,7 @@ public class Uktucp extends DefaultAttributeMap {
             return;
         }
         this.active = false;
-        this.handledTimeout = false;
+        this.resetHandledTimeout();
         notifyReadEvent();
         ktucpListener.handleClose(this);
         //关闭之前尽量把消息都发出去
@@ -606,6 +606,10 @@ public class Uktucp extends DefaultAttributeMap {
     public void changeTimeoutMillis(long timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
         // 修改超时，可再次处理超时
+        this.resetHandledTimeout();
+    }
+
+    protected void resetHandledTimeout() {
         this.handledTimeout = false;
     }
 
