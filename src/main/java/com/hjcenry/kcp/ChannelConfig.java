@@ -2,7 +2,8 @@ package com.hjcenry.kcp;
 
 import com.hjcenry.fec.FecAdapt;
 import com.hjcenry.net.NetChannelConfig;
-import com.hjcenry.net.callback.IKtucpStartUpCallback;
+import com.hjcenry.net.client.IKtucpClientStartUpCallback;
+import com.hjcenry.net.server.IKtucpServerStartUpCallback;
 import com.hjcenry.threadPool.IMessageExecutorPool;
 import com.hjcenry.threadPool.netty.NettyMessageExecutorPool;
 import com.hjcenry.time.IKtucpTimeService;
@@ -92,7 +93,8 @@ public class ChannelConfig {
     /**
      * 启动完成回调
      */
-    private IKtucpStartUpCallback startUpCallback;
+    private IKtucpServerStartUpCallback serverStartUpCallback;
+    private IKtucpClientStartUpCallback clientStartUpCallback;
 
     public void nodelay(boolean nodelay, int interval, int resend, boolean nc) {
         this.nodelay = nodelay;
@@ -284,11 +286,19 @@ public class ChannelConfig {
         this.kcpIdleTimeoutClose = kcpIdleTimeoutClose;
     }
 
-    public IKtucpStartUpCallback getStartUpCallback() {
-        return startUpCallback;
+    public IKtucpServerStartUpCallback getServerStartUpCallback() {
+        return serverStartUpCallback;
     }
 
-    public void setStartUpCallback(IKtucpStartUpCallback startUpCallback) {
-        this.startUpCallback = startUpCallback;
+    public void setServerStartUpCallback(IKtucpServerStartUpCallback serverStartUpCallback) {
+        this.serverStartUpCallback = serverStartUpCallback;
+    }
+
+    public IKtucpClientStartUpCallback getClientStartUpCallback() {
+        return clientStartUpCallback;
+    }
+
+    public void setClientStartUpCallback(IKtucpClientStartUpCallback clientStartUpCallback) {
+        this.clientStartUpCallback = clientStartUpCallback;
     }
 }

@@ -79,14 +79,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
     @Override
     protected void channelRead0(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf) {
         if (uktucp != null) {
-            User user = uktucp.user();
-            //绑定当前网络
-            uktucp.changeCurrentNetId(this.netId);
-            //每次收到消息重绑定地址
-            InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
-            user.changeRemoteAddress(this.netId, remoteAddress);
-            // 读消息
-            uktucp.read(byteBuf);
+            channelReadFromUktucp(channel, readObject, uktucp, byteBuf);
             return;
         }
 
@@ -115,6 +108,17 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
 
         ScheduleTask scheduleTask = new ScheduleTask(iMessageExecutor, newUktucp, hashedWheelTimer, channelConfig.isKcpIdleTimeoutClose());
         hashedWheelTimer.newTimeout(scheduleTask, newUktucp.getInterval(), TimeUnit.MILLISECONDS);
+    }
+
+    protected void channelReadFromUktucp(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf) {
+        User user = uktucp.user();
+        //绑定当前网络
+        uktucp.changeCurrentNetId(this.netId);
+        //每次收到消息重绑定地址
+        InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
+        user.changeRemoteAddress(this.netId, remoteAddress);
+        // 读消息
+        uktucp.read(byteBuf);
     }
 
     /**

@@ -61,6 +61,16 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     }
 
     @Override
+    protected void channelReadFromUktucp(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf) {
+        super.channelReadFromUktucp(channel, readObject, uktucp, byteBuf);
+        // 添加TCP通道管理
+        Uktucp oldUktucp = this.clientChannelManager.getKcp(channel);
+        if (oldUktucp == null) {
+            this.clientChannelManager.addKcp(uktucp, channel);
+        }
+    }
+
+    @Override
     protected ByteBuf getReadByteBuf(Channel channel, Object msg) {
         return (ByteBuf) msg;
     }

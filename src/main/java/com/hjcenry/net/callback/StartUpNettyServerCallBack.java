@@ -11,16 +11,17 @@ import io.netty.util.concurrent.Future;
  **/
 public abstract class StartUpNettyServerCallBack {
 
-    public void apply() {
-        this.apply(null);
+    public void apply(int netId) {
+        this.apply(null, netId);
     }
 
     /**
      * future可能传空，空代表非异步调用，可直接认为执行成功
      *
      * @param future
+     * @param netId
      */
-    public abstract void apply(Future<Void> future);
+    public abstract void apply(Future<Void> future, int netId);
 
 
 }

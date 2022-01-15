@@ -45,7 +45,11 @@ public class ScheduleTask implements ITask, Runnable, TimerTask {
             long now = this.kcpTimeService.now();
             //判断连接是否关闭
             if (uktucp.getTimeoutMillis() != 0 && now - uktucp.getTimeoutMillis() > uktucp.getLastReceiveTime()) {
-                uktucp.getKcpListener().handleIdleTimeout(uktucp);
+                if (!uktucp.isHandledTimeout()) {
+                    // 仅处理一次超时接口
+                    uktucp.getKcpListener().handleIdleTimeout(uktucp);
+                    uktucp.setHandledTimeout(true);
+                }
                 // 需要关闭连接
                 if (kcpIdleTimeoutClose) {
                     uktucp.internalClose();

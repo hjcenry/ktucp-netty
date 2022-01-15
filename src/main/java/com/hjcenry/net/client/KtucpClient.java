@@ -96,7 +96,7 @@ public class KtucpClient {
      * 默认初始化KCP网络
      * <p>该方法只启动一个UDP</p>
      *
-     * @param ktucpListener   KCP监听器
+     * @param ktucpListener KCP监听器
      * @param channelConfig 连接配置
      * @param remoteAddress 远端地址
      */
@@ -109,7 +109,7 @@ public class KtucpClient {
     /**
      * 初始化KCP网络服务
      *
-     * @param ktucpListener   KCP监听器
+     * @param ktucpListener KCP监听器
      * @param channelConfig 连接配置
      */
     public void init(KtucpListener ktucpListener, ChannelConfig channelConfig) {
@@ -120,7 +120,7 @@ public class KtucpClient {
     /**
      * 初始化KCP网络服务
      *
-     * @param ktucpListener    KCP监听器
+     * @param ktucpListener  KCP监听器
      * @param channelConfig  连接配置
      * @param messageDecoder 解码器
      * @param messageEncoder 编码器
@@ -186,6 +186,12 @@ public class KtucpClient {
 
         // 打印启动网络信息
         this.logPrintNetServer();
+
+        // 启动完成回调
+        IKtucpClientStartUpCallback callback = channelConfig.getClientStartUpCallback();
+        if (callback != null) {
+            callback.apply(this.uktucp);
+        }
     }
 
     /**
@@ -236,7 +242,9 @@ public class KtucpClient {
         newUktucp.user(user);
         // 客户端模式
         newUktucp.setClientMode();
-
+        // 设置convId
+        int conv = channelConfig.getConv();
+        newUktucp.setConv(conv);
         // 添加ukcp管理
         channelManager.addKcp(newUktucp);
         return newUktucp;

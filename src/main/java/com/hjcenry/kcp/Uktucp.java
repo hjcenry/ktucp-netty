@@ -91,6 +91,10 @@ public class Uktucp extends DefaultAttributeMap {
      * 时间服务
      */
     private IKtucpTimeService kcpTimeService;
+    /**
+     * 是否处理过超时
+     */
+    private boolean handledTimeout;
 
     /**
      * Creates a new instance.
@@ -532,6 +536,7 @@ public class Uktucp extends DefaultAttributeMap {
             return;
         }
         this.active = false;
+        this.handledTimeout = false;
         notifyReadEvent();
         ktucpListener.handleClose(this);
         //关闭之前尽量把消息都发出去
@@ -586,12 +591,22 @@ public class Uktucp extends DefaultAttributeMap {
         return messageExecutor;
     }
 
+    public boolean isHandledTimeout() {
+        return handledTimeout;
+    }
+
+    public void setHandledTimeout(boolean handledTimeout) {
+        this.handledTimeout = handledTimeout;
+    }
+
     protected long getTimeoutMillis() {
         return timeoutMillis;
     }
 
     public void changeTimeoutMillis(long timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
+        // 修改超时，可再次处理超时
+        this.handledTimeout = false;
     }
 
     protected AtomicInteger getWriteBufferIncr() {

@@ -53,7 +53,7 @@ public abstract class AbstractNetServer extends AbstractNet implements INetServe
         // 绑定端口回调
         bindCallBack = bindCallBack != null ? bindCallBack : new StartUpNettyServerCallBack() {
             @Override
-            public void apply(Future<Void> future) {
+            public void apply(Future<Void> future, int netId) {
                 if (future == null || future.isSuccess()) {
                     if (logger.isInfoEnabled()) {
                         logger.info(serverClassName + " Net bind start success at port: " + bindPort);
@@ -68,7 +68,7 @@ public abstract class AbstractNetServer extends AbstractNet implements INetServe
         // 成功启动回调
         activeCallBack = activeCallBack != null ? activeCallBack : new StartUpNettyServerCallBack() {
             @Override
-            public void apply(Future<Void> future) {
+            public void apply(Future<Void> future, int netId) {
                 if (future == null || future.isSuccess()) {
                     if (logger.isInfoEnabled()) {
                         logger.info(serverClassName + " Net active start success at port: " + bindPort);
@@ -115,7 +115,7 @@ public abstract class AbstractNetServer extends AbstractNet implements INetServe
         ChannelFuture bindFuture = bootstrap.bind(bindPort).addListener((FutureListener<Void>) future -> {
             // 绑定成功回调
             if (bindCallBack != null) {
-                bindCallBack.apply(future);
+                bindCallBack.apply(future, this.netId);
             }
             // 计数
             waiter.countDown();
@@ -123,7 +123,7 @@ public abstract class AbstractNetServer extends AbstractNet implements INetServe
         bindFuture.syncUninterruptibly().addListener((FutureListener<Void>) future -> {
             // 启动成功回调
             if (activeCallBack != null) {
-                activeCallBack.apply(future);
+                activeCallBack.apply(future, this.netId);
             }
             // 计数
             waiter.countDown();

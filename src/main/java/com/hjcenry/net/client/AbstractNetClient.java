@@ -10,6 +10,7 @@ import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.User;
 import com.hjcenry.kcp.UserNetManager;
 import com.hjcenry.kcp.listener.KtucpListener;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.net.AbstractNet;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.NetConfigData;
@@ -47,6 +48,17 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
     }
 
     @Override
+    protected void checkConfigData() throws KtucpInitException {
+        super.checkConfigData();
+        if (this.netConfigData.getChannelConfig().isUseConvChannel() && this.netConfigData.getChannelConfig().getConv() == 0) {
+            // 使用convId管理连接，convId传0给个warn吧
+            if (KtucpLog.logger.isWarnEnabled()) {
+                KtucpLog.logger.warn(String.format("net[%d] use conv channel with convId is 0", this.netId));
+            }
+        }
+    }
+
+    @Override
     public void connect(Uktucp uktucp) throws KtucpInitException {
         NetChannelConfig netChannelConfig = this.netConfigData.getNetChannelConfig();
 
@@ -64,7 +76,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         // 绑定端口回调
         bindCallBack = bindCallBack != null ? bindCallBack : new StartUpNettyServerCallBack() {
             @Override
-            public void apply(Future<Void> future) {
+            public void apply(Future<Void> future, int netId) {
                 if (future == null || future.isSuccess()) {
                     if (logger.isInfoEnabled()) {
                         logger.info(clientClassName + " Net connect success local[{}] to remote[{}]: ",
@@ -81,7 +93,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         // 成功启动回调
         activeCallBack = activeCallBack != null ? activeCallBack : new StartUpNettyServerCallBack() {
             @Override
-            public void apply(Future<Void> future) {
+            public void apply(Future<Void> future, int netId) {
                 if (future == null || future.isSuccess()) {
                     if (logger.isInfoEnabled()) {
                         logger.info(clientClassName + " Net active start success local[{}] to remote[{}]: ",
@@ -140,7 +152,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
     /**
      * 启动服务
      *
-     * @param uktucp           KCP对象
+     * @param uktucp         KCP对象
      * @param localAddress   本地地址
      * @param remoteAddress  远端地址
      * @param waiter         等待
@@ -160,7 +172,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         ChannelFuture bindFuture = bootstrap.connect(remoteAddress, localAddress).addListener((FutureListener<Void>) future -> {
             // 绑定成功回调
             if (bindCallBack != null) {
-                bindCallBack.apply(future);
+                bindCallBack.apply(future, this.netId);
             }
             // 计数
             waiter.countDown();
@@ -168,7 +180,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
         bindFuture.syncUninterruptibly().addListener((FutureListener<Void>) future -> {
             // 启动成功回调
             if (activeCallBack != null) {
-                activeCallBack.apply(future);
+                activeCallBack.apply(future, this.netId);
             }
             this.onConnected(uktucp, (ChannelFuture) future, localAddress, remoteAddress);
             // 计数

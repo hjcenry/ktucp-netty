@@ -25,7 +25,7 @@ public class KtucpOutPutImp implements KtucpOutput {
         INet net = KtucpNetManager.getNet(user.getCurrentNetId());
         if (net == null) {
             if (logger.isWarnEnabled()) {
-                logger.warn(String.format("KcpOutput writeAndFlush currentNet[%d] error : net null", user.getCurrentNetId()));
+                logger.warn(String.format("KtucpOutput writeAndFlush currentNet[%d] error : net null", user.getCurrentNetId()));
             }
             return;
         }

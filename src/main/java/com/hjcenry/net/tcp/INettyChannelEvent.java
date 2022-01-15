@@ -24,7 +24,7 @@ public interface INettyChannelEvent {
      * 通道关闭事件
      *
      * @param channel 通道
-     * @param uktucp    kcp对象 <b>仅TCP连接能通过channel找到KCP对象</b>
+     * @param uktucp  kcp对象 <b>仅TCP连接能通过channel找到KCP对象，并且使用TCP连接发送过消息</b>
      */
     public void onChannelInactive(Channel channel, Uktucp uktucp);
 

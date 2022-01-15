@@ -62,6 +62,35 @@ public class User {
     }
 
     /**
+     * 获取Channel
+     *
+     * @return Channel
+     */
+    public Channel getNetChannel(int netId) {
+        return this.userNetManager.getChannel(netId);
+    }
+
+    /**
+     * 获取通道远端地址
+     *
+     * @param netId 网络id
+     * @return 远端地址
+     */
+    public InetSocketAddress getNetRemoteAddress(int netId) {
+        return this.userNetManager.getRemoteSocketAddress(netId);
+    }
+
+    /**
+     * 获取通道本地地址
+     *
+     * @param netId 网络id
+     * @return 本地地址
+     */
+    public InetSocketAddress getNetLocalAddress(int netId) {
+        return this.userNetManager.getLocalSocketAddress(netId);
+    }
+
+    /**
      * 获取当前网络通道Channel
      *
      * @return 当前网络通道Channel
