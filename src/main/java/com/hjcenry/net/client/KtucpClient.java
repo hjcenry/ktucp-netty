@@ -11,6 +11,7 @@ import com.hjcenry.kcp.IChannelManager;
 import com.hjcenry.kcp.KtucpNetManager;
 import com.hjcenry.kcp.KtucpOutPutImp;
 import com.hjcenry.kcp.KtucpOutput;
+import com.hjcenry.kcp.ScheduleTask;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.User;
 import com.hjcenry.kcp.listener.KtucpListener;
@@ -75,6 +76,10 @@ public class KtucpClient {
      * 解码器
      */
     private IMessageDecoder messageDecoder;
+    /**
+     * 定时器
+     */
+    private ScheduleTask scheduleTask;
     /**
      * 网络服务ID
      */
@@ -166,6 +171,11 @@ public class KtucpClient {
         // 创建网络服务
         createNetClients();
 
+        // 配置
+        long delay = channelConfig.getInterval();
+        // 启动客户端时间轮
+        hashedWheelTimer.newTimeout(this.scheduleTask, delay, TimeUnit.MILLISECONDS);
+
         // 停服钩子
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
@@ -237,6 +247,7 @@ public class KtucpClient {
         KtucpOutput ktucpOutput = new KtucpOutPutImp();
         // 创建KCP对象
         Uktucp newUktucp = new Uktucp(ktucpOutput, ktucpListener, messageExecutor, channelConfig, channelManager, messageEncoder, messageDecoder);
+        this.scheduleTask = new ScheduleTask(messageExecutor, newUktucp, hashedWheelTimer, channelConfig.isKcpIdleTimeoutClose());
         // 创建user
         User user = new User(channelConfig.getNetNum());
         newUktucp.user(user);

@@ -212,15 +212,6 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
                 ktucpListener.handleException(throwable, uktucp);
             }
         });
-
-        HashedWheelTimer hashedWheelTimer = this.netConfigData.getHashedWheelTimer();
-        // 配置
-        ChannelConfig channelConfig = this.netConfigData.getChannelConfig();
-        boolean isKcpIdleTimeoutClose = channelConfig.isKcpIdleTimeoutClose();
-        ScheduleTask scheduleTask = new ScheduleTask(messageExecutor, uktucp, hashedWheelTimer, isKcpIdleTimeoutClose);
-        long delay = channelConfig.getInterval();
-        // 启动客户端时间轮
-        hashedWheelTimer.newTimeout(scheduleTask, delay, TimeUnit.MILLISECONDS);
     }
 
     protected void bindChannel(Uktucp uktucp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {

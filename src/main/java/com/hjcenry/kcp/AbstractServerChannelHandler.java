@@ -94,6 +94,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
 
         // 创建kcp对象
         Uktucp newUktucp = createUkcp(channel, readObject, byteBuf, iMessageExecutor);
+        ScheduleTask scheduleTask = new ScheduleTask(iMessageExecutor, newUktucp, hashedWheelTimer, channelConfig.isKcpIdleTimeoutClose());
 
         iMessageExecutor.execute(() -> {
             try {
@@ -106,7 +107,6 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         // 读消息
         newUktucp.read(byteBuf);
 
-        ScheduleTask scheduleTask = new ScheduleTask(iMessageExecutor, newUktucp, hashedWheelTimer, channelConfig.isKcpIdleTimeoutClose());
         hashedWheelTimer.newTimeout(scheduleTask, newUktucp.getInterval(), TimeUnit.MILLISECONDS);
     }
 
@@ -117,6 +117,13 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         //每次收到消息重绑定地址
         InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
         user.changeRemoteAddress(this.netId, remoteAddress);
+
+        UserNetManager userNetManager = user.getUserNetManager();
+        if (!userNetManager.containsNet(this.netId)) {
+            // 没有网络，绑定一下
+            InetSocketAddress localAddress = getLocalAddress(channel, readObject);
+            this.bindChannel(uktucp, channel, localAddress, remoteAddress);
+        }
         // 读消息
         uktucp.read(byteBuf);
     }

@@ -33,6 +33,16 @@ public class UserNetManager {
     }
 
     /**
+     * 是否拥有网络信息
+     *
+     * @param netId 网络id
+     * @return 是否拥有网络信息
+     */
+    public boolean containsNet(int netId) {
+        return this.netInfoMap.containsKey(netId);
+    }
+
+    /**
      * 添加网络信息
      * <b>适用于多通道网络</b>
      *

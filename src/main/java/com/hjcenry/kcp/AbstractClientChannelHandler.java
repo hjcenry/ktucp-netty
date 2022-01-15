@@ -49,6 +49,9 @@ public abstract class AbstractClientChannelHandler extends AbstractChannelHandle
 
     @Override
     protected void channelRead0(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf) {
-        uktucp.read(byteBuf);
+        if (uktucp != null) {
+            // 如果连接提前被关闭，这里有可能取空
+            uktucp.read(byteBuf);
+        }
     }
 }
