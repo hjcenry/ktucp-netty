@@ -5,7 +5,7 @@
     <parent>
         <artifactId>ktucp-netty</artifactId>
         <groupId>io.github.hjcenry</groupId>
-        <version>1.0</version>
+        <version>1.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>io.github.hjcenry</groupId>
             <artifactId>ktucp-net</artifactId>
-            <version>1.0</version>
+            <version>${ktucp.version}</version>
         </dependency>
     </dependencies>
 </project>
