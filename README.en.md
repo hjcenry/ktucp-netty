@@ -1,69 +1,226 @@
-# java-Kcp
+# ktucp-netty
 
 [![Powered][2]][1]
 
 [1]: https://github.com/skywind3000/kcp
 [2]: http://skywind3000.github.io/word/images/kcp.svg
 
-Kcp based on netty version (including implementation of fec function)
+[中文文档](https://github.com/hjcenry/ktucp-netty/blob/master/README.md)
 
-KCP is a udp-based fast and reliable protocol (rudp), which can reduce the average delay by 30% -40% at the cost of wasting 10% -20% of bandwidth over TCP, and reduce the maximum delay by three times the transmission effect.
+> **KTUCP implementation: KCP as the application layer, TCP/UDP multi-channel protocol layer**
 
-> **Protocol layer combine with TCP & UDP,and upper layer implement by KCP**
+`KCP is a udp-based fast and reliable protocol (udp), which can reduce the average delay by 30% -40% at the cost of wasting 10% -20% of bandwidth over TCP, and reduce the maximum delay by three times the transmission effect.`
 
-- Most implements are Based on https://github.com/l42111996/java-Kcp.git
-- Improve convince for code using and interface
-- Add tcp and udp protocol with choosing yourself
-- Make channel can be changed when running 
+Modifications based on the original author's open source project:https://github.com/l42111996/java-Kcp.git
 
-> Kcp based on netty version (including implementation of fec function)
+Original projects:
 
-KCP is a udp-based fast and reliable protocol (udp), which can reduce the average delay by 30% -40% at the cost of wasting 10% -20% of bandwidth over TCP, and reduce the maximum delay by three times the transmission effect.
+**Communication architecture**
 
-# maven repository:
-
-```java
-// TODO
+```
+Application <--> UDP <--> KCP
 ```
 
-`The followings are refrerence from origin author`
+**Function realization**
 
-# Using method and parameters
-1. [Server-side example](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleServer.java)
-2. [Client Example](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleClient.java)
-3. [Best Practices](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
-4. [A lot of information](https://github.com/skywind3000/kcp)
-5. Compatible with C #, [java server](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java), [c #Client](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
-6. [Encountered problems](https://github.com/l42111996/java-Kcp/blob/master/QA.md)
-7. [Performance test results](https://github.com/l42111996/java-Kcp/blob/master/Benchmark.md)
-8. [Compatible with kcp-go, including fec compatible](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4GoExampleClient.java)
+- Java version of KCP basic implementation
+- Optimize flush policy for KCP
+- Based on event-driven, make full use of multi-core
+- You can configure multiple KCP parameters
+- You can configure conv or address(IP +port) to determine unique connections
+- Include fec to reduce latency
+- With crc32 check
 
-# compatibility:
-1. Compatible with c version of kcp
-2. fec implementation based on https://github.com/Backblaze/JavaReedSolomon
-3. Perfectly compatible C# version, https://github.com/l42111996/csharp-kcp, quickly build the network library before the game
+New additions and optimizations based on original projects:
 
-# optimization:
-1. Based on event-driven, make full use of multi-core
-2. Optimize fastack logic and reduce traffic by 10%
-3. Optimize the check function.
-4. Optimize collection iterators.
-5. Include fec to reduce latency
-6. With crc32 check
-7. Use the time wheel to optimize the CPU usage of a large number of connections
-8. Use directbuf and object pool, no gc pressure
-9. Increase the use of conv or ip + port to determine the uniqueness of the channel. The game is recommended to use conv and tcp configuration. [Related information](https://github.com/skywind3000/kcp/wiki/Cooperate-With-Tcp-Server)
-10. Changes in export ip such as 4G switching wifi when adding games will not cause disconnection
+**Communication architecture**
+```
+ Application
+     ┌┴┐          
+   UDP TCP  ...(several nets)
+     └┬┘
+     KCP
+```
+
+**Optimizations and additions**
+
+- Multiple TCP/UDP underlying network services can be configured
+- Supports TCP and UDP channel switching
+- You can customize Netty parameters for underlying networks
+- Supports adding custom handlers for the underlying network
+- Supports custom codec
+- Supports switching the network under the KCP layer
+- Support to force a network to send data
+- Support for custom time services (you can use your own System's cache time System instead of using the System.CurrentTimemillis method)
+
+# Maven Repository
+```xml
+<dependency>
+    <groupId>io.github.hjcenry</groupId>
+    <artifactId>kcp-net</artifactId>
+    <version>1.6</version>
+</dependency>
+```
+
+# Quick Start
+
+## Server
+
+## 1. create ChannelConfig
+```java
+ChannelConfig channelConfig = new ChannelConfig();
+channelConfig.nodelay(true, 40, 2, true);
+channelConfig.setSndWnd(512);
+channelConfig.setRcvWnd(512);
+channelConfig.setMtu(512);
+channelConfig.setTimeoutMillis(10000);
+channelConfig.setUseConvChannel(true);
+// you can configure most here
+// ...
+```
+
+## 2. create KtucpListener to listener the net event
+```java
+KtucpListener ktucpListener = new KtucpListener() {
+    @Override
+    public void onConnected(int netId, Uktucp uktucp) {
+        System.out.println("onConnected:" + uktucp);
+    }
+
+    @Override
+    public void handleReceive(Object object, Uktucp uktucp) throws Exception {
+        System.out.println("handleReceive:" + uktucp);
+        ByteBuf byteBuf = (ByteBuf) object;
+        // TODO read byteBuf
+    }
+
+    @Override
+    public void handleException(Throwable ex, Uktucp uktucp) {
+        System.out.println("handleException:" + uktucp);
+        ex.printStackTrace();
+    }
+
+    @Override
+    public void handleClose(Uktucp uktucp) {
+        System.out.println("handleClose:" + uktucp);
+        System.out.println("snmp:" + uktucp.getSnmp());
+    }
+
+    @Override
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleIdleTimeout:" + uktucp);
+    }
+};
+```
+
+## 3. create and init KtcupServer
+```java
+KtucpServer ktucpServer = new KtucpServer();
+// start a UDP port for default
+ktucpServer.init(ktucpListener, channelConfig, 8888);
+```
+
+## 4. watch log
+```java
+[main] INFO com.hjcenry.log.KtucpLog - KtucpServer Start :
+===========================================================
+TcpNetServer{bindPort=8888, bossGroup.num=1, ioGroup.num=8}
+UdpNetServer{bindPort=8888, bossGroup.num=8, ioGroup.num=0}
+===========================================================
+```
 
 
-# Relevant information
-1. https://github.com/skywind3000/kcp The original ccp version of kcp
-2. https://github.com/xtaci/kcp-go go version kcp, with a lot of optimization
-3. https://github.com/Backblaze/JavaReedSolomon java version fec
-4. https://github.com/LMAX-Exchange/disruptor High-performance inter-thread messaging library
-5. https://github.com/JCTools/JCTools efficient concurrent library
-6. https://github.com/szhnet/kcp-netty A kcp for java version
-7. https://github.com/l42111996/csharp-kcp C# version of kcp based on dotNetty, perfectly compatible
+## Client
 
-# communicate with
-QQ: 526167774
+## 1. create ChannelConfig
+```java
+ChannelConfig channelConfig = new ChannelConfig();
+// the client has a parameter convId more than server
+channelConfig.setConv(1);
+channelConfig.nodelay(true, 40, 2, true);
+channelConfig.setSndWnd(512);
+channelConfig.setRcvWnd(512);
+channelConfig.setMtu(512);
+channelConfig.setTimeoutMillis(10000);
+channelConfig.setUseConvChannel(true);
+// you can configure most here
+// ...
+```
+
+## 2. create KtucpListener to listener the net event 
+```java
+KtucpListener ktucpListener = new KtucpListener() {
+    @Override
+    public void onConnected(int netId, Uktucp uktucp) {
+        System.out.println("onConnected:" + uktucp);
+    }
+
+    @Override
+    public void handleReceive(Object object, Uktucp uktucp) throws Exception {
+        System.out.println("handleReceive:" + uktucp);
+        ByteBuf byteBuf = (ByteBuf) object;
+        // TODO read byteBuf
+    }
+
+    @Override
+    public void handleException(Throwable ex, Uktucp uktucp) {
+        System.out.println("handleException:" + uktucp);
+        ex.printStackTrace();
+    }
+
+    @Override
+    public void handleClose(Uktucp uktucp) {
+        System.out.println("handleClose:" + uktucp);
+        System.out.println("snmp:" + uktucp.getSnmp());
+    }
+
+    @Override
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleIdleTimeout:" + uktucp);
+    }
+};
+```
+
+## 3. create and init KtcupClient
+```java
+// start a UDP port for default
+KtucpClient ktucpClient = new KtucpClient();
+ktucpClient.init(ktucpListener, channelConfig, new InetSocketAddress("127.0.0.1", 8888));
+```
+
+## 4. watch log
+```java
+[main] INFO com.hjcenry.log.KtucpLog - KtucpClient Connect :
+===========================================================
+TcpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=8}
+UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
+===========================================================
+```
+
+> `The above is a simple example to quickly start the KTUCP service and client. For details about how to use multiple networks, see Examples 3 and 4 below`
+
+# Use methods and examples
+1. [The server end sample](https://github.com/hjcenry/ktucp-netty/blob/master/ketucp-example/src/main/test/KcpRttExampleServer.java)
+2. [The client end sample](https://github.com/hjcenry/ktucp-netty/blob/master/ketucp-example/src/main/test/KcpRttExampleClient.java)
+3. [Multi-network Server example](https://github.com/hjcenry/ktucp-netty/blob/master/ketucp-example/src/main/test/KcpMultiNetExampleServer.java)
+4. [Multi-network client example](https://github.com/hjcenry/ktucp-netty/blob/master/ketucp-example/src/main/test/KcpMultiNetExampleClient.java)
+5. [Best practices](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
+6. [A large number of data](https://github.com/skywind3000/kcp)
+7. [C# compatible server](https://github.com/hjcenry/ktucp-netty/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java) , 
+8. [C# client](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
+9. [Compatible with kcp-go](https://github.com/hjcenry/ktucp-netty/blob/master/kcp-example/src/main/java/test/Kcp4GoExampleClient.java)
+
+# The relevant data
+
+1. https://github.com/skywind3000/kcp Original C version of KCP
+2. https://github.com/xtaci/kcp-go The GO version, KCP with a lot of optimizations
+3. https://github.com/Backblaze/JavaReedSolomon Java version of fec
+4. https://github.com/LMAX-Exchange/disruptor High performance interthread messaging library
+5. https://github.com/JCTools/JCTools High performance concurrent library
+6. https://github.com/szhnet/kcp-netty Java version of a KCP
+7. https://github.com/l42111996/csharp-kcp DotNetty based c# version of KCP, perfect compatibility
+8. https://github.com/l42111996/java-Kcp.git The original version of this open source library
+
+# Communication
+
+- wechat:hjcenry

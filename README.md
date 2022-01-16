@@ -3,72 +3,226 @@
 [![Powered][2]][1]
 
 [1]: https://github.com/skywind3000/kcp
+
 [2]: http://skywind3000.github.io/word/images/kcp.svg
 
-[README in english](https://github.com/hjcenry/ktucp-netty/README.en.md)
+[README in english](https://github.com/hjcenry/ktucp-netty/blob/master/README.en.md)
 
-> **基于TCP/UDP为通信协议，以KCP实现可靠通信的双通道协议栈实现**
+> **KTUCP实现：以KCP为应用层，TCP/UDP为多通道协议层**
 
-- 基于https://github.com/l42111996/java-Kcp.git的大部分实现
-- 对代码使用中不方便的地方进行接口改造
-- 加入TCP和UDP，并通过配置灵活选择
-- 加入TCP和UDP通道切换机制
+`KCP是一个基于udp的快速可靠协议(udp)，能以比 TCP浪费10%-20%的带宽的代价，换取平均延迟降低 30%-40%，且最大延迟降低三倍的传输效果。`
 
+基于原作者的开源项目的修改：https://github.com/l42111996/java-Kcp.git
 
-> 原项目是基于netty版本实现的kcp(包含fec功能的实现)
+原项目：
 
-KCP是一个基于udp的快速可靠协议(udp)，能以比 TCP浪费10%-20%的带宽的代价，换取平均延迟降低 30%-40%，且最大延迟降低三倍的传输效果。
+**通信架构**
 
-# maven地址:
-
-```java
-// TODO
+```
+应用层 <--> UDP <--> KCP
 ```
 
-`以下文档引用原作者的README`
+**实现功能**
 
-> # 使用方法以及参数
-> 1. [server端示例](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleServer.java)
-> 2. [client端实例](https://github.com/hjcenry/ktucp-netty/src/main/test/KcpRttExampleClient.java)
-> 3. [最佳实践](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
-> 4. [大量资料](https://github.com/skywind3000/kcp)
-> 5. 兼容c#端，[java服务端](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java) , [c#客户端](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
-> 6. [遇到过的问题](https://github.com/l42111996/java-Kcp/blob/master/QA.md)
-> 7. [性能测试结果](https://github.com/l42111996/java-Kcp/blob/master/Benchmark.md)
-> 8. [兼容kcp-go,包含fec兼容](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4GoExampleClient.java)
-> 
-> 
-> # 兼容性:
-> 1. 兼容c版本kcp
-> 2. fec基于 https://github.com/Backblaze/JavaReedSolomon 实现
-> 3. 完美兼容的C#版本，https://github.com/l42111996/csharp-kcp ，快速构建游戏前后端网络库
-> 
-> # 稳定性：
-> 已经是稳定版本，据统计有5~10款上线项目接入，包含腾讯，快手等公司产品使用
-> 
-> # 优化:
-> 1. 基于事件驱动,充分利用多核
-> 2. 优化fastack逻辑，降低10%流量
-> 3. 优化check函数。
-> 4. 优化集合迭代器。
-> 5. 包含fec,降低延迟
-> 6. 附带crc32校验
-> 7. 使用时间轮,优化大量连接cpu占用
-> 8. 使用directbuf和对象池，无gc压力
-> 9. 增加使用conv或者ip+port确定channel唯一性，游戏建议使用conv与tcp配置使用,[相关资料](https://github.com/skywind3000/kcp/wiki/Cooperate-With-Tcp-Server)
-> 10. 增加游戏使用时4G切换wifi等出口ip变动不会导致连接断开
-> 
-> # 相关资料
-> 1. https://github.com/skywind3000/kcp 原版c版本的kcp
-> 2. https://github.com/xtaci/kcp-go go版本kcp,有大量优化
-> 3. https://github.com/Backblaze/JavaReedSolomon java版本fec
-> 4. https://github.com/LMAX-Exchange/disruptor 高性能的线程间消息传递库
-> 5. https://github.com/JCTools/JCTools 高性能并发库
-> 6. https://github.com/szhnet/kcp-netty java版本的一个kcp
-> 7. https://github.com/l42111996/csharp-kcp 基于dotNetty的c#版本kcp,完美兼容
->    
->    
-> # 交流
-> 原作者QQ:526167774
-   
-    
+- java版kcp基本实现
+- 优化kcp的flush策略
+- 基于事件驱动，利用多核性能
+- 支持配置多种kcp参数
+- 支持配置conv或address(ip+port)确定唯一连接
+- 支持fec（降低延迟）
+- 支持crc32校验
+
+基于原项目的新增和优化：
+
+**通信架构**
+```
+ 应用层
+  ┌┴┐          
+UDP TCP  ...(N个网络)
+  └┬┘
+  KCP
+```
+
+**优化和新增**
+
+- 支持配置多个TCP/UDP底层网络服务
+- 支持TCP和UDP通道切换
+- 支持自定义配置底层网络的Netty参数
+- 支持添加底层网络的自定义Handler
+- 支持自定义编解码
+- 支持切换KCP下层的网络
+- 支持强制使用某一个网络发送数据
+- 支持使用自定义时间服务（可以不用System.currentTimeMillis方法而使用自己系统的缓存时间系统）
+
+# maven地址
+```xml
+<dependency>
+    <groupId>io.github.hjcenry</groupId>
+    <artifactId>kcp-net</artifactId>
+    <version>1.6</version>
+</dependency>
+```
+
+# 快速开始
+
+## 服务端
+
+## 1. 创建ChannelConfig
+```java
+ChannelConfig channelConfig = new ChannelConfig();
+channelConfig.nodelay(true, 40, 2, true);
+channelConfig.setSndWnd(512);
+channelConfig.setRcvWnd(512);
+channelConfig.setMtu(512);
+channelConfig.setTimeoutMillis(10000);
+channelConfig.setUseConvChannel(true);
+// 这里可以配置大部分的参数
+// ...
+```
+
+## 2. 创建KtucpListener监听网络事件
+```java
+KtucpListener ktucpListener = new KtucpListener() {
+    @Override
+    public void onConnected(int netId, Uktucp uktucp) {
+        System.out.println("onConnected:" + uktucp);
+    }
+
+    @Override
+    public void handleReceive(Object object, Uktucp uktucp) throws Exception {
+        System.out.println("handleReceive:" + uktucp);
+        ByteBuf byteBuf = (ByteBuf) object;
+        // TODO read byteBuf
+    }
+
+    @Override
+    public void handleException(Throwable ex, Uktucp uktucp) {
+        System.out.println("handleException:" + uktucp);
+        ex.printStackTrace();
+    }
+
+    @Override
+    public void handleClose(Uktucp uktucp) {
+        System.out.println("handleClose:" + uktucp);
+        System.out.println("snmp:" + uktucp.getSnmp());
+    }
+
+    @Override
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleIdleTimeout:" + uktucp);
+    }
+};
+```
+
+## 3. 创建并启动KtcupServer
+```java
+KtucpServer ktucpServer = new KtucpServer();
+// 默认启动一个UDP端口
+ktucpServer.init(ktucpListener, channelConfig, 8888);
+```
+
+## 4. 观察日志
+```java
+[main] INFO com.hjcenry.log.KtucpLog - KtucpServer Start :
+===========================================================
+TcpNetServer{bindPort=8888, bossGroup.num=1, ioGroup.num=8}
+UdpNetServer{bindPort=8888, bossGroup.num=8, ioGroup.num=0}
+===========================================================
+```
+
+
+## 客户端
+
+## 1. 创建ChannelConfig
+```java
+ChannelConfig channelConfig = new ChannelConfig();
+// 客户端比服务端多一个设置convId
+channelConfig.setConv(1);
+channelConfig.nodelay(true, 40, 2, true);
+channelConfig.setSndWnd(512);
+channelConfig.setRcvWnd(512);
+channelConfig.setMtu(512);
+channelConfig.setTimeoutMillis(10000);
+channelConfig.setUseConvChannel(true);
+// 这里可以配置大部分的参数
+// ...
+```
+
+## 2. 创建KtucpListener监听网络事件
+```java
+KtucpListener ktucpListener = new KtucpListener() {
+    @Override
+    public void onConnected(int netId, Uktucp uktucp) {
+        System.out.println("onConnected:" + uktucp);
+    }
+
+    @Override
+    public void handleReceive(Object object, Uktucp uktucp) throws Exception {
+        System.out.println("handleReceive:" + uktucp);
+        ByteBuf byteBuf = (ByteBuf) object;
+        // TODO read byteBuf
+    }
+
+    @Override
+    public void handleException(Throwable ex, Uktucp uktucp) {
+        System.out.println("handleException:" + uktucp);
+        ex.printStackTrace();
+    }
+
+    @Override
+    public void handleClose(Uktucp uktucp) {
+        System.out.println("handleClose:" + uktucp);
+        System.out.println("snmp:" + uktucp.getSnmp());
+    }
+
+    @Override
+    public void handleIdleTimeout(Uktucp uktucp) {
+        System.out.println("handleIdleTimeout:" + uktucp);
+    }
+};
+```
+
+## 3. 创建并启动KtcupClient
+```java
+// 默认启动一个UDP端口
+KtucpClient ktucpClient = new KtucpClient();
+ktucpClient.init(ktucpListener, channelConfig, new InetSocketAddress("127.0.0.1", 8888));
+```
+
+## 4. 观察日志
+```java
+[main] INFO com.hjcenry.log.KtucpLog - KtucpClient Connect :
+===========================================================
+TcpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=8}
+UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
+===========================================================
+```
+
+> `以上是简单的示例，可快速启动ktucp服务和客户端。关于多网络的详细使用方法，可参考下面的例子3和4`
+
+# 使用方法以及例子
+1. [server端示例](https://github.com/hjcenry/ktucp-netty/ketucp-example/src/main/test/KcpRttExampleServer.java)
+2. [client端实例](https://github.com/hjcenry/ktucp-netty/ketucp-example/src/main/test/KcpRttExampleClient.java)
+3. [多网络server端示例](https://github.com/hjcenry/ktucp-netty/ketucp-example/src/main/test/KcpMultiNetExampleServer.java)
+4. [多网络client端实例](https://github.com/hjcenry/ktucp-netty/ketucp-example/src/main/test/KcpMultiNetExampleClient.java)
+5. [最佳实践](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
+6. [大量资料](https://github.com/skywind3000/kcp)
+7. [C#兼容版服务端](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java) , [c#客户端](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
+8. [遇到过的问题](https://github.com/l42111996/java-Kcp/blob/master/QA.md)
+9. [性能测试结果](https://github.com/l42111996/java-Kcp/blob/master/Benchmark.md)
+10. [兼容kcp-go](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4GoExampleClient.java)
+
+# 相关资料
+
+1. https://github.com/skywind3000/kcp 原版c版本的kcp
+2. https://github.com/xtaci/kcp-go go版本kcp,有大量优化
+3. https://github.com/Backblaze/JavaReedSolomon java版本fec
+4. https://github.com/LMAX-Exchange/disruptor 高性能的线程间消息传递库
+5. https://github.com/JCTools/JCTools 高性能并发库
+6. https://github.com/szhnet/kcp-netty java版本的一个kcp
+7. https://github.com/l42111996/csharp-kcp 基于dotNetty的c#版本kcp,完美兼容
+8. https://github.com/l42111996/java-Kcp.git 此开源库的原版本
+
+# 交流
+
+- 微信:hjcenry

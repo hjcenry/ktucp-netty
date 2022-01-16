@@ -3,10 +3,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
 
     <name>ktucp-netty</name>
     <description>Java implementation of KCP(TCP/UDP multiple channel) based on Netty(include fec implement)</description>
     <url>https://github.com/hjcenry/ktucp-netty</url>
+    <modules>
+        <module>ktucp-base</module>
+        <module>ktucp-net</module>
+        <module>ktucp-fec</module>
+        <module>ktucp-example</module>
+    </modules>
 
     <groupId>io.github.hjcenry</groupId>
     <artifactId>ktucp-netty</artifactId>
