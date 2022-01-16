@@ -54,6 +54,21 @@ UDP TCP  ...(N个网络)
 - 支持强制使用某一个网络发送数据
 - 支持使用自定义时间服务（可以不用System.currentTimeMillis方法而使用自己系统的缓存时间系统）
 
+# 为什么要使用多网络
+
+根据[原作者对KCP的使用建议](https://github.com/skywind3000/kcp/wiki/Cooperate-With-Tcp-Server)
+实际使用中，最好是通过TCP和UDP结合的方式使用，有以下几点原因：
+1. 中国网络情况特殊，可能出现UDP包被防火墙拦下
+2. TCP网络在使用LB的情况下，两端中的一端可能出现感知不到对方断开的情况
+3. 可通过TCP的可靠连接作为备用线路，UDP不通的情况下可使用备用TCP
+
+结合以上需求，**这套开源库的目的就是整合TCP和UDP网络到同一套KCP机制中，甚至可以支持启动多TCP多UDP服务。**
+并且最大程度的开放底层Netty配置权限，用户可根据自己的需求定制化自己的网络框架
+
+`欢迎大家使用，有任何bug以及优化需求，环境提issue讨论`
+
+# 快速开始
+
 # maven地址
 ```xml
 <dependency>
@@ -62,8 +77,6 @@ UDP TCP  ...(N个网络)
     <version>1.6</version>
 </dependency>
 ```
-
-# 快速开始
 
 ## 服务端
 
