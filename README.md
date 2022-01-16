@@ -73,8 +73,8 @@ UDP TCP  ...(N个网络)
 ```xml
 <dependency>
     <groupId>io.github.hjcenry</groupId>
-    <artifactId>kcp-net</artifactId>
-    <version>1.6</version>
+    <artifactId>ktucp-net</artifactId>
+    <version>1.1</version>
 </dependency>
 ```
 
