@@ -21,6 +21,7 @@ public interface KtucpListener {
      *
      * @param object 接受对象
      * @param uktucp KTUCP对象
+     * @throws Exception 异常
      */
     void handleReceive(Object object, Uktucp uktucp) throws Exception;
 

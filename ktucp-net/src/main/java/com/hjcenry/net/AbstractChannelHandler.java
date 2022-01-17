@@ -132,7 +132,7 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
      *
      * @param channel    通道
      * @param readObject 数据
-     * @param uktucp       kcp对象
+     * @param uktucp     kcp对象
      * @param byteBuf    字节流
      */
     protected abstract void channelRead0(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf);

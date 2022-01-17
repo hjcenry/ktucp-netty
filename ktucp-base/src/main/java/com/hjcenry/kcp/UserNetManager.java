@@ -275,4 +275,17 @@ public class UserNetManager {
         return userNetInfo.getLocalAddress();
     }
 
+    /**
+     * 设置本地地址
+     *
+     * @param netId              网络id
+     * @param localSocketAddress 本地地址
+     */
+    public void setLocalSocketAddress(int netId, InetSocketAddress localSocketAddress) {
+        if (!this.netInfoMap.containsKey(netId)) {
+            return;
+        }
+        UserNetInfo userNetInfo = this.netInfoMap.get(netId);
+        userNetInfo.setLocalAddress(localSocketAddress);
+    }
 }

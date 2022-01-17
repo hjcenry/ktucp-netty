@@ -67,7 +67,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
     /**
      * 绑定通道
      *
-     * @param uktucp          kcp对象
+     * @param uktucp        kcp对象
      * @param channel       通道
      * @param localAddress  本地地址
      * @param remoteAddress 远端地址
@@ -85,6 +85,13 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
             return;
         }
 
+        // 获取convId
+        int conv = channelManager.getConvIdByByteBuf(byteBuf);
+        // 检测是否可创建对象
+        if (!checkCreateUktucp(channel, readObject, conv, byteBuf)) {
+            return;
+        }
+
         //如果是新连接第一个包的sn必须为0
         int sn = getSn(byteBuf, channelConfig);
         if (sn != 0) {
@@ -95,7 +102,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         IMessageExecutor iMessageExecutor = iMessageExecutorPool.getMessageExecutor();
 
         // 创建kcp对象
-        Uktucp newUktucp = createUkcp(channel, readObject, byteBuf, iMessageExecutor);
+        Uktucp newUktucp = createUkcp(conv, channel, readObject, iMessageExecutor);
         ScheduleTask scheduleTask = new ScheduleTask(iMessageExecutor, newUktucp, hashedWheelTimer, channelConfig.isKcpIdleTimeoutClose());
 
         iMessageExecutor.execute(() -> {
@@ -112,20 +119,37 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         hashedWheelTimer.newTimeout(scheduleTask, newUktucp.getInterval(), TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * 检测是否可以创建连接对象
+     *
+     * @param channel    通道
+     * @param readObject 数据
+     * @param convId     唯一id
+     * @param byteBuf    字节流
+     * @return 是否可创建
+     */
+    protected boolean checkCreateUktucp(Channel channel, Object readObject, int convId, ByteBuf byteBuf) {
+        return true;
+    }
+
     protected void channelReadFromUktucp(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf) {
         User user = uktucp.user();
+
         //绑定当前网络
         uktucp.changeCurrentNetId(this.netId);
+
         //每次收到消息重绑定地址
         InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
         user.changeRemoteAddress(this.netId, remoteAddress);
+        InetSocketAddress localAddress = getLocalAddress(channel, readObject);
+        user.changeLocalAddress(this.netId, localAddress);
 
         UserNetManager userNetManager = user.getUserNetManager();
         if (!userNetManager.containsNet(this.netId)) {
             // 没有网络，绑定一下
-            InetSocketAddress localAddress = getLocalAddress(channel, readObject);
             this.bindChannel(uktucp, channel, localAddress, remoteAddress);
         }
+
         // 读消息
         uktucp.read(byteBuf);
     }
@@ -133,13 +157,13 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
     /**
      * 创建KCP 对象
      *
+     * @param conv             convId
      * @param channel          通道
      * @param readObject       读消息对象
-     * @param readByteBuf      读消息
      * @param iMessageExecutor 处理器
      * @return kcp对象
      */
-    protected Uktucp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
+    protected Uktucp createUkcp(int conv, Channel channel, Object readObject, IMessageExecutor iMessageExecutor) {
         KtucpOutput ktucpOutput = this.getKcpOutput();
         Uktucp newUktucp = new Uktucp(ktucpOutput, ktucpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
         // 创建user
@@ -152,7 +176,6 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
         this.bindChannel(newUktucp, channel, localAddress, remoteAddress);
         // 绑定convId
-        int conv = channelManager.getConvIdByByteBuf(readByteBuf);
         if (conv > 0) {
             newUktucp.setConv(conv);
         }

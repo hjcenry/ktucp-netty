@@ -2,12 +2,13 @@ package com.hjcenry.net.server.tcp;
 
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
+import com.hjcenry.log.KtucpLog;
 import com.hjcenry.threadpool.IMessageExecutor;
 import com.hjcenry.threadpool.IMessageExecutorPool;
 import com.hjcenry.net.server.AbstractServerChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.ServerHandlerChannelManager;
+import com.hjcenry.kcp.HandlerChannelManager;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.NetChannelConfig;
@@ -32,7 +33,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     /**
      * TCP有连接存在，可通过连接映射KCP对象
      */
-    private final ServerHandlerChannelManager clientChannelManager;
+    private final HandlerChannelManager clientChannelManager;
 
     public TcpServerChannelHandler(int netId, IChannelManager channelManager,
                                    ChannelConfig channelConfig,
@@ -49,12 +50,12 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
                 hashedWheelTimer,
                 messageEncoder,
                 messageDecoder);
-        this.clientChannelManager = new ServerHandlerChannelManager();
+        this.clientChannelManager = new HandlerChannelManager();
     }
 
     @Override
-    protected Uktucp createUkcp(Channel channel, Object readObject, ByteBuf readByteBuf, IMessageExecutor iMessageExecutor) {
-        Uktucp uktucp = super.createUkcp(channel, readObject, readByteBuf, iMessageExecutor);
+    protected Uktucp createUkcp(int conv, Channel channel, Object readObject, IMessageExecutor iMessageExecutor) {
+        Uktucp uktucp = super.createUkcp(conv, channel, readObject, iMessageExecutor);
         // 添加TCP通道管理
         this.clientChannelManager.addKcp(uktucp, channel);
         return uktucp;
@@ -78,9 +79,48 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     @Override
     protected Uktucp getReadUkcp(Channel channel, Object msg) {
         // 获取KCP对象
+        // TCP连接直接通过Channel管理中取对象，可有效检测数据包来源
+        Uktucp uktucp = this.clientChannelManager.getKcp(channel);
+        if (uktucp != null) {
+            return uktucp;
+        }
+        // 没有TCP连接，就只能从conv取了
         ByteBuf byteBuf = (ByteBuf) msg;
         InetSocketAddress remoteAddress = this.getRemoteAddress(channel, msg);
-        return this.channelManager.getKcp(byteBuf, remoteAddress);
+        uktucp = this.channelManager.getKcp(byteBuf, remoteAddress);
+        if (uktucp == null) {
+            // 确实是找不到这个用户了
+            return null;
+        }
+        Channel curChannel = uktucp.user().getNetChannel(this.netId);
+        // convId取出来的人，和当期Channel不是同一个
+        if (curChannel != null && curChannel != channel) {
+            // 如果convId的用户从来没登陆过TCP，那么理论上，其他人也是可以利用这个伪造正常用户的TCP消息的，外层做好保证用户的第一条消息一定是TCP
+            return null;
+        }
+        return uktucp;
+    }
+
+    @Override
+    protected boolean checkCreateUktucp(Channel channel, Object readObject, int convId, ByteBuf byteBuf) {
+        // TCP的Uktucp对象是通过channel取的，
+        // 如果存在造假情况，那数据包中传的convId有可能已经存在
+        // 因此这里通过convId再次取一下Uktucp，如果已存在，并且不是同一个Channel，则不创建新的Uktucp对象
+        InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
+        // 检测Manager中的KCP对象是否存在
+        Uktucp uktucp = channelManager.getKcp(byteBuf, remoteAddress);
+        if (uktucp == null) {
+            return true;
+        }
+        Channel curChannel = uktucp.user().getNetChannel(this.netId);
+        if (curChannel != null && curChannel != channel) {
+            // convId取出来的人，身上有channel，并且不是同一个Channel
+            if (KtucpLog.logger.isWarnEnabled()) {
+                KtucpLog.logger.warn(String.format("Uktucp.%d.may.be.attack.by.%s", convId, channel));
+            }
+            return false;
+        }
+        return true;
     }
 
     @Override

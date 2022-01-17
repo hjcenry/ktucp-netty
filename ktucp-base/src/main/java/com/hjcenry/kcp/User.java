@@ -121,6 +121,10 @@ public class User {
         this.userNetManager.setRemoteSocketAddress(netId, remoteAddress);
     }
 
+    public void changeLocalAddress(int netId, InetSocketAddress localAddress) {
+        this.userNetManager.setLocalSocketAddress(netId, localAddress);
+    }
+
     public int getCurrentNetId() {
         return currentNetId;
     }

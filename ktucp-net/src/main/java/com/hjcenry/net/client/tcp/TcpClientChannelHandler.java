@@ -3,7 +3,7 @@ package com.hjcenry.net.client.tcp;
 import com.hjcenry.net.client.AbstractClientChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.ServerHandlerChannelManager;
+import com.hjcenry.kcp.HandlerChannelManager;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.net.NetChannelConfig;
 import io.netty.buffer.ByteBuf;
@@ -26,11 +26,11 @@ public class TcpClientChannelHandler extends AbstractClientChannelHandler {
     /**
      * TCP有连接存在，可通过连接映射KCP对象
      */
-    private final ServerHandlerChannelManager clientChannelManager;
+    private final HandlerChannelManager clientChannelManager;
 
     public TcpClientChannelHandler(int netId, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
         super(netId, channelManager, channelConfig, netChannelConfig);
-        this.clientChannelManager = new ServerHandlerChannelManager();
+        this.clientChannelManager = new HandlerChannelManager();
     }
 
     @Override
@@ -41,6 +41,12 @@ public class TcpClientChannelHandler extends AbstractClientChannelHandler {
     @Override
     protected Uktucp getReadUkcp(Channel channel, Object msg) {
         // 获取KCP对象
+        // 先从Channel获取
+        Uktucp uktucp = this.clientChannelManager.getKcp(channel);
+        if (uktucp != null) {
+            return uktucp;
+        }
+        // 从convId获取
         ByteBuf byteBuf = (ByteBuf) msg;
         InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
         return this.channelManager.getKcp(byteBuf, remoteAddress);

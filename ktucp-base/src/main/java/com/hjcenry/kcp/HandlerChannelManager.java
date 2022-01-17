@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  * @date 2022/1/8 17:28
  **/
-public class ServerHandlerChannelManager {
+public class HandlerChannelManager {
 
-    private Map<Channel, Uktucp> ukcpMap = new ConcurrentHashMap<>();
+    private final Map<Channel, Uktucp> ukcpMap = new ConcurrentHashMap<>();
 
     public Uktucp getKcp(Channel channel) {
         return ukcpMap.get(channel);
