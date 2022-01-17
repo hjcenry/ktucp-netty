@@ -56,7 +56,7 @@ New additions and optimizations based on original projects:
 # Why use multiple networks为什么要使用多网络
 
 According to[Origin author's recommendations on the use of KCP](https://github.com/skywind3000/kcp/wiki/Cooperate-With-Tcp-Server)
-In practice, it is best to use TCP and UDP for the following reasons:
+In practice, it is best to use TCP and UDP:
 1. The Chinese network is special, and UDP packets may be blocked by the firewall
 2. When LB is used on the TCP network, one end of the TCP network may fail to detect the connection of the other end
 3. A reliable TCP connection can be used as the standby line. When UDP fails, the standby TCP connection can be used
@@ -64,7 +64,7 @@ In practice, it is best to use TCP and UDP for the following reasons:
 Combined with the above requirements,**The purpose of this open source library is to integrate TCP and UDP networks into the same KCP mechanism, and even enable multiple TCP and UDP services.**
 In addition, the basic Netty configuration permission is open to the maximum extent, and users can customize their own network framework according to their own requirements
 
-`Welcome to use, there are any bugs and optimization requirements, environment issue discussion`
+`Welcome to use, there are any bugs and optimization requirements, welcome to commit issues to discuss`
 
 # Quick Start
 
