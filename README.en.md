@@ -210,13 +210,12 @@ UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
 ===========================================================
 ```
 
-# Use caution
-
-- **ConvId uniqueness** : Can not verify udp address or TCP channel, only rely on convId to obtain a unique Uktucp object
-- **Verify the validity of convId** : To determine the source of convId, you can determine whether the UDP adress or TCP channel is the same as the last source (this method needs to pay attention to handling the disconnection during 4G and wifi switching).
-- **Handle a lot of network connection management** : because the underlying configuration is more open, the default is KCP timeout, that is, disconnect all connections, if there are other configurations, please note the connection release time
-
 > `The above is a simple example to quickly start the KTUCP service and client. For details about how to use multiple networks, see Examples 3 and 4 below`
+
+# Use caution
+- **ConvId uniqueness** : Can not verify udp address or TCP channel, only rely on convId to obtain a unique Uktucp object
+- **Validation of convId** : Determine the source of convId to prevent forgery. Because convId is read from message packets, the framework performs Channel uniqueness judgment on message packets of TCP connections, but UDP does not have a good judgment method at the moment. For example, the server allocates a token to the client, the client sends the token to the client in each packet header, and the server verifies the token in each packet header
+- **Handle several network connections management** : because the underlying configuration is more open, the default is KCP timeout, that is, disconnect all connections, if there are other configurations, please note the connection release time
 
 # Use methods and examples
 1. [The server end sample](https://github.com/hjcenry/ktucp-netty/blob/master/ketucp-example/src/main/test/KcpRttExampleServer.java)
@@ -225,7 +224,7 @@ UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
 4. [Multi-network client example](https://github.com/hjcenry/ktucp-netty/blob/master/ketucp-example/src/main/test/KcpMultiNetExampleClient.java)
 5. [Best practices](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
 6. [A large number of data](https://github.com/skywind3000/kcp)
-7. [C# compatible server](https://github.com/hjcenry/ktucp-netty/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java) , 
+7. [C# compatible server](https://github.com/hjcenry/ktucp-netty/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java)
 8. [C# client](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
 9. [Compatible with kcp-go](https://github.com/hjcenry/ktucp-netty/blob/master/kcp-example/src/main/java/test/Kcp4GoExampleClient.java)
 

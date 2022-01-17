@@ -18,6 +18,8 @@ import io.netty.util.HashedWheelTimer;
 import java.net.InetSocketAddress;
 
 /**
+ * UDP没有比较安全可靠的能在网络层检测消息可靠性的方法
+ *
  * @author hejincheng
  * @version 1.0
  * @date 2022/1/8 16:24
