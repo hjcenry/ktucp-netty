@@ -210,6 +210,12 @@ UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
 ===========================================================
 ```
 
+# Use caution
+
+- **ConvId uniqueness** : Can not verify udp address or TCP channel, only rely on convId to obtain a unique Uktucp object
+- **Verify the validity of convId** : To determine the source of convId, you can determine whether the UDP adress or TCP channel is the same as the last source (this method needs to pay attention to handling the disconnection during 4G and wifi switching).
+- **Handle a lot of network connection management** : because the underlying configuration is more open, the default is KCP timeout, that is, disconnect all connections, if there are other configurations, please note the connection release time
+
 > `The above is a simple example to quickly start the KTUCP service and client. For details about how to use multiple networks, see Examples 3 and 4 below`
 
 # Use methods and examples
