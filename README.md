@@ -131,7 +131,7 @@ KtucpListener ktucpListener = new KtucpListener() {
 };
 ```
 
-## 3. 创建并启动KtcupServer
+## 3. 创建并启动KtucpServer
 ```java
 KtucpServer ktucpServer = new KtucpServer();
 // 默认启动一个UDP端口
@@ -199,7 +199,7 @@ KtucpListener ktucpListener = new KtucpListener() {
 };
 ```
 
-## 3. 创建并启动KtcupClient
+## 3. 创建并启动KtucpClient
 ```java
 // 默认启动一个UDP端口
 KtucpClient ktucpClient = new KtucpClient();

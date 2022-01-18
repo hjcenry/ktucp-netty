@@ -126,7 +126,7 @@ KtucpListener ktucpListener = new KtucpListener() {
 };
 ```
 
-## 3. create and init KtcupServer
+## 3. create and init KtucpServer
 ```java
 KtucpServer ktucpServer = new KtucpServer();
 // start a UDP port for default
@@ -194,7 +194,7 @@ KtucpListener ktucpListener = new KtucpListener() {
 };
 ```
 
-## 3. create and init KtcupClient
+## 3. create and init KtucpClient
 ```java
 // start a UDP port for default
 KtucpClient ktucpClient = new KtucpClient();
