@@ -213,6 +213,7 @@ UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
 > `The above is a simple example to quickly start the KTUCP service and client. For details about how to use multiple networks, see Examples 3 and 4 below`
 
 # Use caution
+- **Client implementation** : this framework only implemented the Java version, other versions of the client needs to be implemented according to this communication architecture (UDP channel only, but also compatible with the original KCP)
 - **ConvId uniqueness** : Can not verify udp address or TCP channel, only rely on convId to obtain a unique Uktucp object
 - **Validation of convId** : Determine the source of convId to prevent forgery. Because convId is read from message packets, the framework performs Channel uniqueness judgment on message packets of TCP connections, but UDP does not have a good judgment method at the moment. For example, the server allocates a token to the client, the client sends the token to the client in each packet header, and the server verifies the token in each packet header
 - **Handle several network connections management** : because the underlying configuration is more open, the default is KCP timeout, that is, disconnect all connections, if there are other configurations, please note the connection release time
