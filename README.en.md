@@ -66,6 +66,9 @@ In addition, the basic Netty configuration permission is open to the maximum ext
 
 `Welcome to use, there are any bugs and optimization requirements, welcome to commit issues to discuss`
 
+# Java Doc
+https://hjcenry.com/ktucp/doc/
+
 # Quick Start
 
 # Maven Repository

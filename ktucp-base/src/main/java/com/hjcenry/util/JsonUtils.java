@@ -72,6 +72,7 @@ public class JsonUtils {
      *
      * @param s     字符串
      * @param clazz 类
+     * @param <T>   泛型
      * @return list
      */
     public static <T> List<T> stringToList(String s, Class<T> clazz) {

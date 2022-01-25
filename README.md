@@ -71,6 +71,9 @@ UDP TCP  ...(N个网络)
 
 `欢迎大家使用，有任何bug以及优化需求，欢迎提issue讨论`
 
+# Java Doc
+https://hjcenry.com/ktucp/doc/
+
 # 快速开始
 
 # maven地址

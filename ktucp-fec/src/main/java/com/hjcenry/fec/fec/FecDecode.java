@@ -72,8 +72,8 @@ public class FecDecode implements IFecDecode {
      * 注意: pkt在传入后不要做释放操作 pkt的data不要做释放操作
      * 返回的对象是被丢掉的数据 需要手动 release
      *
-     * @param
-     * @return
+     * @param pkt 消息包
+     * @return 解码消息
      */
     @Override
     public List<ByteBuf> decode(final FecPacket pkt) {
