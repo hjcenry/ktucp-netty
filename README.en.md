@@ -53,7 +53,7 @@ New additions and optimizations based on original projects:
 - Support to force a network to send data
 - Support for custom time services (you can use your own System's cache time System instead of using the System.CurrentTimemillis method)
 
-# Why use multiple networks为什么要使用多网络
+# Why use multiple networks
 
 According to[Origin author's recommendations on the use of KCP](https://github.com/skywind3000/kcp/wiki/Cooperate-With-Tcp-Server)
 In practice, it is best to use TCP and UDP:
