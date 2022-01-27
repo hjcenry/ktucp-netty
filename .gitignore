@@ -1,3 +1,7 @@
 /.idea/
 /.target/
 /target/
+/ktucp-base/target/classes/com/hjcenry/
+/ktucp-example/target/classes/com/hjcenry/
+/ktucp-fec/target/classes/com/hjcenry/fec/
+/ktucp-net/target/classes/com/hjcenry/net/

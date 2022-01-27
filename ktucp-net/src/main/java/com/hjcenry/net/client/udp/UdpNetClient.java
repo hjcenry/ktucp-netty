@@ -94,15 +94,15 @@ public class UdpNetClient extends AbstractNetClient {
 
     @Override
     public void send(ByteBuf data, User user) {
-        Channel channel = user.getCurrentNetChannel();
+        Channel channel = user.getNetChannel(this.netId);
         if (channel == null) {
             if (AbstractNet.logger.isWarnEnabled()) {
-                AbstractNet.logger.warn(String.format("KcpOutput writeAndFlush currentNet[%d] error : channel null", user.getCurrentNetId()));
+                AbstractNet.logger.warn(String.format("KcpOutput writeAndFlush net[%d] error : channel null", this.netId));
             }
             return;
         }
         // UDP写数据包
-        DatagramPacket msg = new DatagramPacket(data, user.getCurrentNetRemoteAddress(), user.getCurrentNetLocalAddress());
+        DatagramPacket msg = new DatagramPacket(data, user.getNetRemoteAddress(this.netId), user.getNetLocalAddress(this.netId));
         channel.writeAndFlush(msg);
     }
 }

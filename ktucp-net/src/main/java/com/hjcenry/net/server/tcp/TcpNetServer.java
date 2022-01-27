@@ -151,10 +151,10 @@ public class TcpNetServer extends AbstractNetServer {
 
     @Override
     public void send(ByteBuf data, User user) {
-        Channel channel = user.getCurrentNetChannel();
+        Channel channel = user.getNetChannel(this.netId);
         if (channel == null) {
             if (AbstractNet.logger.isWarnEnabled()) {
-                AbstractNet.logger.warn(String.format("KcpOutput writeAndFlush currentNet[%d] error : channel null", user.getCurrentNetId()));
+                AbstractNet.logger.warn(String.format("KcpOutput writeAndFlush net[%d] error : channel null", this.netId));
             }
             return;
         }
