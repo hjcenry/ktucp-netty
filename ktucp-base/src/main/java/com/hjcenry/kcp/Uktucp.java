@@ -629,6 +629,26 @@ public class Uktucp extends DefaultAttributeMap {
     }
 
     /**
+     * 获取强制使用网络id
+     *
+     * @return 强制使用网络id
+     */
+    public int getForceUseNet() {
+        User user = user();
+        return user.getForceUseNetId();
+    }
+
+    /**
+     * 是否强制使用网络
+     *
+     * @return 是否强制使用网络
+     */
+    public boolean isForceUseNet() {
+        User user = user();
+        return user.getForceUseNetId() != INet.NO_USE_FORCE_NET_ID;
+    }
+
+    /**
      * 重置为不强制使用网络
      */
     public void resetForceUseNet() {
