@@ -62,10 +62,9 @@ public abstract class MessageToByteEncoder<I> implements IMessageEncoder {
     /**
      * byteBuf消息编码
      *
-     * @param uktucp
+     * @param uktucp        ktucp对象
      * @param writeObject   写对象
      * @param targetByteBuf 目标byteBuf
-     * @return 编码对象
      */
     protected abstract void encodeObject(Uktucp uktucp, I writeObject, ByteBuf targetByteBuf);
 
@@ -73,7 +72,7 @@ public abstract class MessageToByteEncoder<I> implements IMessageEncoder {
      * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
      * {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      */
-    public boolean acceptOutboundMessage(Object msg) throws Exception {
+    protected boolean acceptOutboundMessage(Object msg) throws Exception {
         return matcher.match(msg);
     }
 

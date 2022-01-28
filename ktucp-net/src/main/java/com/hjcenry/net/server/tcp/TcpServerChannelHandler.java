@@ -33,7 +33,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     /**
      * TCP有连接存在，可通过连接映射KCP对象
      */
-    private final HandlerChannelManager clientChannelManager;
+    private final HandlerChannelManager serverChannelManager;
 
     public TcpServerChannelHandler(int netId, IChannelManager channelManager,
                                    ChannelConfig channelConfig,
@@ -50,14 +50,14 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
                 hashedWheelTimer,
                 messageEncoder,
                 messageDecoder);
-        this.clientChannelManager = new HandlerChannelManager();
+        this.serverChannelManager = new HandlerChannelManager();
     }
 
     @Override
     protected Uktucp createUkcp(int conv, Channel channel, Object readObject, IMessageExecutor iMessageExecutor) {
         Uktucp uktucp = super.createUkcp(conv, channel, readObject, iMessageExecutor);
         // 添加TCP通道管理
-        this.clientChannelManager.addKcp(uktucp, channel);
+        this.serverChannelManager.addKcp(uktucp, channel);
         return uktucp;
     }
 
@@ -65,9 +65,9 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     protected void channelReadFromUktucp(Channel channel, Object readObject, Uktucp uktucp, ByteBuf byteBuf) {
         super.channelReadFromUktucp(channel, readObject, uktucp, byteBuf);
         // 添加TCP通道管理
-        Uktucp oldUktucp = this.clientChannelManager.getKcp(channel);
+        Uktucp oldUktucp = this.serverChannelManager.getKcp(channel);
         if (oldUktucp == null) {
-            this.clientChannelManager.addKcp(uktucp, channel);
+            this.serverChannelManager.addKcp(uktucp, channel);
         }
     }
 
@@ -80,7 +80,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
     protected Uktucp getReadUkcp(Channel channel, Object msg) {
         // 获取KCP对象
         // TCP连接直接通过Channel管理中取对象，可有效检测数据包来源
-        Uktucp uktucp = this.clientChannelManager.getKcp(channel);
+        Uktucp uktucp = this.serverChannelManager.getKcp(channel);
         if (uktucp != null) {
             return uktucp;
         }
@@ -93,9 +93,11 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
             return null;
         }
         Channel curChannel = uktucp.user().getNetChannel(this.netId);
-        // convId取出来的人，和当期Channel不是同一个
+        // convId取出来的人，和当前Channel不是同一个
         if (curChannel != null && curChannel != channel) {
-            // 如果convId的用户从来没登陆过TCP，那么理论上，其他人也是可以利用这个伪造正常用户的TCP消息的，外层做好保证用户的第一条消息一定是TCP
+            // 如果convId的用户从来没登陆过TCP，或者用户的TCP网络掉线了，那么理论上，其他人也是可以利用这个间隙伪造正常用户的TCP消息的，
+            // 这里只做一层TCP安全检测兜底，如果依赖这里的逻辑进行假消息检测，需要外层做好保证用户的第一条消息一定是TCP
+            // 另外一种解决方案：应用层自己对消息包做一层封装，服务器为每个用户分配一个token，客户端拿这个token来访问网络
             return null;
         }
         return uktucp;
@@ -128,13 +130,13 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
         super.channelInactive(ctx);
         Channel channel = ctx.channel();
         // 移除绑定
-        this.clientChannelManager.remove(channel);
+        this.serverChannelManager.remove(channel);
     }
 
     @Override
     protected Uktucp getUkcpByChannel(Channel channel) {
         // 通过TCP Channel获取KCP对象
-        return this.clientChannelManager.getKcp(channel);
+        return this.serverChannelManager.getKcp(channel);
     }
 
     @Override

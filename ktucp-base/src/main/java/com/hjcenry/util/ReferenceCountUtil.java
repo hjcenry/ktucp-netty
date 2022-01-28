@@ -87,6 +87,9 @@ public final class ReferenceCountUtil {
     /**
      * Try to call {@link ReferenceCounted#release()} if the specified message implements {@link ReferenceCounted}.
      * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
+     *
+     * @param msg 消息
+     * @return 是否成功
      */
     public static boolean release(Object msg) {
         if (msg == null) {
@@ -104,6 +107,10 @@ public final class ReferenceCountUtil {
     /**
      * Try to call {@link ReferenceCounted#release(int)} if the specified message implements {@link ReferenceCounted}.
      * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
+     *
+     * @param msg       消息
+     * @param decrement 减少数量
+     * @return 是否成功
      */
     public static boolean release(Object msg, int decrement) {
         if (msg == null) {

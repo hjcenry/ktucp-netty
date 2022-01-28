@@ -67,6 +67,9 @@ UDP TCP  ...(N个网络)
 
 `欢迎大家使用，有任何bug以及优化需求，欢迎提issue讨论`
 
+# Java Doc
+https://hjcenry.com/ktucp/doc/
+
 # 快速开始
 
 # maven地址
@@ -127,7 +130,7 @@ KtucpListener ktucpListener = new KtucpListener() {
 };
 ```
 
-## 3. 创建并启动KtcupServer
+## 3. 创建并启动KtucpServer
 ```java
 KtucpServer ktucpServer = new KtucpServer();
 // 默认启动一个UDP端口
@@ -195,7 +198,7 @@ KtucpListener ktucpListener = new KtucpListener() {
 };
 ```
 
-## 3. 创建并启动KtcupClient
+## 3. 创建并启动KtucpClient
 ```java
 // 默认启动一个UDP端口
 KtucpClient ktucpClient = new KtucpClient();
@@ -211,13 +214,14 @@ UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
 ===========================================================
 ```
 
+> `以上是简单的示例，可快速启动ktucp服务和客户端。关于多网络的详细使用方法，可参考下面的例子3和4`
+
 # 使用注意
 
+- **客户端实现**：该框架仅实现了Java版本，其他版本的客户端需要根据此通信架构进行实现（单纯使用UDP通道的话，也是能和原版KCP兼容的）
 - **convId的唯一性**：因不能校验udp的address或tcp的channel，只能依靠convId获取唯一Uktucp对象
-- **convId的有效性校验**：需要判断convId的来源，可以判断udp的adress或tcp的channel是否和上次来源一致（这种做法需要注意处理在4G和wifi切换时的掉线）
-- **处理好多网络连接管理***：因底层配置较为开放，默认为KCP超时即断开所有连接，如有其他配置，请注意连接释放时机
-
-> `以上是简单的示例，可快速启动ktucp服务和客户端。关于多网络的详细使用方法，可参考下面的例子3和4`
+- **convId的有效性校验**：需要判断convId的来源，防止伪造。因convId从消息包读取，框架底层对TCP连接的消息包做了Channel唯一性判断处理，但UDP暂时没有好的判断方法。如果有安全性需求，应用层需要自己做一个防伪检测，比如服务端给客户端分配一个token，客户端在每个消息包头把token带过来，服务端对每个包头的token做一个校验
+- **处理好多网络连接管理**：因底层配置较为开放，默认为KCP超时即断开所有连接，如有其他配置，请注意连接释放时机
 
 # 使用方法以及例子
 1. [server端示例](https://github.com/hjcenry/ktucp-netty/ketucp-example/src/main/test/KcpRttExampleServer.java)
@@ -226,10 +230,9 @@ UdpNetClient{connect= local:null -> remote:/127.0.0.1:8888, ioGroup.num=0}
 4. [多网络client端实例](https://github.com/hjcenry/ktucp-netty/ketucp-example/src/main/test/KcpMultiNetExampleClient.java)
 5. [最佳实践](https://github.com/skywind3000/kcp/wiki/KCP-Best-Practice)
 6. [大量资料](https://github.com/skywind3000/kcp)
-7. [C#兼容版服务端](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java) , [c#客户端](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
-8. [遇到过的问题](https://github.com/l42111996/java-Kcp/blob/master/QA.md)
-9. [性能测试结果](https://github.com/l42111996/java-Kcp/blob/master/Benchmark.md)
-10. [兼容kcp-go](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4GoExampleClient.java)
+7. [C#兼容版服务端](https://github.com/hjcenry/ktucp-netty/blob/master/kcp-example/src/main/java/test/Kcp4sharpExampleServer.java) 
+8. [C#客户端](https://github.com/l42111996/csharp-kcp/blob/master/example-Kcp/KcpRttExampleClient.cs)
+9. [兼容kcp-go](https://github.com/l42111996/java-Kcp/blob/master/kcp-example/src/main/java/test/Kcp4GoExampleClient.java)
 
 # 相关资料
 

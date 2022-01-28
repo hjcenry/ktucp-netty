@@ -61,7 +61,7 @@ public abstract class SimpleKtucpListener<I> implements KtucpListener {
     /**
      * Returns {@code true} if the given message should be handled.
      */
-    public boolean acceptInboundMessage(Object msg) throws Exception {
+    protected boolean acceptInboundMessage(Object msg) throws Exception {
         return matcher.match(msg);
     }
 }
