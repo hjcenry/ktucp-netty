@@ -98,7 +98,7 @@ public class TcpNetClient extends AbstractNetClient {
         long writeIdleTime = tcpChannelConfig.getWriteIdleTime();
         long allIdleTime = tcpChannelConfig.getAllIdleTime();
         if (readIdleTime > 0 || writeIdleTime > 0 || allIdleTime > 0) {
-            cp.addLast(new IdleStateHandler(tcpChannelConfig.getReadIdleTime(), tcpChannelConfig.getWriteIdleTime(), tcpChannelConfig.getAllIdleTime(), TimeUnit.MILLISECONDS));
+            cp.addLast(new IdleStateHandler(readIdleTime, writeIdleTime, allIdleTime, TimeUnit.MILLISECONDS));
         }
 
         if (tcpChannelConfig.getMaxFrameLength() > 0) {
