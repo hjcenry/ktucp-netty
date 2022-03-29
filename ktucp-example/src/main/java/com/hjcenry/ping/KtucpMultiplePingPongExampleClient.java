@@ -55,7 +55,7 @@ public class KtucpMultiplePingPongExampleClient implements KtucpListener {
                 byte[] bytes = new byte[1000];
                 byteBuf.writeBytes(bytes);
                 uktucp.write(byteBuf);
-                byteBuf.release();
+//                byteBuf.release();
             }
         }, 100, 100);
     }
