@@ -103,7 +103,7 @@ public class TcpNetServer extends AbstractNetServer {
         for (Map.Entry<ChannelOption, Object> entry : tcpChannelConfig.getChildChannelOptions().entrySet()) {
             ChannelOption channelOption = entry.getKey();
             Object value = entry.getValue();
-            serverBootstrap.option(channelOption, value);
+            serverBootstrap.childOption(channelOption, value);
         }
     }
 
