@@ -1,0 +1,16 @@
+option java_package = "com.hjcenry.test";// (生成Java类时包名；C#类的命名空间)
+
+// KCP测试协议
+message TestKcp {
+  required int64 clientTime = 1;
+  required int32 msgIndex = 2;
+  optional string content = 3;
+}
+
+// KCP测试协议
+message TestKcp_S2C {
+  required int64 clientTime = 1;
+  required int64 serverTime = 2;
+  required int32 msgIndex = 3;
+  optional string content = 4;
+}
