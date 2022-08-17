@@ -103,7 +103,7 @@ public class TcpNetServer extends AbstractNetServer {
         for (Map.Entry<ChannelOption, Object> entry : tcpChannelConfig.getChildChannelOptions().entrySet()) {
             ChannelOption channelOption = entry.getKey();
             Object value = entry.getValue();
-            serverBootstrap.option(channelOption, value);
+            serverBootstrap.childOption(channelOption, value);
         }
     }
 
@@ -124,7 +124,7 @@ public class TcpNetServer extends AbstractNetServer {
         long writeIdleTime = tcpChannelConfig.getWriteIdleTime();
         long allIdleTime = tcpChannelConfig.getAllIdleTime();
         if (readIdleTime > 0 || writeIdleTime > 0 || allIdleTime > 0) {
-            cp.addLast(new IdleStateHandler(tcpChannelConfig.getReadIdleTime(), tcpChannelConfig.getWriteIdleTime(), tcpChannelConfig.getAllIdleTime(), TimeUnit.MILLISECONDS));
+            cp.addLast(new IdleStateHandler(readIdleTime, writeIdleTime, allIdleTime, TimeUnit.MILLISECONDS));
         }
 
         if (tcpChannelConfig.getMaxFrameLength() > 0) {
@@ -151,10 +151,10 @@ public class TcpNetServer extends AbstractNetServer {
 
     @Override
     public void send(ByteBuf data, User user) {
-        Channel channel = user.getCurrentNetChannel();
+        Channel channel = user.getNetChannel(this.netId);
         if (channel == null) {
             if (AbstractNet.logger.isWarnEnabled()) {
-                AbstractNet.logger.warn(String.format("KcpOutput writeAndFlush currentNet[%d] error : channel null", user.getCurrentNetId()));
+                AbstractNet.logger.warn(String.format("KcpOutput writeAndFlush net[%d] error : channel null", this.netId));
             }
             return;
         }
