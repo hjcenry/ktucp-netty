@@ -2,9 +2,7 @@ package com.hjcenry.net;
 
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
-import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.KtucpNetManager;
+import com.hjcenry.kcp.*;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.log.KtucpLog;
 import com.hjcenry.threadpool.IMessageExecutorPool;
@@ -12,7 +10,8 @@ import com.hjcenry.util.Assert;
 import io.netty.util.HashedWheelTimer;
 import org.slf4j.Logger;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author hejincheng
@@ -51,9 +50,31 @@ public abstract class KtucpNet {
      */
     protected IMessageExecutorPool messageExecutorPool;
     /**
-     * 网络ID
+     * 网络管理器
      */
-    protected static AtomicInteger autoNetId = new AtomicInteger(0);
+    protected final KtucpNetManager ktucpNetManager = new KtucpNetManager();
+
+    /**
+     * 检测是否可通过地址管理网络
+     *
+     * @param channelConfig 配置
+     * @return 是否可通过地址管理网络
+     */
+    protected boolean checkCanManageAddress(ChannelConfig channelConfig) {
+        Set<NetTypeEnum> netTypeEnums = new HashSet<>(channelConfig.getNetChannelConfigList().size());
+        for (INetChannelConfig netChannelConfig : channelConfig.getNetChannelConfigList()) {
+            NetChannelConfig config = (NetChannelConfig) netChannelConfig;
+            netTypeEnums.add(config.getNetTypeEnum());
+        }
+        if (netTypeEnums.size() > 1) {
+            // 超过一种类型的网络，不能使用Address管理KCP
+            if (logger.isErrorEnabled()) {
+                logger.error("Can not use address to manager channel when net size greater than 1");
+            }
+            return false;
+        }
+        return true;
+    }
 
     /**
      * 获取网络配置
@@ -86,11 +107,38 @@ public abstract class KtucpNet {
      */
     protected int getNetId(NetChannelConfig config) {
         int netId = config.getNetId();
-        int autoId = autoNetId.incrementAndGet();
+        int autoId = KtucpGlobalNetManager.createNetId();
         // 配置了取自定义id，否则取自增id
         netId = netId > 0 ? netId : autoId;
         // 判重
-        Assert.isTrue(!KtucpNetManager.containsNet(netId), String.format("create net failed : netId[%d] exist", netId));
+        Assert.isTrue(!KtucpGlobalNetManager.containsNet(netId), String.format("create net failed : netId[%d] exist", netId));
         return netId;
+    }
+
+    protected void logPrintNet() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (INet net : this.ktucpNetManager.getAllNet()) {
+            stringBuilder.append(net.toString()).append("\n");
+        }
+        logger.info(String.format("%s Connect : " +
+                        "\n===========================================================\n" +
+                        "%s" +
+                        "===========================================================",
+                this.getClass().getSimpleName(), stringBuilder));
+    }
+
+    public void stop() {
+        // 停止所有网络
+        for (INet net : this.ktucpNetManager.getAllNet()) {
+            net.stop();
+            KtucpGlobalNetManager.removeNet(net);
+        }
+        this.ktucpNetManager.clear();
+        if (this.messageExecutorPool != null) {
+            this.messageExecutorPool.stop();
+        }
+        if (this.hashedWheelTimer != null) {
+            this.hashedWheelTimer.stop();
+        }
     }
 }

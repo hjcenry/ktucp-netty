@@ -77,7 +77,7 @@ public class UserNetManager {
      * @return 是否是UDP网络
      */
     private boolean isUdpChannel(int netId) {
-        INet net = KtucpNetManager.getNet(netId);
+        INet net = KtucpGlobalNetManager.getNet(netId);
         if (net == null) {
             return false;
         }
@@ -90,7 +90,7 @@ public class UserNetManager {
     public void closeAllChannel() {
         for (UserNetInfo userNetInfo : this.netInfoMap.values()) {
             int netId = userNetInfo.getNetId();
-            INet net = KtucpNetManager.getNet(netId);
+            INet net = KtucpGlobalNetManager.getNet(netId);
             if (net == null) {
                 continue;
             }

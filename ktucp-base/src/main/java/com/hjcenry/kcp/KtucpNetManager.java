@@ -16,15 +16,24 @@ public class KtucpNetManager {
     /**
      * 网络map
      */
-    private static final Map<Integer, INet> NET_MAP = new HashMap<>();
+    private final Map<Integer, INet> NET_MAP = new HashMap<>();
 
     /**
      * 添加网络
      *
      * @param net 网络
      */
-    public static void addNet(INet net) {
+    public void addNet(INet net) {
         NET_MAP.put(net.getNetId(), net);
+    }
+
+    /**
+     * 移除网络
+     *
+     * @param net 网络
+     */
+    public void removeNet(INet net) {
+        NET_MAP.remove(net.getNetId());
     }
 
     /**
@@ -33,7 +42,7 @@ public class KtucpNetManager {
      * @param netId 网络id
      * @return 网络
      */
-    public static INet getNet(int netId) {
+    public INet getNet(int netId) {
         if (!NET_MAP.containsKey(netId)) {
             return null;
         }
@@ -46,7 +55,7 @@ public class KtucpNetManager {
      * @param netId 网络id
      * @return 网络是否存在
      */
-    public static boolean containsNet(int netId) {
+    public boolean containsNet(int netId) {
         return NET_MAP.containsKey(netId);
     }
 
@@ -55,7 +64,14 @@ public class KtucpNetManager {
      *
      * @return 所有网络
      */
-    public static Collection<INet> getAllNet() {
+    public Collection<INet> getAllNet() {
         return NET_MAP.values();
+    }
+
+    /**
+     * 清空网络
+     */
+    public void clear() {
+        NET_MAP.clear();
     }
 }

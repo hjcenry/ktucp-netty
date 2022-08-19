@@ -97,11 +97,7 @@ public class KtucpClient extends KtucpNet {
             this.channelManager = new ClientConvChannelManager(convIndex);
         } else {
             // address管理
-            if (channelConfig.getNetChannelConfigList().size() > 1) {
-                // 超过一种类型的网络，不能使用Adress管理KCP
-                if (logger.isErrorEnabled()) {
-                    logger.error("Can not use address to manager channel when net size greater than 1");
-                }
+            if (!checkCanManageAddress(channelConfig)) {
                 return;
             }
             this.channelManager = new ClientAddressChannelManager();
@@ -138,7 +134,7 @@ public class KtucpClient extends KtucpNet {
      */
     public void connect() {
         // 启动网络服务
-        for (INet net : KtucpNetManager.getAllNet()) {
+        for (INet net : this.ktucpNetManager.getAllNet()) {
             try {
                 INetClient client = (INetClient) net;
                 client.connect(this.uktucp);
@@ -148,7 +144,7 @@ public class KtucpClient extends KtucpNet {
         }
 
         // 打印启动网络信息
-        this.logPrintNetServer();
+        this.logPrintNet();
 
         // 启动完成回调
         IKtucpClientStartUpCallback callback = channelConfig.getClientStartUpCallback();
@@ -164,7 +160,7 @@ public class KtucpClient extends KtucpNet {
      */
     public void reconnect() {
         // 启动网络服务
-        for (INet net : KtucpNetManager.getAllNet()) {
+        for (INet net : this.ktucpNetManager.getAllNet()) {
             try {
                 INetClient client = (INetClient) net;
                 client.reconnect(this.uktucp);
@@ -176,7 +172,7 @@ public class KtucpClient extends KtucpNet {
 
     public void reconnect(int netId) {
         // 启动网络服务
-        INet net = KtucpNetManager.getNet(netId);
+        INet net = KtucpGlobalNetManager.getNet(netId);
         if (net == null) {
             return;
         }
@@ -228,20 +224,9 @@ public class KtucpClient extends KtucpNet {
                 continue;
             }
             // 添加到网络manager
-            KtucpNetManager.addNet(netClient);
+            this.ktucpNetManager.addNet(netClient);
+            KtucpGlobalNetManager.addNet(netClient);
         }
-    }
-
-    private void logPrintNetServer() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (INet netServer : KtucpNetManager.getAllNet()) {
-            stringBuilder.append(netServer.toString()).append("\n");
-        }
-        logger.info(String.format("%s Connect : " +
-                        "\n===========================================================\n" +
-                        "%s" +
-                        "===========================================================",
-                this.getClass().getSimpleName(), stringBuilder));
     }
 
     private INet createNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
@@ -250,17 +235,6 @@ public class KtucpClient extends KtucpNet {
         } catch (KtucpInitException e) {
             logger.error("", e);
             return null;
-        }
-    }
-
-    public void stop() {
-        // 停止所有网络
-        KtucpNetManager.getAllNet().forEach(INet::stop);
-        if (this.messageExecutorPool != null) {
-            this.messageExecutorPool.stop();
-        }
-        if (this.hashedWheelTimer != null) {
-            this.hashedWheelTimer.stop();
         }
     }
 

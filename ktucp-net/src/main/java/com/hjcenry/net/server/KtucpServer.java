@@ -3,11 +3,10 @@ package com.hjcenry.net.server;
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
 import com.hjcenry.exception.KtucpInitException;
-import com.hjcenry.kcp.*;
-import com.hjcenry.kcp.NetTypeEnum;
-import com.hjcenry.net.KtucpNet;
 import com.hjcenry.fec.fec.Fec;
+import com.hjcenry.kcp.*;
 import com.hjcenry.kcp.listener.KtucpListener;
+import com.hjcenry.net.KtucpNet;
 import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.NetConfigData;
 import com.hjcenry.net.udp.UdpChannelConfig;
@@ -82,11 +81,7 @@ public class KtucpServer extends KtucpNet {
             this.channelManager = new ServerConvChannelManager(convIndex);
         } else {
             // address管理
-            if (channelConfig.getNetChannelConfigList().size() > 1) {
-                // 超过一种类型的网络，不能使用Address管理KCP
-                if (logger.isErrorEnabled()) {
-                    logger.error("Can not use address to manager channel when net size greater than 1");
-                }
+            if (!checkCanManageAddress(channelConfig)) {
                 return;
             }
             this.channelManager = new ServerAddressChannelManager();
@@ -106,7 +101,7 @@ public class KtucpServer extends KtucpNet {
         createNetServers();
 
         // 启动网络服务
-        for (INet net : KtucpNetManager.getAllNet()) {
+        for (INet net : this.ktucpNetManager.getAllNet()) {
             try {
                 INetServer netServer = (INetServer) net;
                 netServer.start();
@@ -116,7 +111,7 @@ public class KtucpServer extends KtucpNet {
         }
 
         // 打印启动网络信息
-        this.logPrintNetServer();
+        this.logPrintNet();
 
         // 启动完成回调
         IKtucpServerStartUpCallback callback = channelConfig.getServerStartUpCallback();
@@ -142,20 +137,9 @@ public class KtucpServer extends KtucpNet {
                 continue;
             }
             // 添加到网络manager
-            KtucpNetManager.addNet(netServer);
+            this.ktucpNetManager.addNet(netServer);
+            KtucpGlobalNetManager.addNet(netServer);
         }
-    }
-
-    private void logPrintNetServer() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (INet netServer : KtucpNetManager.getAllNet()) {
-            stringBuilder.append(netServer.toString()).append("\n");
-        }
-        logger.info(String.format("%s Start : " +
-                        "\n===========================================================\n" +
-                        "%s" +
-                        "===========================================================",
-                this.getClass().getSimpleName(), stringBuilder));
     }
 
     private INet createNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) {
@@ -164,17 +148,6 @@ public class KtucpServer extends KtucpNet {
         } catch (KtucpInitException e) {
             logger.error("", e);
             return null;
-        }
-    }
-
-    public void stop() {
-        // 停止所有网络服务
-        KtucpNetManager.getAllNet().forEach(INet::stop);
-        if (this.messageExecutorPool != null) {
-            this.messageExecutorPool.stop();
-        }
-        if (this.hashedWheelTimer != null) {
-            this.hashedWheelTimer.stop();
         }
     }
 
