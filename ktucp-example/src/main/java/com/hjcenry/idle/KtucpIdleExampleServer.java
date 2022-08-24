@@ -27,7 +27,7 @@ public class KtucpIdleExampleServer implements KtucpListener {
         //channelConfig.setFecParityShardCount(3);
         channelConfig.setAckNoDelay(false);
         channelConfig.setCrc32Check(true);
-        //channelConfig.setTimeoutMillis(10000);
+        channelConfig.setTimeoutMillis(5000);
         KtucpServer ktucpServer = new KtucpServer();
         ktucpServer.init(kcpIdleExampleServer, channelConfig, 10020);
     }

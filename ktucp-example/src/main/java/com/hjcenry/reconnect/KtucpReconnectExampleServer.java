@@ -6,6 +6,7 @@ import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 /**
  * 重连测试服务器
@@ -28,7 +29,7 @@ public class KtucpReconnectExampleServer extends SimpleKtucpListener<ByteBuf> {
         channelConfig.setUseConvChannel(true);
         channelConfig.setTimeoutMillis(10000);
         KtucpServer ktucpServer = new KtucpServer();
-        ktucpServer.init(kcpRttExampleServer, channelConfig, 10021);
+        ktucpServer.init(kcpRttExampleServer, channelConfig, 20004);
     }
 
 
@@ -50,7 +51,8 @@ public class KtucpReconnectExampleServer extends SimpleKtucpListener<ByteBuf> {
             start = now;
             i = 0;
         }
-        uktucp.write(cast);
+        ByteBuf resp = ByteBufAllocator.DEFAULT.heapBuffer();
+        uktucp.write(resp);
     }
 
     @Override

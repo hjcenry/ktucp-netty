@@ -76,7 +76,7 @@ https://hjcenry.com/ktucp/doc/
 <dependency>
     <groupId>io.github.hjcenry</groupId>
     <artifactId>ktucp-net</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 </dependency>
 ```
 

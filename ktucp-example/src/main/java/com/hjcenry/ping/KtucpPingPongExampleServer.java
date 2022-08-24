@@ -6,6 +6,7 @@ import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.DefaultEventLoop;
 
 /**
@@ -46,7 +47,7 @@ public class KtucpPingPongExampleServer extends SimpleKtucpListener<ByteBuf> {
 
     @Override
     protected void handleReceive0(ByteBuf cast, Uktucp uktucp) throws Exception {
-        ByteBuf newBuf = cast.retainedDuplicate();
+        ByteBuf newBuf = ByteBufAllocator.DEFAULT.heapBuffer();
         logicThread.execute(() -> {
             try {
                 i++;
@@ -57,7 +58,8 @@ public class KtucpPingPongExampleServer extends SimpleKtucpListener<ByteBuf> {
                     i = 0;
                 }
                 uktucp.write(newBuf);
-                newBuf.release();
+                // WriteTask 70行会自动进行释放，因此ByteBuf无需自行释放
+//                newBuf.release();
             } catch (Exception e) {
                 e.printStackTrace();
             }

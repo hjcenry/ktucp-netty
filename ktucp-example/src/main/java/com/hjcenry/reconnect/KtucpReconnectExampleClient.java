@@ -11,6 +11,7 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.*;
 
 /**
  * 重连测试客户端
@@ -40,13 +41,13 @@ public class KtucpReconnectExampleClient extends SimpleKtucpListener<ByteBuf> {
 
         ktucpClient.connect();
 
-        Timer timer = new Timer();
+        ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 ktucpClient.reconnect();
             }
-        }, 1000, 1000);
+        }, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -57,7 +58,8 @@ public class KtucpReconnectExampleClient extends SimpleKtucpListener<ByteBuf> {
             byte[] bytes = new byte[1020];
             byteBuf.writeBytes(bytes);
             uktucp.write(byteBuf);
-            byteBuf.release();
+            // WriteTask 70行会自动进行释放，因此ByteBuf无需自行释放
+//            byteBuf.release();
         }
     }
 

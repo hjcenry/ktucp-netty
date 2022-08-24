@@ -27,25 +27,12 @@ public class KtucpIdleExampleClient implements KtucpListener {
         //channelConfig.setFecParityShardCount(3);
         channelConfig.setAckNoDelay(false);
         channelConfig.setCrc32Check(true);
-        //channelConfig.setTimeoutMillis(10000);
+        channelConfig.setTimeoutMillis(5000);
 
         KtucpClient ktucpClient = new KtucpClient();
         KtucpIdleExampleClient kcpIdleExampleClient = new KtucpIdleExampleClient();
         ktucpClient.init(kcpIdleExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10020));
-
-        for (int i = 0; i < 3; i++) {
-            if (i % 1000 == 0) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            ;
-            //kcpClient.connect(new InetSocketAddress("10.60.100.191", 10020), channelConfig, kcpIdleExampleClient);
-            ktucpClient.connect();
-        }
-
+        ktucpClient.connect();
     }
 
     int i = 0;
@@ -57,7 +44,8 @@ public class KtucpIdleExampleClient implements KtucpListener {
         byte[] bytes = new byte[120];
         byteBuf.writeBytes(bytes);
         uktucp.write(byteBuf);
-        byteBuf.release();
+        // WriteTask 70行会自动进行释放，因此ByteBuf无需自行释放
+        //byteBuf.release();
     }
     //int j =0;
 
@@ -79,6 +67,7 @@ public class KtucpIdleExampleClient implements KtucpListener {
     @Override
     public void handleIdleTimeout(Uktucp uktucp) {
         System.out.println("handleTimeout!!!:" + uktucp);
+
     }
 
     @Override

@@ -49,7 +49,8 @@ public class KtucpPingPongExampleClient extends SimpleKtucpListener<ByteBuf> {
             byte[] bytes = new byte[1020];
             byteBuf.writeBytes(bytes);
             uktucp.write(byteBuf);
-            byteBuf.release();
+            // WriteTask 70行会自动进行释放，因此ByteBuf无需自行释放
+//            byteBuf.release();
         }
     }
 
@@ -62,7 +63,8 @@ public class KtucpPingPongExampleClient extends SimpleKtucpListener<ByteBuf> {
         logicThread.execute(() -> {
             try {
                 uktucp.write(newBuf);
-                newBuf.release();
+                // WriteTask 70行会自动进行释放，因此ByteBuf无需自行释放
+//                newBuf.release();
                 j++;
                 if (j % 100000 == 0) {
                     System.out.println(Snmp.snmp.toString());

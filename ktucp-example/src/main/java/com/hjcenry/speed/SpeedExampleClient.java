@@ -6,10 +6,13 @@ import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.KtucpListener;
 import com.hjcenry.net.client.KtucpClient;
 import com.hjcenry.threadpool.disruptor.DisruptorExecutorPool;
+import com.hjcenry.util.ReferenceCountUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.*;
 
 /**
  * Created by JinMiao
@@ -47,7 +50,8 @@ public class SpeedExampleClient implements KtucpListener {
 
     @Override
     public void onConnected(int netId, Uktucp uktucp) {
-        new Thread(() -> {
+        ExecutorService thread = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new DefaultThreadFactory("Single"));
+        thread.submit((Runnable) () -> {
             for (; ; ) {
                 long now = System.currentTimeMillis();
                 if (now - start >= 1000) {
@@ -58,16 +62,16 @@ public class SpeedExampleClient implements KtucpListener {
                 }
                 ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(messageSize);
                 byteBuf.writeBytes(new byte[messageSize]);
-                if (!uktucp.write(byteBuf)) {
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                uktucp.write(byteBuf);
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                byteBuf.release();
+                // WriteTask 70行会自动进行释放，因此ByteBuf无需自行释放
+//                byteBuf.release();
             }
-        }).start();
+        });
     }
 
     @Override

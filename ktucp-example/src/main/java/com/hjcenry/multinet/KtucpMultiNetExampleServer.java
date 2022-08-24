@@ -74,7 +74,7 @@ public class KtucpMultiNetExampleServer extends SimpleKtucpListener<ByteBuf> {
         // KCP超时时是否关闭KCP连接，默认true
         channelConfig.setKcpIdleTimeoutClose(true);
         // 是否使用fec
-        channelConfig.setFecAdapt(new FecAdapt(10, 3));
+//        channelConfig.setFecAdapt(new FecAdapt(10, 3));
         // 发送包立即调用flush 延迟低一些  cpu增加  如果interval值很小 建议关闭该参数
         channelConfig.setFastFlush(true);
         // 是否使用crc32校验
