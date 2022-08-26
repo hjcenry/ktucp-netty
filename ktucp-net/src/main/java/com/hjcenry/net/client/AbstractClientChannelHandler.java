@@ -2,6 +2,7 @@ package com.hjcenry.net.client;
 
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
+import com.hjcenry.kcp.INet;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.log.KtucpLog;
 import com.hjcenry.net.AbstractChannelHandler;
@@ -23,8 +24,8 @@ public abstract class AbstractClientChannelHandler extends AbstractChannelHandle
 
     protected static final Logger logger = KtucpLog.logger;
 
-    public AbstractClientChannelHandler(int netId, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
-        super(netId, channelManager, channelConfig, netChannelConfig);
+    public AbstractClientChannelHandler(INet net, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
+        super(net, channelManager, channelConfig, netChannelConfig);
     }
 
     @Override

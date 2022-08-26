@@ -5,6 +5,7 @@ import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 /**
  * 重复新连接进入断开测试内存泄漏服务器
@@ -39,7 +40,9 @@ public class KtucpDisconnectExampleServer extends SimpleKtucpListener<ByteBuf> {
 
     @Override
     protected void handleReceive0(ByteBuf buf, Uktucp uktucp) throws Exception {
-        uktucp.write(buf);
+        ByteBuf newBuf = ByteBufAllocator.DEFAULT.buffer(buf.readableBytes());
+        newBuf.writeBytes(buf);
+        uktucp.write(newBuf);
     }
 
     @Override

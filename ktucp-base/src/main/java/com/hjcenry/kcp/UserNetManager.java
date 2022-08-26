@@ -44,40 +44,27 @@ public class UserNetManager {
      * 添加网络信息
      * <b>适用于多通道网络</b>
      *
-     * @param netId         网络id
+     * @param net           网络
      * @param channel       通道
      * @param localAddress  本地地址
      * @param remoteAddress 远端地址
      */
-    public void addNetInfo(int netId, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+    public void addNetInfo(INet net, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         UserNetInfo userNetInfo = new UserNetInfo();
-        userNetInfo.setNetId(netId);
+        userNetInfo.setNet(net);
         userNetInfo.setChannel(channel);
         userNetInfo.setRemoteAddress(remoteAddress);
         userNetInfo.setLocalAddress(localAddress);
-        this.netInfoMap.put(netId, userNetInfo);
-    }
-
-    /**
-     * 添加网络信息
-     * <b>适用于单通道网络</b>
-     *
-     * @param channel       通道
-     * @param localAddress  本地地址
-     * @param remoteAddress 远端地址
-     */
-    public void addNetInfo(Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
-        this.addNetInfo(INet.DEFAULT_CHANNEL_NET_ID, channel, localAddress, remoteAddress);
+        this.netInfoMap.put(net.getNetId(), userNetInfo);
     }
 
     /**
      * 是否是UDP网络
      *
-     * @param netId 网络
+     * @param net 网络
      * @return 是否是UDP网络
      */
-    private boolean isUdpChannel(int netId) {
-        INet net = KtucpGlobalNetManager.getNet(netId);
+    private boolean isUdpChannel(INet net) {
         if (net == null) {
             return false;
         }
@@ -89,13 +76,12 @@ public class UserNetManager {
      */
     public void closeAllChannel() {
         for (UserNetInfo userNetInfo : this.netInfoMap.values()) {
-            int netId = userNetInfo.getNetId();
-            INet net = KtucpGlobalNetManager.getNet(netId);
+            INet net = userNetInfo.getNet();
             if (net == null) {
                 continue;
             }
             Channel channel = userNetInfo.getChannel();
-            if (isUdpChannel(netId)) {
+            if (isUdpChannel(net)) {
                 if (this.user.isClient()) {
                     // UDP，仅客户端关闭
                     channel.close();
@@ -116,7 +102,7 @@ public class UserNetManager {
             return;
         }
         UserNetInfo userNetInfo = iterator.next();
-        this.closeNet(userNetInfo.getNetId());
+        this.closeNet(userNetInfo.getNet().getNetId());
     }
 
     /**
@@ -143,6 +129,21 @@ public class UserNetManager {
      */
     public Channel getCurrentNetChannel() {
         return getChannel(this.user.getCurrentNetId());
+    }
+
+    /**
+     * 获取网络
+     * <b>适用于多通道网络</b>
+     *
+     * @param netId 网络id
+     * @return net
+     */
+    public INet getNet(int netId) {
+        if (!this.netInfoMap.containsKey(netId)) {
+            return null;
+        }
+        UserNetInfo userNetInfo = this.netInfoMap.get(netId);
+        return userNetInfo.getNet();
     }
 
     /**

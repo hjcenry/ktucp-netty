@@ -1,5 +1,6 @@
 package com.hjcenry.net.client.udp;
 
+import com.hjcenry.kcp.INet;
 import com.hjcenry.net.client.AbstractClientChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
@@ -20,8 +21,8 @@ import io.netty.channel.socket.DatagramPacket;
 @ChannelHandler.Sharable
 public class UdpClientChannelHandler extends AbstractClientChannelHandler {
 
-    public UdpClientChannelHandler(int netId, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
-        super(netId, channelManager, channelConfig, netChannelConfig);
+    public UdpClientChannelHandler(INet net, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
+        super(net, channelManager, channelConfig, netChannelConfig);
     }
 
     @Override

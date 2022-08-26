@@ -2,9 +2,9 @@ package com.hjcenry.net;
 
 import com.hjcenry.kcp.ChannelConfig;
 import com.hjcenry.kcp.IChannelManager;
+import com.hjcenry.kcp.INet;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.log.KtucpLog;
-import com.hjcenry.net.NetChannelConfig;
 import com.hjcenry.net.tcp.INettyChannelEvent;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -40,10 +40,10 @@ public abstract class AbstractChannelHandler extends ChannelInboundHandlerAdapte
     /**
      * 网络id
      */
-    protected int netId;
+    protected INet net;
 
-    public AbstractChannelHandler(int netId, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
-        this.netId = netId;
+    public AbstractChannelHandler(INet net, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
+        this.net = net;
         this.channelManager = channelManager;
         this.channelConfig = channelConfig;
         this.netChannelConfig = netChannelConfig;

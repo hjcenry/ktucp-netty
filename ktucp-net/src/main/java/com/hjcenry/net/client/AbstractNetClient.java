@@ -214,7 +214,7 @@ public abstract class AbstractNetClient extends AbstractNet implements INetClien
     protected void bindChannel(Uktucp uktucp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         User user = uktucp.user();
         UserNetManager userNetManager = user.getUserNetManager();
-        userNetManager.addNetInfo(this.netId, channel, localAddress, remoteAddress);
+        userNetManager.addNetInfo(this, channel, localAddress, remoteAddress);
     }
 
     protected KtucpOutput getKcpOutput() {

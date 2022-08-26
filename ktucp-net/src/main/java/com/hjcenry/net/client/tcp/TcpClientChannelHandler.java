@@ -1,10 +1,7 @@
 package com.hjcenry.net.client.tcp;
 
+import com.hjcenry.kcp.*;
 import com.hjcenry.net.client.AbstractClientChannelHandler;
-import com.hjcenry.kcp.ChannelConfig;
-import com.hjcenry.kcp.IChannelManager;
-import com.hjcenry.kcp.HandlerChannelManager;
-import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.net.NetChannelConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -28,8 +25,8 @@ public class TcpClientChannelHandler extends AbstractClientChannelHandler {
      */
     private final HandlerChannelManager clientChannelManager;
 
-    public TcpClientChannelHandler(int netId, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
-        super(netId, channelManager, channelConfig, netChannelConfig);
+    public TcpClientChannelHandler(INet net, IChannelManager channelManager, ChannelConfig channelConfig, NetChannelConfig netChannelConfig) {
+        super(net, channelManager, channelConfig, netChannelConfig);
         this.clientChannelManager = new HandlerChannelManager();
     }
 

@@ -129,6 +129,8 @@ public class KtucpServer extends KtucpNet {
             NetChannelConfig config = (NetChannelConfig) netChannelConfig;
             // 网络id
             int netId = getNetId(config);
+            // 判断id重复
+            Assert.isTrue(!this.ktucpNetManager.containsNet(netId), String.format("create net failed : netId[%d] exist", netId));
             // 网络服务数据
             NetConfigData netConfigData = getNetConfigData(config);
             // 创建网络服务
@@ -138,7 +140,6 @@ public class KtucpServer extends KtucpNet {
             }
             // 添加到网络manager
             this.ktucpNetManager.addNet(netServer);
-            KtucpGlobalNetManager.addNet(netServer);
         }
     }
 

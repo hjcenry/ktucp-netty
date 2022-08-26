@@ -15,7 +15,7 @@ public class UserNetInfo {
     /**
      * 网络id
      */
-    private int netId;
+    private INet net;
     /**
      * 网络通道
      */
@@ -29,12 +29,12 @@ public class UserNetInfo {
      */
     private InetSocketAddress localAddress;
 
-    public int getNetId() {
-        return netId;
+    public INet getNet() {
+        return net;
     }
 
-    public void setNetId(int netId) {
-        this.netId = netId;
+    public void setNet(INet net) {
+        this.net = net;
     }
 
     public Channel getChannel() {

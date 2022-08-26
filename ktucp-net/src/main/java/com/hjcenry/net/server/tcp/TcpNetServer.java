@@ -45,7 +45,7 @@ public class TcpNetServer extends AbstractNetServer {
 
     public TcpNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         super(netId, netTypeEnum, netConfigData);
-        serverChannelHandler = new TcpServerChannelHandler(netId,
+        serverChannelHandler = new TcpServerChannelHandler(this,
                 netConfigData.getChannelManager(),
                 netConfigData.getChannelConfig(),
                 netConfigData.getNetChannelConfig(),

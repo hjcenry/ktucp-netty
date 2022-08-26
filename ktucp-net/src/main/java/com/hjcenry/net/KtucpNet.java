@@ -107,12 +107,11 @@ public abstract class KtucpNet {
      */
     protected int getNetId(NetChannelConfig config) {
         int netId = config.getNetId();
-        int autoId = KtucpGlobalNetManager.createNetId();
+        if (netId > 0) {
+            return netId;
+        }
         // 配置了取自定义id，否则取自增id
-        netId = netId > 0 ? netId : autoId;
-        // 判重
-        Assert.isTrue(!KtucpGlobalNetManager.containsNet(netId), String.format("create net failed : netId[%d] exist", netId));
-        return netId;
+        return KtucpGlobalNetManager.createNetId();
     }
 
     protected void logPrintNet() {
@@ -131,7 +130,6 @@ public abstract class KtucpNet {
         // 停止所有网络
         for (INet net : this.ktucpNetManager.getAllNet()) {
             net.stop();
-            KtucpGlobalNetManager.removeNet(net);
         }
         this.ktucpNetManager.clear();
         if (this.messageExecutorPool != null) {

@@ -2,6 +2,7 @@ package com.hjcenry.net.server.udp;
 
 import com.hjcenry.codec.decode.IMessageDecoder;
 import com.hjcenry.codec.encode.IMessageEncoder;
+import com.hjcenry.kcp.INet;
 import com.hjcenry.threadpool.IMessageExecutorPool;
 import com.hjcenry.net.server.AbstractServerChannelHandler;
 import com.hjcenry.kcp.ChannelConfig;
@@ -27,14 +28,14 @@ import java.net.InetSocketAddress;
 @ChannelHandler.Sharable
 public class UdpServerChannelHandler extends AbstractServerChannelHandler {
 
-    public UdpServerChannelHandler(int netId, IChannelManager channelManager,
+    public UdpServerChannelHandler(INet net, IChannelManager channelManager,
                                    ChannelConfig channelConfig,
                                    NetChannelConfig netChannelConfig, IMessageExecutorPool iMessageExecutorPool,
                                    KtucpListener ktucpListener,
                                    HashedWheelTimer hashedWheelTimer,
                                    IMessageEncoder messageEncoder,
                                    IMessageDecoder messageDecoder) {
-        super(netId, channelManager,
+        super(net, channelManager,
                 channelConfig,
                 netChannelConfig,
                 iMessageExecutorPool,

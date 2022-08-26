@@ -36,7 +36,7 @@ public class UdpNetServer extends AbstractNetServer {
 
     public UdpNetServer(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         super(netId, netTypeEnum, netConfigData);
-        serverChannelHandler = new UdpServerChannelHandler(netId,
+        serverChannelHandler = new UdpServerChannelHandler(this,
                 netConfigData.getChannelManager(),
                 netConfigData.getChannelConfig(),
                 netConfigData.getNetChannelConfig(),

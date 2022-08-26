@@ -41,7 +41,7 @@ public class TcpNetClient extends AbstractNetClient {
 
     public TcpNetClient(int netId, NetTypeEnum netTypeEnum, NetConfigData netConfigData) throws KtucpInitException {
         super(netId, netTypeEnum, netConfigData);
-        clientChannelHandler = new TcpClientChannelHandler(this.netId, netConfigData.getChannelManager(), netConfigData.getChannelConfig(), netConfigData.getNetChannelConfig());
+        clientChannelHandler = new TcpClientChannelHandler(this, netConfigData.getChannelManager(), netConfigData.getChannelConfig(), netConfigData.getNetChannelConfig());
     }
 
     @Override

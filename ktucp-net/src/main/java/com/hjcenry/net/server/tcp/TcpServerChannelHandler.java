@@ -35,14 +35,14 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
      */
     private final HandlerChannelManager serverChannelManager;
 
-    public TcpServerChannelHandler(int netId, IChannelManager channelManager,
+    public TcpServerChannelHandler(TcpNetServer net, IChannelManager channelManager,
                                    ChannelConfig channelConfig,
                                    NetChannelConfig netChannelConfig, IMessageExecutorPool iMessageExecutorPool,
                                    KtucpListener ktucpListener,
                                    HashedWheelTimer hashedWheelTimer,
                                    IMessageEncoder messageEncoder,
                                    IMessageDecoder messageDecoder) {
-        super(netId, channelManager,
+        super(net, channelManager,
                 channelConfig,
                 netChannelConfig,
                 iMessageExecutorPool,
@@ -92,7 +92,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
             // 确实是找不到这个用户了
             return null;
         }
-        Channel curChannel = uktucp.user().getNetChannel(this.netId);
+        Channel curChannel = uktucp.user().getNetChannel(this.net.getNetId());
         // convId取出来的人，和当前Channel不是同一个
         if (curChannel != null && curChannel != channel) {
             // 如果convId的用户从来没登陆过TCP，或者用户的TCP网络掉线了，那么理论上，其他人也是可以利用这个间隙伪造正常用户的TCP消息的，
@@ -114,7 +114,7 @@ public class TcpServerChannelHandler extends AbstractServerChannelHandler {
         if (uktucp == null) {
             return true;
         }
-        Channel curChannel = uktucp.user().getNetChannel(this.netId);
+        Channel curChannel = uktucp.user().getNetChannel(this.net.getNetId());
         if (curChannel != null && curChannel != channel) {
             // convId取出来的人，身上有channel，并且不是同一个Channel
             if (KtucpLog.logger.isWarnEnabled()) {

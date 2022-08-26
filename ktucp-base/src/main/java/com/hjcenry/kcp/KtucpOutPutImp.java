@@ -29,12 +29,12 @@ public class KtucpOutPutImp implements KtucpOutput {
         int finalUseNetId = user.getCurrentNetId();
 
         int forceUseNetId = user.getForceUseNetId();
-        if (forceUseNetId != INet.NO_USE_FORCE_NET_ID && KtucpGlobalNetManager.containsNet(forceUseNetId)) {
+        if (forceUseNetId != INet.NO_USE_FORCE_NET_ID && user.getUserNetManager().containsNet(forceUseNetId)) {
             // 强制使用网络，并且这个网络存在
             finalUseNetId = forceUseNetId;
         }
 
-        INet net = KtucpGlobalNetManager.getNet(finalUseNetId);
+        INet net = user.getUserNetManager().getNet(finalUseNetId);
         if (net == null) {
             if (logger.isWarnEnabled()) {
                 logger.warn(String.format("KtucpOutput writeAndFlush useNet[%d] currentNet[%d] forceUseNet[%d] error : net null", finalUseNetId, user.getCurrentNetId(), forceUseNetId));

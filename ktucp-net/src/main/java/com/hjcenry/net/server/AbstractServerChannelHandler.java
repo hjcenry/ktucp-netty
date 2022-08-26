@@ -47,7 +47,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
      */
     protected IMessageDecoder messageDecoder;
 
-    public AbstractServerChannelHandler(int netId,
+    public AbstractServerChannelHandler(INet net,
                                         IChannelManager channelManager,
                                         ChannelConfig channelConfig,
                                         NetChannelConfig netChannelConfig,
@@ -56,7 +56,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
                                         HashedWheelTimer hashedWheelTimer,
                                         IMessageEncoder messageEncoder,
                                         IMessageDecoder messageDecoder) {
-        super(netId, channelManager, channelConfig, netChannelConfig);
+        super(net, channelManager, channelConfig, netChannelConfig);
         this.iMessageExecutorPool = iMessageExecutorPool;
         this.ktucpListener = ktucpListener;
         this.hashedWheelTimer = hashedWheelTimer;
@@ -75,7 +75,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
     protected void bindChannel(Uktucp uktucp, Channel channel, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         User user = uktucp.user();
         UserNetManager userNetManager = user.getUserNetManager();
-        userNetManager.addNetInfo(this.netId, channel, localAddress, remoteAddress);
+        userNetManager.addNetInfo(this.net, channel, localAddress, remoteAddress);
     }
 
     @Override
@@ -107,7 +107,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
 
         iMessageExecutor.execute(() -> {
             try {
-                newUktucp.getKcpListener().onConnected(this.netId, newUktucp);
+                newUktucp.getKcpListener().onConnected(this.net.getNetId(), newUktucp);
             } catch (Throwable throwable) {
                 newUktucp.getKcpListener().handleException(throwable, newUktucp);
             }
@@ -136,16 +136,16 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         User user = uktucp.user();
 
         //绑定当前网络
-        uktucp.changeCurrentNetId(this.netId);
+        uktucp.changeCurrentNetId(this.net.getNetId());
 
         //每次收到消息重绑定地址
         InetSocketAddress remoteAddress = getRemoteAddress(channel, readObject);
-        user.changeRemoteAddress(this.netId, remoteAddress);
+        user.changeRemoteAddress(this.net.getNetId(), remoteAddress);
         InetSocketAddress localAddress = getLocalAddress(channel, readObject);
-        user.changeLocalAddress(this.netId, localAddress);
+        user.changeLocalAddress(this.net.getNetId(), localAddress);
 
         UserNetManager userNetManager = user.getUserNetManager();
-        if (!userNetManager.containsNet(this.netId)) {
+        if (!userNetManager.containsNet(this.net.getNetId())) {
             // 没有网络，绑定一下
             this.bindChannel(uktucp, channel, localAddress, remoteAddress);
         }
@@ -167,7 +167,7 @@ public abstract class AbstractServerChannelHandler extends AbstractChannelHandle
         KtucpOutput ktucpOutput = this.getKcpOutput();
         Uktucp newUktucp = new Uktucp(ktucpOutput, ktucpListener, iMessageExecutor, this.channelConfig, this.channelManager, this.messageEncoder, this.messageDecoder);
         // 创建user
-        User user = new User(this.netId, this.channelConfig.getNetNum());
+        User user = new User(this.net.getNetId(), this.channelConfig.getNetNum());
         newUktucp.user(user);
         // 服务端模式
         newUktucp.setServerMode();

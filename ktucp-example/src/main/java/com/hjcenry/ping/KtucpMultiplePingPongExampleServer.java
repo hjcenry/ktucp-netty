@@ -6,6 +6,7 @@ import com.hjcenry.net.server.KtucpServer;
 import com.hjcenry.kcp.Uktucp;
 import com.hjcenry.kcp.listener.SimpleKtucpListener;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 /**
  * 测试多连接吞吐量
@@ -51,7 +52,9 @@ public class KtucpMultiplePingPongExampleServer extends SimpleKtucpListener<Byte
         //    start = now;
         //    i=0;
         //}
-        uktucp.write(cast);
+        ByteBuf newBuf = ByteBufAllocator.DEFAULT.buffer(cast.readableBytes());
+        newBuf.writeBytes(cast);
+        uktucp.write(newBuf);
     }
 
     @Override

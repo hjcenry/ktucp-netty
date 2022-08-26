@@ -10,6 +10,9 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 测试多连接吞吐量
@@ -31,18 +34,17 @@ public class KtucpMultiplePingPongExampleClient implements KtucpListener {
         //channelConfig.setCrc32Check(true);
         //channelConfig.setTimeoutMillis(10000);
 
-        KtucpClient ktucpClient = new KtucpClient();
-        KtucpMultiplePingPongExampleClient kcpMultiplePingPongExampleClient = new KtucpMultiplePingPongExampleClient();
-        ktucpClient.init(kcpMultiplePingPongExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10011));
-
         int clientNumber = 1000;
         for (int i = 0; i < clientNumber; i++) {
             channelConfig.setConv(i);
+            KtucpClient ktucpClient = new KtucpClient();
+            KtucpMultiplePingPongExampleClient kcpMultiplePingPongExampleClient = new KtucpMultiplePingPongExampleClient();
+            ktucpClient.init(kcpMultiplePingPongExampleClient, channelConfig, new InetSocketAddress("127.0.0.1", 10011));
             ktucpClient.connect();
         }
     }
 
-    Timer timer = new Timer();
+    ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public void onConnected(int netId, Uktucp uktucp) {
@@ -57,7 +59,7 @@ public class KtucpMultiplePingPongExampleClient implements KtucpListener {
                 uktucp.write(byteBuf);
 //                byteBuf.release();
             }
-        }, 100, 100);
+        }, 100, 100, TimeUnit.MILLISECONDS);
     }
 
     @Override

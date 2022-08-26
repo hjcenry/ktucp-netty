@@ -124,9 +124,6 @@ public class KtucpClient extends KtucpNet {
         long delay = channelConfig.getInterval();
         // 启动客户端时间轮
         hashedWheelTimer.newTimeout(this.scheduleTask, delay, TimeUnit.MILLISECONDS);
-
-        // 停服钩子
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
 
     /**
@@ -172,7 +169,7 @@ public class KtucpClient extends KtucpNet {
 
     public void reconnect(int netId) {
         // 启动网络服务
-        INet net = KtucpGlobalNetManager.getNet(netId);
+        INet net = this.ktucpNetManager.getNet(netId);
         if (net == null) {
             return;
         }
@@ -216,6 +213,8 @@ public class KtucpClient extends KtucpNet {
             NetChannelConfig config = (NetChannelConfig) netChannelConfig;
             // 网络id
             int netId = getNetId(config);
+            // 判断id重复
+            Assert.isTrue(!this.ktucpNetManager.containsNet(netId), String.format("create net failed : netId[%d] exist", netId));
             // 网络服务数据
             NetConfigData netConfigData = getNetConfigData(config);
             // 创建网络服务
@@ -225,7 +224,6 @@ public class KtucpClient extends KtucpNet {
             }
             // 添加到网络manager
             this.ktucpNetManager.addNet(netClient);
-            KtucpGlobalNetManager.addNet(netClient);
         }
     }
 

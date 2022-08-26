@@ -10,6 +10,10 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,24 +37,24 @@ public class KtucpDisconnectExampleClient extends SimpleKtucpListener<ByteBuf> {
         channelConfig.setConv(55);
         channelConfig.setUseConvChannel(true);
 
-        KtucpClient ktucpClient = new KtucpClient();
-        KtucpDisconnectExampleClient kcpClientRttExample = new KtucpDisconnectExampleClient();
-        ktucpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 10031));
 
-        Timer timer = new Timer();
+        ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                for (int i = 0; i < 100; i++) {
+                for (int i = 0; i < 10; i++) {
                     try {
                         channelConfig.setConv(id.incrementAndGet());
+                        KtucpClient ktucpClient = new KtucpClient();
+                        KtucpDisconnectExampleClient kcpClientRttExample = new KtucpDisconnectExampleClient();
+                        ktucpClient.init(kcpClientRttExample, channelConfig, new InetSocketAddress("127.0.0.1", 10031));
                         ktucpClient.connect();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
-        }, 1000, 1000);
+        }, 3000, 3000, TimeUnit.MILLISECONDS);
     }
 
     private static final AtomicInteger id = new AtomicInteger();
@@ -63,7 +67,7 @@ public class KtucpDisconnectExampleClient extends SimpleKtucpListener<ByteBuf> {
             byte[] bytes = new byte[1020];
             byteBuf.writeBytes(bytes);
             uktucp.write(byteBuf);
-            byteBuf.release();
+//            byteBuf.release();
         }
     }
 
