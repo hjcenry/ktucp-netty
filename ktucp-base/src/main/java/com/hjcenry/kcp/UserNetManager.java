@@ -81,13 +81,14 @@ public class UserNetManager {
                 continue;
             }
             Channel channel = userNetInfo.getChannel();
-            if (isUdpChannel(net)) {
-                if (this.user.isClient()) {
-                    // UDP，仅客户端关闭
-                    channel.close();
-                }
-            } else {
+            // UDP仅客户端关闭
+            boolean needClose = !isUdpChannel(net) || this.user.isClient();
+            if (needClose) {
                 channel.close();
+            }
+            if (this.user.isClient()) {
+                // 客户端需要关闭网络
+                net.stop();
             }
         }
     }
